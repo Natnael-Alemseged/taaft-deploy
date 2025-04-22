@@ -55,7 +55,7 @@ export default function Home() {
       <AIAutomation />
 
       {/* Footer */}
-      <Footer />
+
     </div>
   )
 }
