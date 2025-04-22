@@ -1,58 +1,121 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ChevronRight, Share2, Bookmark } from "lucide-react"
+import { useFeaturedTools, useSaveTool, useUnsaveTool } from "@/hooks/use-tools"
+import { useAuth } from "@/contexts/auth-context"
+import { useState, useEffect } from "react"
 
 export default function FeaturedTools() {
-  const featuredTools = [
-    {
-      id: "ai-image-creator",
-      name: "AI Image Creator",
-      category: "Image Generation",
-      pricing: "Premium",
-      description: "Generate stunning images from text descriptions using advanced AI models.",
-      tags: ["Marketing", "Design", "Content"],
-    },
-    {
-      id: "ai-writing-assistant",
-      name: "AI Writing Assistant",
-      category: "Text Generation",
-      pricing: "Premium",
-      description: "Create high-quality content with AI-powered writing assistance.",
-      tags: ["Marketing", "Content", "Blogging"],
-    },
-    {
-      id: "code-assist-ai",
-      name: "CodeAssist AI",
-      category: "Development",
-      pricing: "Free",
-      featured: true,
-      description: "AI-powered code completion and generator tool that helps developers write better code.",
-      tags: ["Coding", "Web Dev", "Debugging"],
-    },
-    {
-      id: "video-creator-ai",
-      name: "Video Creator AI",
-      category: "Video Generation",
-      pricing: "Premium",
-      featured: true,
-      description: "Create professional videos from text prompts with AI-powered video generation.",
-      tags: ["Marketing", "Social Media", "Content"],
-    },
-  ]
+  // Always call hooks at the top level, regardless of client/server
+  const { data, isLoading, isError } = useFeaturedTools(4)
+  const { isAuthenticated } = useAuth()
+  const saveTool = useSaveTool()
+  const unsaveTool = useUnsaveTool()
+
+  // Use state to track client-side rendering
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(false)
+  }, [])
+
+  const handleSaveToggle = (toolId: string, savedByUser: boolean) => {
+    if (!isAuthenticated || !isClient) {
+      // Handle unauthenticated state or server-side rendering
+      return
+    }
+
+    if (savedByUser) {
+      unsaveTool.mutate(toolId)
+    } else {
+      saveTool.mutate(toolId)
+    }
+  }
 
   const getBadgeClass = (label: string) => {
     switch (label) {
-      case "Premium":
+      case "premium":
+      case "subscription":
+      case "one-time":
+      case "usage-based":
         return "bg-yellow-100 text-yellow-600"
-      case "Free":
+      case "free":
+      case "freemium":
         return "bg-green-100 text-green-600"
-      case "Featured":
+      case "featured":
         return "bg-purple-600 text-white"
       default:
         return "bg-gray-100 text-gray-600"
     }
   }
+
+  // Helper function to format pricing option label
+  const formatPricingLabel = (pricing: string): string => {
+    switch (pricing) {
+      case "free":
+        return "Free"
+      case "freemium":
+        return "Freemium"
+      case "subscription":
+        return "Subscription"
+      case "one-time":
+        return "One-time"
+      case "usage-based":
+        return "Usage-based"
+      default:
+        return pricing?.charAt(0).toUpperCase() + pricing?.slice(1) || "Unknown"
+    }
+  }
+
+  // Fallback data for SSR or when API fails
+  const fallbackTools = [
+    {
+      id: "ai-image-creator",
+      name: "AI Image Creator",
+      category: "Image Generation",
+      pricing: "premium",
+      description: "Generate stunning images from text descriptions using advanced AI models.",
+      features: ["Marketing", "Design", "Content"],
+      isFeatured: true,
+      savedByUser: false,
+    },
+    {
+      id: "ai-writing-assistant",
+      name: "AI Writing Assistant",
+      category: "Text Generation",
+      pricing: "premium",
+      description: "Create high-quality content with AI-powered writing assistance.",
+      features: ["Marketing", "Content", "Blogging"],
+      isFeatured: true,
+      savedByUser: false,
+    },
+    {
+      id: "code-assist-ai",
+      name: "CodeAssist AI",
+      category: "Development",
+      pricing: "free",
+      description: "AI-powered code completion and generator tool that helps developers write better code.",
+      features: ["Coding", "Web Dev", "Debugging"],
+      isFeatured: true,
+      savedByUser: false,
+    },
+    {
+      id: "video-creator-ai",
+      name: "Video Creator AI",
+      category: "Video Generation",
+      pricing: "premium",
+      description: "Create professional videos from text prompts with AI-powered video generation.",
+      features: ["Marketing", "Social Media", "Content"],
+      isFeatured: true,
+      savedByUser: false,
+    },
+  ]
+
+  // Use API data if available, otherwise use fallback
+  const tools = data?.tools || fallbackTools
 
   return (
     <section className="py-12">
@@ -64,8 +127,23 @@ export default function FeaturedTools() {
           </Link>
         </div>
 
+        {isLoading && isClient && (
+          <div className="flex justify-center py-12">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600"></div>
+          </div>
+        )}
+
+        {isError && isClient && (
+          <div className="mx-auto max-w-md rounded-lg bg-red-50 p-4 text-center">
+            <p className="text-red-600">Failed to load featured tools.</p>
+            <Button onClick={() => window.location.reload()} className="mt-4 bg-red-600 text-white hover:bg-red-700">
+              Retry
+            </Button>
+          </div>
+        )}
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {featuredTools.map((tool) => (
+          {tools.map((tool) => (
             <Card
               key={tool.id}
               className="max-w-sm overflow-hidden rounded-2xl border border-gray-200 shadow-lg w-full mx-auto"
@@ -77,14 +155,12 @@ export default function FeaturedTools() {
                       <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
                         {tool.category}
                       </span>
-                      {tool.pricing && (
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass(tool.pricing)}`}>
-                          {tool.pricing}
-                        </span>
-                      )}
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass(tool.pricing)}`}>
+                        {formatPricingLabel(tool.pricing)}
+                      </span>
                     </div>
-                    {tool.featured && (
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("Featured")}`}>
+                    {tool.isFeatured && (
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}>
                         Featured
                       </span>
                     )}
@@ -94,19 +170,26 @@ export default function FeaturedTools() {
                   <p className="mb-4 text-sm text-gray-600">{tool.description}</p>
 
                   <div className="mb-4 flex flex-wrap gap-2">
-                    {tool.tags.map((tag) => (
-                      <span key={tag} className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600">
-                        {tag}
+                    {tool.features.slice(0, 3).map((feature, index) => (
+                      <span key={index} className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600">
+                        {feature}
                       </span>
                     ))}
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <button className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
-                        <Bookmark className="h-4 w-4" />
+                      <button
+                        className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
+                        onClick={() => handleSaveToggle(tool.id, !!tool.savedByUser)}
+                        disabled={!isClient}
+                      >
+                        <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
                       </button>
-                      <button className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
+                      <button
+                        className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+                        disabled={!isClient}
+                      >
                         <Share2 className="h-4 w-4" />
                       </button>
                     </div>

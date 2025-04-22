@@ -51,25 +51,24 @@ export default function SponsoredTools() {
 
   // Effect to add and clean up scroll listener
   useEffect(() => {
-    const element = scrollRef.current;
-    if (!element) return;
+    const element = scrollRef.current
+    if (!element) return
 
     const handleScroll = () => {
       // Calculate the current page based on scroll position
       // We divide the scrollLeft by the clientWidth (width of the visible area)
       // and round to the nearest whole number to get the page index.
-      const newPage = Math.round(element.scrollLeft / element.clientWidth);
-      setCurrentPage(newPage);
-    };
+      const newPage = Math.round(element.scrollLeft / element.clientWidth)
+      setCurrentPage(newPage)
+    }
 
-    element.addEventListener('scroll', handleScroll);
+    element.addEventListener("scroll", handleScroll)
 
     // Clean up the event listener
     return () => {
-      element.removeEventListener('scroll', handleScroll);
-    };
-  }, [scrollRef]); // Re-run effect if scrollRef changes (though it won't in this case)
-
+      element.removeEventListener("scroll", handleScroll)
+    }
+  }, [scrollRef]) // Re-run effect if scrollRef changes (though it won't in this case)
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return
@@ -83,7 +82,6 @@ export default function SponsoredTools() {
     // Let's remove the setCurrentPage from here to rely purely on the scroll event.
     // setCurrentPage(newPage);
   }
-
 
   return (
     <section className="py-8 bg-white">
@@ -151,9 +149,7 @@ export default function SponsoredTools() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                    Try Tool
-                  </Button>
+                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">Try Tool</Button>
                   <button className="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
                     <Share2 className="h-4 w-4" />
                   </button>
@@ -173,22 +169,20 @@ export default function SponsoredTools() {
                 key={i}
                 className={clsx(
                   "h-1.5 transition-all duration-300 cursor-pointer",
-                  currentPage === i
-                    ? "w-6 h-1 bg-purple-600 "
-                    : "w-1.5 rounded-full bg-gray-300 opacity-50"
+                  currentPage === i ? "w-6 h-1 bg-purple-600 " : "w-1.5 rounded-full bg-gray-300 opacity-50",
                 )}
                 role="tab"
                 aria-controls={`sponsored-tool-page-${i}`}
                 aria-selected={currentPage === i}
                 tabIndex={currentPage === i ? 0 : -1}
-                onClick={() => { // Allow clicking dots to navigate
+                onClick={() => {
+                  // Allow clicking dots to navigate
                   if (scrollRef.current) {
                     // Calculate the scroll position for the clicked page.
                     // Need to consider the width of one "page" which is likely the clientWidth of the container.
-                    const pageWidth = scrollRef.current.clientWidth;
-                    scrollRef.current.scrollTo({ left: i * pageWidth, behavior: 'smooth' });
+                    const pageWidth = scrollRef.current.clientWidth
+                    scrollRef.current.scrollTo({ left: i * pageWidth, behavior: "smooth" })
                   }
-
                 }}
               ></div>
             ))}

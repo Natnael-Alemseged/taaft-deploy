@@ -2,6 +2,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getTools,
   getToolById,
+  getFeaturedTools,
+  getPopularTools,
+  saveTool,
+  unsaveTool,
+  getSavedTools,
   submitTool,
   updateTool,
   deleteTool,
@@ -29,6 +34,68 @@ export function useTool(id: string) {
     queryKey: ["tool", id],
     queryFn: () => getToolById(id),
     enabled: !!id, // Only run if id is provided
+  })
+}
+
+// Hook for fetching featured tools
+export function useFeaturedTools(limit?: number) {
+  return useQuery({
+    queryKey: ["tools", "featured", limit],
+    queryFn: () => getFeaturedTools(limit),
+  })
+}
+
+// Hook for fetching popular tools
+export function usePopularTools(limit?: number) {
+  return useQuery({
+    queryKey: ["tools", "popular", limit],
+    queryFn: () => getPopularTools(limit),
+  })
+}
+
+// Hook for fetching saved tools
+export function useSavedTools() {
+  return useQuery({
+    queryKey: ["tools", "saved"],
+    queryFn: () => getSavedTools(),
+  })
+}
+
+// Hook for saving a tool
+export function useSaveTool() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (toolId: string) => saveTool(toolId),
+    onSuccess: (_, toolId) => {
+      // Update the tool in the cache
+      queryClient.setQueryData(["tool", toolId], (oldData: Tool | undefined) => {
+        if (!oldData) return undefined
+        return { ...oldData, savedByUser: true }
+      })
+
+      // Invalidate saved tools query
+      queryClient.invalidateQueries({ queryKey: ["tools", "saved"] })
+    },
+  })
+}
+
+// Hook for unsaving a tool
+export function useUnsaveTool() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (toolId: string) => unsaveTool(toolId),
+    onSuccess: (_, toolId) => {
+      // Update the tool in the cache
+      queryClient.setQueryData(["tool", toolId], (oldData: Tool | undefined) => {
+        if (!oldData) return undefined
+        return { ...oldData, savedByUser: false }
+      })
+
+      // Invalidate saved tools query
+      queryClient.invalidateQueries({ queryKey: ["tools", "saved"] })
+    },
   })
 }
 

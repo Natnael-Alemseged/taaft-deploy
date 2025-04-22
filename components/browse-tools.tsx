@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 
 import { useTools } from "@/hooks/use-tools"
 import { useCategories } from "@/hooks/use-categories"
-import {Footer} from "react-day-picker";
+import { Footer } from "react-day-picker"
 
 export default function BrowseTools() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -34,7 +34,7 @@ export default function BrowseTools() {
   const { data: categoriesData } = useCategories()
 
   // Prepare categories for dropdown
-  const categories = ["All Categories", ...(categoriesData?.map((cat) => cat.name) || [])]
+  const categories = ["All Categories", ...(categoriesData?.map((cat: { name: any }) => cat.name) || [])]
 
   const getBadgeClass = (label: string) => {
     switch (label) {

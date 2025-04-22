@@ -1,7 +1,12 @@
 "use client"
+import { useState } from "react"
+import type React from "react"
+
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
 
 interface SignUpModalProps {
   isOpen: boolean
@@ -10,7 +15,31 @@ interface SignUpModalProps {
 }
 
 export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalProps) {
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const { register } = useAuth()
+  const router = useRouter()
+
   if (!isOpen) return null
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setIsLoading(true)
+
+    try {
+      await register({ name, email, password })
+      onClose()
+      router.refresh() // Refresh the page to update auth state
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to sign up. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -19,9 +48,9 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
           <X size={24} />
         </button>
 
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <h2 className="text-3xl font-bold mb-2">Create an Account</h2>
-          <p className="text-gray-500">Sign up to get started with AI Tool Gateway</p>
+          <p className="text-gray-500">Join our community of AI enthusiasts</p>
         </div>
 
         <button className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-lg p-3 mb-6 hover:bg-gray-50 transition-colors">
@@ -35,16 +64,21 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
           <div className="h-px bg-gray-300 flex-1"></div>
         </div>
 
-        <div className="space-y-4">
+        {error && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="fullName" className="block text-lg font-medium mb-2">
-              Full Name
+            <label htmlFor="name" className="block text-lg font-medium mb-2">
+              Name
             </label>
             <input
               type="text"
-              id="fullName"
-              placeholder="John Doe"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
+              required
             />
           </div>
 
@@ -55,8 +89,11 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             <input
               type="email"
               id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="name@example.com"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
+              required
             />
           </div>
 
@@ -67,36 +104,32 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             <input
               type="password"
               id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
+              required
+              minLength={8}
             />
           </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-lg font-medium mb-2">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              placeholder="••••••••"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
-            />
-          </div>
-
-          <Button className="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white py-3 rounded-lg text-lg">
-            Create Account
+          <Button
+            type="submit"
+            className="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white py-3 rounded-lg text-lg"
+            disabled={isLoading}
+          >
+            {isLoading ? "Creating account..." : "Create Account"}
           </Button>
 
           <div className="text-center mt-6">
             <p className="text-gray-700">
               Already have an account?{" "}
-              <button onClick={onSwitchToSignIn} className="text-[#a855f7] hover:underline">
+              <button type="button" onClick={onSwitchToSignIn} className="text-[#a855f7] hover:underline">
                 Sign in
               </button>
             </p>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   )

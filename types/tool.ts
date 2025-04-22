@@ -1,6 +1,7 @@
 export interface Tool {
   id: string
   name: string
+  slug: string
   website: string
   category: string
   description: string
@@ -14,6 +15,8 @@ export interface Tool {
   createdAt: string
   updatedAt: string
   status: "pending" | "approved" | "rejected"
+  isFeatured?: boolean
+  savedByUser?: boolean
 }
 
 export interface ToolSubmission {

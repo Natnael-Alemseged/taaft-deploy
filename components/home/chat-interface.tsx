@@ -4,49 +4,43 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Send, Search, Bot } from "lucide-react" // Import Search and Bot icons
+import { Send, Search, Bot } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import clsx from "clsx" // Import clsx
-// Assuming useClickOutside is correctly implemented and imported
+import clsx from "clsx"
 import { useClickOutside } from "@/hooks/use-click-outside"
-
-
-interface Message {
-  role: "user" | "assistant"
-  content: string
-}
+import { useChatCompletion, useChatSuggestions } from "@/hooks/use-chat"
+import type { Message } from "@/services/chat-service"
 
 interface ChatInterfaceProps {
   isOpen: boolean
   onClose: () => void
-  inputRef: React.RefObject<HTMLInputElement>
-  // New prop to indicate if it's rendered relative to a parent container
-  isRelativeToParent?: boolean;
+  inputRef: React.RefObject<HTMLInputElement> // Ref to the chat input
+  isRelativeToParent?: boolean
 }
 
 export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToParent = false }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
-  const chatRef = useRef<HTMLDivElement>(null)
+  const chatRef = useRef<HTMLDivElement>(null) // Ref for the main chat box div
   const router = useRouter()
 
-  // Use the click outside hook
-  // Apply the hook only if the component is open
-  useClickOutside(chatRef, onClose);
-
-
-  const suggestions = [
+  // Use the chat API
+  const chatCompletion = useChatCompletion()
+  const { data: suggestionsData } = useChatSuggestions()
+  const suggestions = suggestionsData || [
     "How is AI affecting my business?",
     "Want only tools with a free plan?",
     "Looking for video-focused tools?",
     "Show me e-commerce AI tools",
   ]
 
+  // Use the click outside hook
+  useClickOutside(chatRef as React.RefObject<HTMLElement>, onClose)
+
+  // Effect to add initial assistant message when chat opens
   useEffect(() => {
-    // Add initial assistant message when chat opens
     if (isOpen && messages.length === 0) {
       setMessages([
         {
@@ -63,154 +57,121 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  useEffect(() => {
+    if (isOpen) {
+      // Use a small timeout to ensure the element is rendered and positioned
+      const timer = setTimeout(() => {
+        chatRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+        inputRef.current?.focus() // Focus the input after scrolling
+      }, 50) // Adjust delay if needed
+
+      return () => clearTimeout(timer) // Cleanup the timer
+    }
+  }, [isOpen, inputRef]) // Depends on isOpen and inputRef
+
   const handleSendMessage = async () => {
     if (!input.trim()) return
 
-    // Add user message
-    const userMessage = { role: "user" as const, content: input }
+    const userMessage: Message = { role: "user", content: input }
     setMessages((prev) => [...prev, userMessage])
     setInput("")
-    setIsLoading(true)
 
-    // Check for category or search queries
-    const lowerInput = input.toLowerCase()
+    try {
+      const allMessages = [...messages, userMessage]
+      const response = await chatCompletion.mutateAsync(allMessages)
 
-    // Simulate AI response
-    setTimeout(() => {
-      let aiResponse: Message
+      // Check if response contains navigation command
+      const responseContent = response.message.content
+      const navigationMatch = responseContent.match(/NAVIGATE_TO:([^\s]+)/)
 
-      if (lowerInput.includes("how is ai affecting my business")) {
-        aiResponse = {
-          role: "assistant" as const,
-          content: "AI is transforming businesses through automation, data analysis, and customer service. I can recommend tools like ChatGPT for customer support, Jasper for content creation, and Tableau for data visualization. Would you like more specific recommendations for your industry?",
-        };
-      } else if (lowerInput.includes("free plan")) {
-        aiResponse = {
-          role: "assistant" as const,
-          content: "I found several AI tools with free plans: Canva (design), ChatGPT (text generation), Lumen5 (video creation), and Otter.ai (transcription). What specific task are you looking to accomplish?",
-        };
-      } else if (lowerInput.includes("video-focused tools") || lowerInput.includes("video tools")) {
-        aiResponse = {
-          role: "assistant" as const,
-          content: "For video-focused AI tools, I recommend checking out Runway ML, Synthesia, Descript, and Lumen5. These tools can help with video editing, generation, and enhancement. Do you need tools for a specific video task?",
-        };
-      } else if (lowerInput.includes("e-commerce") || lowerInput.includes("ecommerce")) {
-        aiResponse = {
-          role: "assistant" as const,
-          content: "I've found some great AI tools for e-commerce. Let me show you the results.",
-        };
-        // Navigate to search page with category
+      if (navigationMatch && navigationMatch[1]) {
+        // Extract navigation path
+        const navigationPath = navigationMatch[1]
+
+        // Add the response message with the navigation instruction stripped out
+        const cleanResponse = responseContent.replace(/NAVIGATE_TO:[^\s]+\s*/, "")
+        setMessages((prev) => [...prev, { ...response.message, content: cleanResponse }])
+
+        // Navigate after a short delay
         setTimeout(() => {
-          onClose();
-          router.push("/search?category=e-commerce");
-        }, 1000);
-        setIsLoading(false);
-        return; // Stop further processing if navigating
+          onClose()
+          router.push(navigationPath)
+        }, 1000)
+      } else {
+        setMessages((prev) => [...prev, response.message])
       }
-      // Default response if no specific intent matched
-      else {
-        aiResponse = {
-          role: "assistant" as const,
-          content: `I found some AI tools that might help with "${input}". Would you like to see tools for specific categories or with particular features?`,
-        };
-      }
-
-
-      setMessages((prev) => [...prev, aiResponse])
-      setIsLoading(false)
-
-      // Handle navigation for specific suggestions if needed here as well,
-      // or rely on the suggestion handler which already does this.
-      // For now, keeping the navigation logic primarily in suggestion handler
-      // and only adding it here for e-commerce as it was in the original code.
-
-
-    }, 1000)
+    } catch (error) {
+      console.error("Error in chat completion:", error)
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "I'm sorry, I encountered an error. Please try again or ask a different question.",
+        },
+      ])
+    }
   }
 
-  const handleSuggestionClick = (suggestion: string) => {
-    // Add user message from suggestion
-    const userMessage = { role: "user" as const, content: suggestion }
+  const handleSuggestionClick = async (suggestion: string) => {
+    const userMessage: Message = { role: "user", content: suggestion }
     setMessages((prev) => [...prev, userMessage])
-    setInput("") // Clear input field
-    setIsLoading(true)
+    setInput("")
 
+    try {
+      const allMessages = [...messages, userMessage]
+      const response = await chatCompletion.mutateAsync(allMessages)
 
-    // Simulate AI response
-    setTimeout(() => {
-      let aiResponse: Message;
-      let navigateTo: string | null = null;
+      // Check if response contains navigation command
+      const responseContent = response.message.content
+      const navigationMatch = responseContent.match(/NAVIGATE_TO:([^\s]+)/)
 
-      if (suggestion.includes("e-commerce") || suggestion.includes("ecommerce")) {
-        aiResponse = {
-          role: "assistant" as const,
-          content: "I've found some great AI tools for e-commerce. Let me show you the results.",
-        };
-        navigateTo = "/search?category=e-commerce";
-      } else if (suggestion.includes("video")) {
-        aiResponse = {
-          role: "assistant" as const,
-          content: "I've found some excellent video creation AI tools. Let me show you the results.",
-        };
-        navigateTo = "/search?category=video";
-      } else if (suggestion.includes("business")) {
-        aiResponse = {
-          role: "assistant" as const,
-          content:
-            "AI is transforming businesses through automation, data analysis, and customer service. I can recommend tools like ChatGPT for customer support, Jasper for content creation, and Tableau for data visualization. Would you like more specific recommendations for your industry?",
-        };
-      } else if (suggestion.includes("free plan")) {
-        aiResponse = {
-          role: "assistant" as const,
-          content:
-            "I found several AI tools with free plans: Canva (design), ChatGPT (text generation), Lumen5 (video creation), and Otter.ai (transcription). What specific task are you looking to accomplish?",
-        };
-      } else { // Default response for suggestions not specifically handled above
-        aiResponse = {
-          role: "assistant" as const,
-          content: `Okay, looking into "${suggestion}". Would you like to refine this search?`,
-        };
-      }
+      if (navigationMatch && navigationMatch[1]) {
+        // Extract navigation path
+        const navigationPath = navigationMatch[1]
 
-      setMessages((prev) => [...prev, aiResponse])
-      setIsLoading(false)
+        // Add the response message with the navigation instruction stripped out
+        const cleanResponse = responseContent.replace(/NAVIGATE_TO:[^\s]+\s*/, "")
+        setMessages((prev) => [...prev, { ...response.message, content: cleanResponse }])
 
-      if (navigateTo) {
+        // Navigate after a short delay
         setTimeout(() => {
-          onClose();
-          if (navigateTo != null) {
-            router.push(navigateTo);
-          }
-        }, 1000);
+          onClose()
+          router.push(navigationPath)
+        }, 1000)
+      } else {
+        setMessages((prev) => [...prev, response.message])
       }
-
-    }, 1000)
+    } catch (error) {
+      console.error("Error in chat completion:", error)
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "I'm sorry, I encountered an error. Please try again or ask a different question.",
+        },
+      ])
+    }
   }
 
-
-  if (!isOpen) return null
+  if (!isOpen) return null // Don't render if not open
 
   return (
     <div
-      ref={chatRef}
+      ref={chatRef} // Attach the ref to the main chat box div
       className={clsx(
         "rounded-xl bg-white shadow-2xl transition-all duration-300 ease-in-out",
-        // Styles when used as a modal (current use case outside Hero)
         !isRelativeToParent && "absolute left-0 right-0 top-0 z-50 mx-auto mt-20 max-w-lg md:max-w-2xl",
-        // Styles when used relative to a parent (new Hero use case)
-        isRelativeToParent && "absolute top-0 w-full z-50" // Adjusted positioning for Hero
+        isRelativeToParent && "absolute top-0 w-full z-50", // This positions it relative to the parent in Hero
       )}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex h-[400px] flex-col rounded-xl border border-gray-200">
         {/* Chat header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3"> {/* Slightly more vertical padding */}
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
           <div className="flex items-center">
-            {/* Using a simple icon for AI assistant */}
-            <Bot className="h-6 w-6 text-purple-600" /> {/* Bot icon */}
-            <span className="ml-2 text-base font-semibold text-gray-800">AI Assistant</span> {/* Adjusted text style */}
+            <Bot className="h-6 w-6 text-purple-600" />
+            <span className="ml-2 text-base font-semibold text-gray-800">AI Assistant</span>
           </div>
-          {/* Close button */}
           <button onClick={onClose} className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -230,31 +191,24 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
         </div>
 
         {/* Chat messages */}
-        <div className="flex-1 overflow-y-auto p-4 text-sm"> {/* Added text-sm for message font size */}
+        <div className="flex-1 overflow-y-auto p-4 text-sm">
           {messages.map((message, index) => (
-            // Adjusted container to use flex for alignment and remove max-width
-            <div
-              key={index}
-              className={`mb-4 flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              {/* Show AI Assistant label only for the first assistant message */}
+            <div key={index} className={`mb-4 flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
               {message.role === "assistant" && index === 0 && (
-                // Ensure this label aligns correctly with the message bubble
-                <div className="mb-1 text-xs text-gray-600 font-medium absolute -top-5 left-0">AI Assistant</div> // Position absolutely relative to message bubble container
+                <div className="mb-1 text-xs text-gray-600 font-medium absolute -top-5 left-0">AI Assistant</div>
               )}
-              {/* Message bubble - now limited by max-width */}
               <div
                 className={clsx(
-                  "rounded-lg p-3 max-w-[80%]", // Apply max-width here
+                  "rounded-lg p-3 max-w-[80%]",
                   message.role === "user" ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-800",
-                  message.role === "assistant" && index === 0 && "relative mt-5" // Add margin-top and relative for the first assistant message to make space for the label
+                  message.role === "assistant" && index === 0 && "relative mt-5",
                 )}
               >
                 {message.content}
               </div>
             </div>
           ))}
-          {isLoading && (
+          {chatCompletion.isPending && (
             <div className="mr-auto max-w-[80%]">
               <div className="flex items-center space-x-2 rounded-lg bg-gray-100 p-3 text-gray-800">
                 <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
@@ -273,15 +227,15 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
         </div>
 
         {/* Suggestions */}
-        {messages.length <= 2 && ( // Assuming suggestions disappear after a few messages
-          <div className="border-t border-gray-100 px-4 py-3"> {/* Slightly more vertical padding */}
+        {messages.length <= 2 && (
+          <div className="border-t border-gray-100 px-4 py-3">
             <p className="mb-2 text-xs text-gray-500">Try these examples:</p>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((suggestion, index) => (
                 <button
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="rounded-full border border-gray-300 bg-gray-100 px-3 py-1 text-xs text-gray-700 hover:bg-gray-200 transition-colors" // Updated styling
+                  className="rounded-full border border-gray-300 bg-gray-100 px-3 py-1 text-xs text-gray-700 hover:bg-gray-200 transition-colors"
                 >
                   {suggestion}
                 </button>
@@ -292,15 +246,14 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
 
         {/* Input area */}
         <div className="border-t border-gray-100 p-4">
-          <div className="flex items-center space-x-2"> {/* Added space-x-2 */}
-            {/* Input with icon */}
-            <div className="relative flex-1"> {/* Relative container for input and icon */}
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" /> {/* Search icon */}
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
                 ref={inputRef}
                 type="text"
                 placeholder="Ask me anything..."
-                className="w-full rounded-full border-gray-300 pl-10 pr-4 text-sm focus:border-purple-500 focus:ring-purple-500" // Rounded, added left padding for icon, adjusted border/focus
+                className="w-full rounded-full border-gray-300 pl-10 pr-4 text-sm focus:border-purple-500 focus:ring-purple-500"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -310,14 +263,13 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                 }}
               />
             </div>
-            {/* Send button */}
             <Button
               onClick={handleSendMessage}
-              className="rounded-full bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none" // Adjusted padding, added text-white and disabled styles
-              disabled={isLoading || !input.trim()} // Disable if loading or input is empty
+              className="rounded-full bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
+              disabled={chatCompletion.isPending || !input.trim()}
             >
-              Send <Send className="ml-1 h-4 w-4" /> {/* Added "Send" text and icon */}
-              <span className="sr-only">Send message</span> {/* Improved accessibility label */}
+              Send <Send className="ml-1 h-4 w-4" />
+              <span className="sr-only">Send message</span>
             </Button>
           </div>
         </div>
