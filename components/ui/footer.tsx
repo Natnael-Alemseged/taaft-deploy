@@ -26,9 +26,9 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/submit-tool" className="text-sm text-gray-600 hover:text-purple-600">
-                  Submit Tool
-                </Link>
+                {/*<Link href="/submit-tool" className="text-sm text-gray-600 hover:text-purple-600">*/}
+                {/*  Submit Tool*/}
+                {/*</Link>*/}
               </li>
               <li>
                 <Link href="#" className="text-sm text-gray-600 hover:text-purple-600">

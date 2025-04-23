@@ -46,6 +46,16 @@
   --input: 217.2 32.6% 17.5%;
   --ring: 270 91% 65%;
 }
+/* Hide scrollbar but retain scroll behavior */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
+}
+
 
 * {
   @apply border-border;

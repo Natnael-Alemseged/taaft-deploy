@@ -111,7 +111,8 @@ export default function SponsoredTools() {
         {/* Make the scrollable container focusable and add aria-live for accessibility */}
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto scroll-smooth transition-all duration-300 focus:outline-none" // Added overflow-x-auto and focus:outline-none
+          className="flex gap-6 overflow-x-auto scroll-smooth transition-all duration-300 focus:outline-none scrollbar-hide"
+
           style={{ scrollSnapType: "x mandatory" }}
           tabIndex={0} // Make it focusable
           role="region" // Indicate this is a section of content

@@ -1,106 +1,81 @@
-"use client"
+// BrowseCategories.tsx
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { ChevronRight } from "lucide-react"
-import { getCategories } from "@/services/category-service"
-import type { Category } from "@/types/category"
+import { useState, useEffect } from "react"; // Keep useState for potential other local state if needed
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+// Removed direct getCategories import
+import type { Category } from "@/types/category";
+
+// Import the useCategories hook
+import { useCategories } from "@/hooks/use-categories";
+// Import the reusable CategoryCard component
+import CategoryCard from "@/components/category-card";
+// You might need a loading spinner component
+// import LoadingSpinner from "@/components/loading-spinner";
+// You might need an error message component
+// import ErrorMessage from "@/components/error-message";
+
+
+// Removed fallbackCategories as the hook handles initial loading/error
 
 export default function BrowseCategories() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Use the hook to fetch categories
+  const { data: categoriesData, isLoading, isError } = useCategories();
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      setIsLoading(true); // Set loading true at the start
-      setError(null); // Clear any previous error
-
-      try {
-        const data = await getCategories();
-        // console.log("Data received:", data); // <-- Optional: uncomment to inspect the data
-
-        console.log("Data from category is:", data);
+  // Limit the number of categories displayed
+  const categoriesToDisplay = categoriesData ? categoriesData.slice(0, 8) : [];
 
 
-        // Check if the received data is actually an array
-        if (Array.isArray(data)) {
-          setCategories(data);
-        } else {
-          // If it's not an array, it's an unexpected response
-          console.error("API returned unexpected data format:", data);
-          setError("Received invalid category data from the server.");
-          setCategories(fallbackCategories); // Fallback even if no network error
-        }
+  // No need for local 'categories', 'isLoading', 'error' states managed manually
 
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-        setError("Failed to load categories. Please try again later.");
-        setCategories(fallbackCategories); // Use fallback data on network/request error
-      } finally {
-        setIsLoading(false); // Always set loading to false when done
-      }
-    };
 
-    fetchCategories();
-  }, []); // The empty dependency array ensures this runs only once on mount
+  // Render nothing if there's an error (optional, you could show an error message instead)
+  if (isError) {
+    // You could return an error message component here
+    console.error("Error loading categories:", isError); // Log the error
+    return null; // Or return a simple error message div
+  }
 
-  // Fallback categories in case the API fails
-  const fallbackCategories: Category[] = [
-    { id: "1", name: "Text Generation", slug: "text-generation", toolCount: 24 },
-    { id: "2", name: "Image Generation", slug: "image-generation", toolCount: 18 },
-    { id: "3", name: "Video Creation", slug: "video-creation", toolCount: 12 },
-    { id: "4", name: "Audio & Voice", slug: "audio-voice", toolCount: 15 },
-    { id: "5", name: "Chatbots", slug: "chatbots", toolCount: 20 },
-    { id: "6", name: "Data Analysis", slug: "data-analysis", toolCount: 14 },
-    { id: "7", name: "Development", slug: "development", toolCount: 22 },
-    { id: "8", name: "Productivity", slug: "productivity", toolCount: 17 },
-  ]
 
   return (
-    <section className="py-12 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Browse by Category</h2>
-          <Link href="/categories" className="flex items-center text-sm text-purple-600 hover:underline">
-            View all <ChevronRight className="ml-1 h-4 w-4" />
-          </Link>
-        </div>
+      // Keep the section wrapper
+      <section className="py-12 bg-gray-50 dark:bg-gray-900"> {/* Added dark mode */}
+        <div className="container mx-auto px-4">
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Browse by Category</h2> {/* Added dark mode */}
+            {/* Link to the full Categories page */}
+            <Link href="/categories" className="flex items-center text-sm text-purple-600 dark:text-purple-400 hover:underline"> {/* Added dark mode */}
+              View all <ChevronRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, index) => (
-              <div key={index} className="bg-white rounded-lg p-6 shadow-sm animate-pulse">
-                <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          {/* Show loading state */}
+          {isLoading ? (
+              // Display skeleton loaders while loading
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[...Array(categoriesToDisplay.length || 8)].map((_, index) => ( // Render skeletons equal to the display limit or default
+                    <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm animate-pulse"> {/* Added dark mode */}
+                      <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4"></div> {/* Adjusted skeleton for image */}
+                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mx-auto mb-2"></div> {/* Adjusted skeleton for name */}
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mx-auto"></div> {/* Adjusted skeleton for count */}
+                    </div>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center p-8 bg-red-50 rounded-lg">
-            <p className="text-red-600 mb-4">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-            >
-              Retry
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/category/${category.slug}`}
-                className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <h3 className="font-semibold text-gray-900 mb-1">{category.name}</h3>
-                <p className="text-sm text-gray-500">{category.toolCount} tools</p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  )
+          ) : (
+              // Render the categories grid if data is loaded and no error
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Map over the sliced categories data and render CategoryCard */}
+                {categoriesToDisplay.map((category) => (
+                    <CategoryCard key={category.id} category={category} />
+                ))}
+                {/* Optional: Handle the case where no categories are found after loading */}
+                {categoriesToDisplay.length === 0 && !isLoading && !isError && (
+                    <div className="md:col-span-4 text-center text-gray-600 dark:text-gray-400">No categories found.</div>
+                )}
+              </div>
+          )}
+        </div>
+      </section>
+  );
 }

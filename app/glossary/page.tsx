@@ -315,7 +315,6 @@ export default function Glossary() {
             </div>
           </main>
         </div>
-        <Footer /> {/* Assuming Footer component */}
       </>
   );
 }
