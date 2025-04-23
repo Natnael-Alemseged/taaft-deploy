@@ -2,7 +2,7 @@ import apiClient from "@/lib/api-client"
 import type { Category } from "@/types/category"
 
 export const getCategories = async (): Promise<Category[]> => {
-  const response = await apiClient.get("/categories")
+  const response = await apiClient.get("api/categories")
   return response.data
 }
 

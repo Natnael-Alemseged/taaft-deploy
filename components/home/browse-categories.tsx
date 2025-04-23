@@ -20,6 +20,9 @@ export default function BrowseCategories() {
         const data = await getCategories();
         // console.log("Data received:", data); // <-- Optional: uncomment to inspect the data
 
+        console.log("Data from category is:", data);
+
+
         // Check if the received data is actually an array
         if (Array.isArray(data)) {
           setCategories(data);
