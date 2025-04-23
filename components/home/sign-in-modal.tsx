@@ -36,6 +36,7 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
       await login({ username: email, password })
       // If login succeeds (tokens stored, user fetched), close modal and refresh
       onClose()
+      window.location.reload()
       // router.refresh() might be needed depending on Next.js version and cache,
       // but setting user state in AuthProvider should ideally re-render parts
       // that consume useAuth. Test if router.refresh is truly necessary.

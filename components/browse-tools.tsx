@@ -17,7 +17,7 @@ export default function BrowseTools() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [page, setPage] = useState(1)
   const limit = 12
-
+  const [debouncedSearch] = useDebounce(searchQuery, 500)
   // Fetch tools with React Query
   const {
     data: toolsData,
@@ -25,7 +25,7 @@ export default function BrowseTools() {
     isError,
   } = useTools({
     category: selectedCategory !== "All Categories" ? selectedCategory.toLowerCase() : undefined,
-    search: searchQuery,
+    search: debouncedSearch,
     page,
     limit,
   })
@@ -48,31 +48,31 @@ export default function BrowseTools() {
         return "bg-gray-100 text-gray-600"
     }
   }
-
-  const getCategoryClass = (category: string) => {
-    switch (category) {
-      case "Image Generation":
-        return "bg-purple-100 text-purple-600"
-      case "Development":
-        return "bg-blue-100 text-blue-600"
-      case "Writing":
-        return "bg-pink-100 text-pink-600"
-      case "Audio":
-        return "bg-green-100 text-green-600"
-      case "Data & Analytics":
-        return "bg-indigo-100 text-indigo-600"
-      case "Video":
-        return "bg-red-100 text-red-600"
-      case "Language":
-        return "bg-violet-100 text-violet-600"
-      case "Business":
-        return "bg-orange-100 text-orange-600"
-      case "Design":
-        return "bg-teal-100 text-teal-600"
-      default:
-        return "bg-gray-100 text-gray-600"
-    }
-  }
+  //
+  // const getCategoryClass = (category: string) => {
+  //   switch (category) {
+  //     case "Image Generation":
+  //       return "bg-purple-100 text-purple-600"
+  //     case "Development":
+  //       return "bg-blue-100 text-blue-600"
+  //     case "Writing":
+  //       return "bg-pink-100 text-pink-600"
+  //     case "Audio":
+  //       return "bg-green-100 text-green-600"
+  //     case "Data & Analytics":
+  //       return "bg-indigo-100 text-indigo-600"
+  //     case "Video":
+  //       return "bg-red-100 text-red-600"
+  //     case "Language":
+  //       return "bg-violet-100 text-violet-600"
+  //     case "Business":
+  //       return "bg-orange-100 text-orange-600"
+  //     case "Design":
+  //       return "bg-teal-100 text-teal-600"
+  //     default:
+  //       return "bg-gray-100 text-gray-600"
+  //   }
+  // }
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
@@ -199,8 +199,8 @@ export default function BrowseTools() {
                   <div className="p-4">
                     <div className="mb-2 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${getCategoryClass(tool.category)}`}
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getCategoryClass(tool.category)}`}>
+
                         >
                           {tool.category}
                         </span>

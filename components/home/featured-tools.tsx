@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { ChevronRight, Share2, Bookmark } from "lucide-react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChevronRight, Share2, Bookmark } from "lucide-react";
 // Assuming these hooks handle fetching and mutations client-side
-import { useFeaturedTools, useSaveTool, useUnsaveTool } from "@/hooks/use-tools"
+import { useFeaturedTools, useSaveTool, useUnsaveTool } from "@/hooks/use-tools";
 // Assuming this context provides authentication status client-side
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/auth-context";
 // Removed useState and useEffect for isClient state as they are not needed here
 
 // Define a type for the expected tool structure, ensuring 'features' is an array
@@ -21,8 +21,7 @@ type Tool = {
   isFeatured: boolean;
   savedByUser: boolean;
   // Add any other properties your Tool type might have
-}
-
+};
 
 export default function FeaturedTools() {
   // These hooks are called client-side in a "use client" component
@@ -38,6 +37,7 @@ export default function FeaturedTools() {
     if (!isAuthenticated) {
       // Optionally provide feedback to the user that they need to log in
       console.log("User not authenticated. Cannot save tool.");
+      // You might want to trigger a login modal or redirect here
       return;
     }
 
@@ -86,8 +86,8 @@ export default function FeaturedTools() {
     }
   };
 
-  // Fallback data for initial render or when API fails
-  // It's good practice for fallback data to match the expected structure
+  // Fallback data for initial render or when API hasn't loaded yet or fails
+  // This fallback is primarily used in the line `const toolsToRender = ...`
   const fallbackTools: Tool[] = [
     {
       id: "ai-image-creator",
@@ -131,10 +131,23 @@ export default function FeaturedTools() {
     },
   ];
 
+  // --- New Conditional Rendering Check ---
+  // If there is an error fetching the data, return null to render nothing
+  if (isError) {
+    return null; // Or return <></>; or return undefined;
+  }
+  // --------------------------------------
+
   // Use API data (data?.tools) if available and is an array, otherwise use fallback
   // Added Array.isArray check for extra safety
+  // Note: This line will only be reached if there was no fatal fetching error (isError is false).
+  // If data?.tools is null/undefined or not array AND there's no error,
+  // it might mean the API returned a non-error response with empty/malformed data,
+  // in which case the fallbackTools are used.
   const toolsToRender = Array.isArray(data?.tools) ? data.tools : fallbackTools;
 
+
+  // We now only render the section if there was no error (checked above)
   return (
       <section className="py-12">
         <div className="container mx-auto px-4">
@@ -152,20 +165,12 @@ export default function FeaturedTools() {
               </div>
           )}
 
-          {/* Show error only when there's an error and not loading */}
-          {!isLoading && isError && (
-              <div className="mx-auto max-w-md rounded-lg bg-red-50 p-4 text-center">
-                <p className="text-red-600">Failed to load featured tools.</p>
-                {/* Retry button can trigger refetch if your hook supports it,
-                or just reload the page as a simple fallback */}
-                <Button onClick={() => window.location.reload()} className="mt-4 bg-red-600 text-white hover:bg-red-700">
-                  Retry
-                </Button>
-              </div>
-          )}
-
-          {/* Render tools only when not loading and no error */}
-          {!isLoading && !isError && (
+          {/* Render tools only when not loading */}
+          {/* The outer if (isError) check handles the error state by returning null */}
+          {!isLoading && (
+              // You might also want to check if toolsToRender has items if you don't want to show
+              // an empty grid after loading fallback/empty data.
+              // For example: toolsToRender.length > 0 && ( ... grid here ... )
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {/* Use toolsToRender which is guaranteed to be an array */}
                 {toolsToRender.map((tool) => (
@@ -209,14 +214,12 @@ export default function FeaturedTools() {
                                   className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
                                   onClick={() => handleSaveToggle(tool.id, !!tool.savedByUser)}
                                   // Button is enabled by default, handleSaveToggle checks isAuthenticated
-                                  // disabled={!isClient} // Removed this line
                               >
                                 <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
                               </button>
                               <button
                                   className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
                                   // Button is enabled by default
-                                  // disabled={!isClient} // Removed this line
                               >
                                 <Share2 className="h-4 w-4" />
                               </button>

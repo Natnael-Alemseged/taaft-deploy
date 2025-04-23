@@ -23,8 +23,9 @@ export function useTools(params?: {
   limit?: number
 }) {
   return useQuery({
-    queryKey: ["tools", params],
+    queryKey: ["tools", params?.category, params?.search, params?.page, params?.limit],
     queryFn: () => getTools(params),
+    // keepPreviousData: true, // Optional: Keeps UI responsive during transition
   })
 }
 
