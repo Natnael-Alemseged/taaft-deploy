@@ -2,17 +2,18 @@ import axios from "axios"
 
 // Create an Axios instance with default config
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://api.example.com", // Fallback URL
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 10000, // 10 second timeout
 })
 
 // Request interceptor for adding auth token
 apiClient.interceptors.request.use(
   (config) => {
     // Get token from localStorage
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
 
     // If token exists, add it to the authorization header
     if (token) {
@@ -22,6 +23,7 @@ apiClient.interceptors.request.use(
     return config
   },
   (error) => {
+    console.error("API Request Error:", error)
     return Promise.reject(error)
   },
 )
@@ -34,17 +36,28 @@ apiClient.interceptors.response.use(
   (error) => {
     // Handle 401 Unauthorized errors (token expired, etc.)
     if (error.response && error.response.status === 401) {
-      // Clear auth data if we're in the browser
+      // Only show login popup if there was a previous user session
       if (typeof window !== "undefined") {
-        localStorage.removeItem("token")
+        // Check if there was a user session before
+        const hadPreviousSession =
+          localStorage.getItem("access_token") !== null || localStorage.getItem("user") !== null
+
+        // Clear auth data
+        localStorage.removeItem("access_token")
+        localStorage.removeItem("refresh_token")
         localStorage.removeItem("user")
 
-        // Redirect to home page if not already there
-        if (window.location.pathname !== "/") {
-          window.location.href = "/"
+        // Only show login popup if there was a previous session
+        if (hadPreviousSession) {
+          import("@/lib/auth-events").then(({ showLoginModal }) => {
+            showLoginModal()
+          })
         }
       }
     }
+
+    // Log the error for debugging but don't block the promise chain
+    console.error("API Error:", error.message, error.response?.data)
 
     return Promise.reject(error)
   },

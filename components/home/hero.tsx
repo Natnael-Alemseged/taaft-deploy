@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,8 +13,6 @@ export default function Hero() {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const chatInputRef = useRef<HTMLInputElement>(null) // Keep this ref
-
-  // Ref for the container holding the search/chat (still needed for min-height)
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
   const exampleTags = [
@@ -25,21 +23,9 @@ export default function Hero() {
     "AI voice assistants",
   ]
 
-  // --- MODIFIED EFFECT ---
-  // Only sets focus on the initial input if the chat is NOT open.
-  // The scroll and focus for the chat are moved to ChatInterface.
-  useEffect(() => {
-    // This effect now just ensures the main input gets focus if chat isn't open
-    // (though the onFocus on the Input element also handles this).
-    // The scroll and focus for the chat box are handled inside ChatInterface.
-  }, []) // This effect probably doesn't need dependencies or can be removed if onFocus is sufficient.
-
   const handleSearchFocus = () => {
     setIsChatOpen(true)
-    // The scrolling will be triggered by the 'isOpen' state change in ChatInterface's effect
   }
-
-  const chatOpenMinHeight = "min-h-[432px]" // Keep this for spacing
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-white via-purple-50 to-purple-100 py-24 text-center">
@@ -74,10 +60,7 @@ export default function Hero() {
           </p>
 
           {/* Search bar / Chat Interface container */}
-          <div
-            ref={searchContainerRef} // Keep ref and conditional min-height
-            className={`relative mx-auto mb-8 max-w-2xl ${isChatOpen ? chatOpenMinHeight : ""}`}
-          >
+          <div ref={searchContainerRef} className="relative mx-auto mb-8 max-w-2xl">
             {!isChatOpen ? (
               <div className="relative">
                 <Input
@@ -97,14 +80,15 @@ export default function Hero() {
                   Search
                 </Button>
               </div>
-            ) : (
-              <ChatInterface
-                isOpen={isChatOpen}
-                onClose={() => setIsChatOpen(false)}
-                inputRef={chatInputRef as React.RefObject<HTMLInputElement>} // Pass the chatInputRef down
-                isRelativeToParent
-              />
-            )}
+            ) : null}
+
+            {/* Chat Interface is now rendered outside the container for better positioning */}
+            <ChatInterface
+              isOpen={isChatOpen}
+              onClose={() => setIsChatOpen(false)}
+              inputRef={chatInputRef as React.RefObject<HTMLInputElement>}
+              isRelativeToParent={false}
+            />
           </div>
 
           {/* Example buttons */}

@@ -1,54 +1,53 @@
 // BrowseTools.tsx
-"use client"; // Keep the directive
+"use client" // Keep the directive
 
-import React, { useState, useEffect } from "react"; // Keep useState, need useEffect for initial category from URL
-import Link from "next/link";
-import { Search, ExternalLink, ChevronDown, Bookmark, Share2, ArrowLeft } from "lucide-react"; // Import icons
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card"; // Keep Card components for ToolCard wrapper
-import { Input } from "@/components/ui/input"; // Assuming this is your Input component
+import React, { useState, useEffect } from "react" // Keep useState, need useEffect for initial category from URL
+import Link from "next/link"
+import { Search, ChevronDown, ArrowLeft } from "lucide-react" // Import icons
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input" // Assuming this is your Input component
 
 // Import hooks
-import { useTools } from "@/hooks/use-tools";
-import { useCategories } from "@/hooks/use-categories";
+import { useTools } from "@/hooks/use-tools"
+import { useCategories } from "@/hooks/use-categories"
 
 // Import reusable ToolCard component
-import ToolCard from "@/components/tool-card";
+import ToolCard from "@/components/tool-card"
 // Import Category type (assuming it's updated)
-import type { Category } from "@/types/category";
+import type { Category } from "@/types/category"
 
 // Import Next.js router hooks to read query parameters
-import { useRouter, useSearchParams } from 'next/navigation'; // Correct import for App Router
+import { useRouter, useSearchParams, usePathname } from "next/navigation" // Correct import for App Router
 
 // You might need a Footer component import
 // import Footer from "@/components/footer";
 
 export default function BrowseTools() {
   // Use router hooks for URL query parameters
-  const router = useRouter();
-  const searchParams = useSearchParams(); // Hook to read query params
+  const router = useRouter()
+  const searchParams = useSearchParams() // Hook to read query params
+  const pathname = usePathname()
 
   // State for search, category filter, and pagination
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("")
   // Initialize selected category from URL query param on mount
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [page, setPage] = useState(1);
-  const limit = 12; // Items per page
-
+  const [selectedCategory, setSelectedCategory] = useState("All Categories")
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [page, setPage] = useState(1)
+  const limit = 12 // Items per page
 
   // --- Sync state with URL query parameter for category ---
   useEffect(() => {
-    const categoryFromUrl = searchParams.get('category');
+    const categoryFromUrl = searchParams.get("category")
     if (categoryFromUrl) {
       // Find the category by slug to get the correct case/name if needed
       // Or just use the slug directly if that's what the API expects
       // For now, let's just set the state with the slug from the URL
-      setSelectedCategory(categoryFromUrl);
+      setSelectedCategory(categoryFromUrl)
       // Optional: You could validate the slug against fetched categoriesData
     } else {
       // If no category param in URL, ensure state is "All Categories"
-      setSelectedCategory("All Categories");
+      setSelectedCategory("All Categories")
     }
     // Note: Adding searchParams to dependency array here could cause issues
     // if you are also updating searchParams from this component.
@@ -56,8 +55,7 @@ export default function BrowseTools() {
     // Let's keep the dependency array empty to only read on initial mount.
     // If you want the page to update when the URL changes (e.g., user clicks browser back/forward after clicking category link),
     // you might need searchParams as a dependency, but handle it carefully.
-  }, [searchParams]); // Add searchParams to re-sync if URL changes
-
+  }, [searchParams]) // Add searchParams to re-sync if URL changes
 
   // --- Fetch tools with React Query ---
   const {
@@ -74,85 +72,91 @@ export default function BrowseTools() {
     search: searchQuery,
     page, // Pass the current page number
     limit, // Pass the limit per page
-  });
-
+  })
 
   // --- Fetch categories with React Query ---
-  const { data: categoriesData, isLoading: isLoadingCategories, isError: isErrorCategories } = useCategories();
-
+  const { data: categoriesData, isLoading: isLoadingCategories, isError: isErrorCategories } = useCategories()
 
   // --- Prepare categories for the dropdown ---
   // The dropdown list needs to include "All Categories" and the fetched categories
   // Use useMemo to avoid recreating this array on every render if categoriesData doesn't change
   const categoryDropdownList = React.useMemo(() => {
-    const allCats = [{ id: 'all', name: 'All Categories', slug: 'all-categories', count: toolsData?.total || 0, imageUrl: '' /* or iconName */ }]; // Add a representation for "All Categories"
-    if (!categoriesData) return allCats;
+    const allCats = [
+      {
+        id: "all",
+        name: "All Categories",
+        slug: "all-categories",
+        count: toolsData?.total || 0,
+        imageUrl: "" /* or iconName */,
+      },
+    ] // Add a representation for "All Categories"
+    if (!categoriesData) return allCats
     // Assuming categoriesData is an array of Category objects { id, name, slug, count, imageUrl/iconName }
-    return [...allCats, ...categoriesData];
-  }, [categoriesData, toolsData?.total]); // Recreate if categoriesData or total tool count changes
-
+    return [...allCats, ...categoriesData]
+  }, [categoriesData, toolsData?.total]) // Recreate if categoriesData or total tool count changes
 
   // --- Handlers for UI interactions ---
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setPage(1); // Reset to first page on new search
-  };
+    setSearchQuery(e.target.value)
+    setPage(1) // Reset to first page on new search
+    const current = new URLSearchParams(Array.from(searchParams.entries()))
+    const search = current.toString()
+    const query = search ? `?${search}` : ""
+    router.replace(`${pathname}${query}`) // Use pathname from usePathname hook
+  }
 
-  const handleCategorySelect = (category: Category | { name: string, slug: string }) => {
+  const handleCategorySelect = (category: Category | { name: string; slug: string }) => {
     // If the selected category is the current one, toggle dropdown visibility
     if (selectedCategory === category.slug) {
-      setShowCategoryDropdown(false);
-      return;
+      setShowCategoryDropdown(false)
+      return
     }
-    setSelectedCategory(category.slug); // Update selected category state with slug
-    setPage(1); // Reset to first page on new category selection
-    setShowCategoryDropdown(false); // Close dropdown
+    setSelectedCategory(category.slug) // Update selected category state with slug
+    setPage(1) // Reset to first page on new category selection
+    setShowCategoryDropdown(false) // Close dropdown
 
     // Optional: Update URL query parameter when category changes
-    const current = new URLSearchParams(Array.from(searchParams.entries()));
-    if (category.slug === 'all-categories') {
-      current.delete('category'); // Remove param for "All Categories"
+    const current = new URLSearchParams(Array.from(searchParams.entries()))
+    if (category.slug === "all-categories") {
+      current.delete("category") // Remove param for "All Categories"
     } else {
-      current.set('category', category.slug); // Set param for selected category
+      current.set("category", category.slug) // Set param for selected category
     }
     // Use replace instead of push so it doesn't add to browser history heavily
-    const search = current.toString();
-    const query = search ? `?${search}` : '';
-    router.replace(`${router.pathname}${query}`);
-  };
+    const search = current.toString()
+    const query = search ? `?${search}` : ""
+    router.replace(`${pathname}${query}`) // Use pathname from usePathname hook
+  }
 
   const handlePageChange = (newPage: number) => {
-    setPage(newPage);
+    setPage(newPage)
     // Optional: Update URL query parameter for page if needed
     // This makes pagination state shareable via URL
-    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    const current = new URLSearchParams(Array.from(searchParams.entries()))
     if (newPage === 1) {
-      current.delete('page');
+      current.delete("page")
     } else {
-      current.set('page', newPage.toString());
+      current.set("page", newPage.toString())
     }
-    const search = current.toString();
-    const query = search ? `?${search}` : '';
-    router.replace(`${router.pathname}${query}`);
-  };
-
+    const search = current.toString()
+    const query = search ? `?${search}` : ""
+    router.replace(`${pathname}${query}`) // Use pathname from usePathname hook
+  }
 
   // --- Calculate pagination details ---
-  const totalTools = toolsData?.total || 0;
-  const totalPages = Math.ceil(totalTools / limit);
-  const showPagination = totalTools > limit;
-
+  const totalTools = toolsData?.total || 0
+  const totalPages = Math.ceil(totalTools / limit)
+  const showPagination = totalTools > limit
 
   // --- Determine text for tool count display ---
   const toolCountText = isLoading
-      ? "Loading tools..."
-      : isError
-          ? "Error loading tools"
-          : totalTools === 0
-              ? `No tools found${selectedCategory !== 'All Categories' || searchQuery ? ' for your criteria' : ''}` // More specific empty state
-              : `Showing ${toolsData?.tools.length || 0} of ${totalTools} tools`;
-
+    ? "Loading tools..."
+    : isError
+      ? "Error loading tools"
+      : totalTools === 0
+        ? `No tools found${selectedCategory !== "All Categories" || searchQuery ? " for your criteria" : ""}` // More specific empty state
+        : `Showing ${toolsData?.tools.length || 0} of ${totalTools} tools`
 
   // --- Conditional Rendering for Loading, Error, Content ---
 
@@ -227,7 +231,7 @@ export default function BrowseTools() {
                                 {/* Display tool count */}
 
                                 {typeof category.count === 'number' && (
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">{category.count}</span> {/* Added dark mode */}
+                                    <span className="text-xs text-gray-500 dark:text-gray-400\">{category.count}</span> {/* Added dark mode */}
                                   )}
                               </button>
                           ))
@@ -253,10 +257,17 @@ export default function BrowseTools() {
 
           {isError && !isLoading && (
               // Error message (handled by toolCountText, but could add a more prominent block)
-              <div className="text-center py-12 text-red-600">
-                <p>Failed to load tools. Please try again.</p>
-                {/* Optional retry button */}
-                {/* <Button onClick={() => refetch()}>Retry</Button> */}
+              <div className="text-center py-12">
+                <div className="mb-4 text-red-600 dark:text-red-500">
+                  <p className="text-lg font-semibold">Failed to load tools</p>
+                  <p className="mt-2">There was an error connecting to the server. Please try again later.</p>
+                </div>
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-4 bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  Retry
+                </Button>
               </div>
           )}
 
@@ -271,9 +282,31 @@ export default function BrowseTools() {
           )}
 
           {/* Empty state after loading */}
-          {!isLoading && !isError && (!toolsData?.tools || toolsData.tools.length === 0) && totalTools === 0 && (
-              <div className="text-center py-12 text-gray-600 dark:text-gray-400"> {/* Added dark mode */}
-                <p>No tools found matching your criteria.</p>
+          {!isLoading && !isError && (!toolsData?.tools || toolsData.tools.length === 0) && (
+              <div className="text-center py-12">
+                <div className="text-gray-600 dark:text-gray-400">
+                  <p className="text-lg font-semibold">No tools found</p>
+                  {(selectedCategory !== "All Categories" || searchQuery) ? (
+                    <>
+                      <p className="mt-2">Try adjusting your search criteria or filters.</p>
+                      <Button 
+                        onClick={() => {
+                          // Reset all filters
+                          setSelectedCategory("All Categories");
+                          setSearchQuery("");
+                          // Update URL
+                          router.replace(pathname);
+                        }} 
+                        variant="outline"
+                        className="mt-4 border-purple-300 text-purple-700 hover:bg-purple-50"
+                      >
+                        Clear all filters
+                      </Button>
+                    </>
+                  ) : (
+                    <p className="mt-2">There are currently no tools in our database.</p>
+                  )}
+                </div>
               </div>
           )}
 

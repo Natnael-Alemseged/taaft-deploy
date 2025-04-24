@@ -47,9 +47,17 @@ export default function Header() {
 
     window.addEventListener("scroll", handleScroll)
 
-    // Clean up the event listener when the component unmounts
+    // Add listener for login modal event
+    const handleShowLoginModal = () => {
+      setIsSignInModalOpen(true)
+    }
+
+    window.addEventListener("show-login-modal", handleShowLoginModal)
+
+    // Clean up the event listeners when the component unmounts
     return () => {
       window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("show-login-modal", handleShowLoginModal)
     }
   }, [])
 

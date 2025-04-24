@@ -1,6 +1,4 @@
 "use client"
-
-import Footer from "@/components/ui/footer"
 import FeaturedTools from "@/components/home/featured-tools"
 import SponsoredTools from "@/components/home/sponsored-tools"
 import BrowseCategories from "@/components/home/browse-categories"
@@ -55,7 +53,6 @@ export default function Home() {
       <AIAutomation />
 
       {/* Footer */}
-
     </div>
   )
 }

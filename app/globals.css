@@ -56,7 +56,6 @@
   display: none; /* Chrome, Safari, and Opera */
 }
 
-
 * {
   @apply border-border;
 }

@@ -1,15 +1,15 @@
-// app/terms/[termSlug]/page.tsx
 "use client"
 
+import { useEffect, useState } from "react"
 import Header from "@/components/header"
-import Footer from "@/components/ui/footer" // Assuming you have a Footer component
-import { ChevronRight, ExternalLink } from "lucide-react"
+import Footer from "@/components/ui/footer"
+import { ChevronRight, ExternalLink, Calendar, Clock } from "lucide-react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { getGlossaryTermBySlug, type ExtendedGlossaryTerm, getGlossaryTerm } from "@/services/glossary-service"
 
 // Helper function to convert a term title into a URL-friendly slug
-// Ensure this function is defined ONLY ONCE
 function slugify(text: string): string {
   return text
     .toString()
@@ -21,231 +21,56 @@ function slugify(text: string): string {
     .replace(/-+$/, "") // Trim - from end of text
 }
 
-// --- Mock Data ---
-// Ensure each key (term slug) is unique in this object literal.
-const termsData: { [key: string]: any } = {
-  "artificial-intelligence": {
-    title: "Artificial Intelligence",
-    abbreviation: "AI",
-    pronunciation: "[ˌɑːr.t̬əˈfɪʃ.əl ɪnˈtel.ə.dʒəns]",
-    definition: [
-      "Artificial intelligence (AI) is the simulation of human intelligence processes by machines, especially computer systems. These processes include learning (the acquisition of information and rules for using the information), reasoning (using rules to reach approximate or definite conclusions), and self-correction.",
-      "AI can be categorized as either weak or strong. Weak AI (also known as narrow AI or Artificial Narrow Intelligence) is an AI system designed and trained for a particular task. Strong AI (also known as Artificial General Intelligence) is an AI system with general cognitive abilities, capable of performing any intellectual task that a human can. Most current AI is weak AI.",
-      "Key aspects of AI include perception, reasoning, problem-solving, natural language processing, learning, and decision making.",
-    ],
-    examples: [
-      "Image recognition in autonomous vehicles",
-      "Natural language processing in virtual assistants (like Siri or Alexa)",
-      "Recommendation engines (like on Netflix or Amazon)",
-      "Stock trading prediction software",
-      "Spam filtering in email",
-      "Chatbots for customer service",
-    ],
-    relatedTerms: [
-      "Machine Learning",
-      "NLP",
-      "Neural Networks",
-      "Deep Learning",
-      "Algorithms",
-      "Data Science",
-      "Computer Vision",
-    ],
-    relatedTools: [
-      {
-        name: "ChatGPT",
-        description:
-          "A large language model developed by OpenAI, capable of generating human-like text based on prompts.",
-        link: "https://chat.openai.com/",
-      },
-      {
-        name: "Midjourney",
-        description: "An AI-powered image generation tool that creates images from text descriptions.",
-        link: "https://www.midjourney.com/",
-      },
-      {
-        name: "Jasper",
-        description: "An AI writing assistant for creating content like blog posts, emails, and marketing copy.",
-        link: "https://www.jasper.ai/",
-      },
-    ],
-    relatedBlogPosts: [
-      {
-        title: "The Evolution of AI: From Theory to Practice",
-        link: "/blog/evolution-of-ai",
-        date: "2024-01-10",
-      },
-      {
-        title: "AI in Healthcare: Revolutionizing Patient Care",
-        link: "/blog/ai-in-healthcare",
-        date: "2024-02-20",
-      },
-      {
-        title: "Top 5 AI Tools for Small Businesses",
-        link: "/blog/top-5-ai-tools-small-business",
-        date: "2024-03-01",
-      },
-    ],
-    sources: [
-      {
-        name: "MIT Technology Review - What is AI?",
-        link: "https://www.technologyreview.com/explainer/what-is-ai/",
-      },
-      {
-        name: "IBM - Artificial Intelligence",
-        link: "https://www.ibm.com/topics/artificial-intelligence",
-      },
-      {
-        name: "Google AI",
-        link: "https://ai.google/",
-      },
-    ],
-  },
-  // Ensure these keys are unique
-  "machine-learning": {
-    title: "Machine Learning",
-    abbreviation: "ML",
-    // pronunciation: "...",
-    definition: [
-      "Machine Learning is a type of artificial intelligence that allows computer programs to learn from data without being explicitly programmed. It focuses on the development of computer programs that can access data and use it learn for themselves.",
-      "The primary aim of machine learning is to build models that can make predictions or decisions based on new data. It's a subset of AI.",
-    ],
-    examples: [
-      "Email spam detection",
-      "Product recommendations on e-commerce sites",
-      "Fraud detection",
-      "Image and speech recognition",
-    ],
-    relatedTerms: [
-      "AI",
-      "Neural Networks",
-      "Deep Learning",
-      "Algorithms",
-      "Data Science",
-      "Supervised Learning",
-      "Unsupervised Learning",
-    ],
-    relatedTools: [
-      {
-        name: "TensorFlow",
-        description: "An open-source machine learning library developed by Google.",
-        link: "https://www.tensorflow.org/",
-      },
-      {
-        name: "PyTorch",
-        description: "An open-source machine learning framework developed by Facebook's AI Research lab.",
-        link: "https://pytorch.org/",
-      },
-    ],
-    relatedBlogPosts: [
-      {
-        title: "Getting Started with Machine Learning",
-        link: "/blog/getting-started-ml",
-        date: "2023-11-01",
-      },
-    ],
-    sources: [
-      {
-        name: "Coursera - Machine Learning Course",
-        link: "https://www.coursera.org/learn/machine-learning",
-      },
-    ],
-  },
-  // Ensure this key is unique
-  "natural-language-processing": {
-    title: "Natural Language Processing",
-    abbreviation: "NLP",
-    // pronunciation: "...",
-    definition: [
-      "Natural Language Processing (NLP) is a subfield of artificial intelligence, computer science, and computational linguistics concerned with the interactions between computers and human (natural) languages, in particular how to program computers to process and analyze large amounts of natural language data.",
-      "Challenges in NLP include understanding nuances of human language like sarcasm, context, and intent.",
-    ],
-    examples: [
-      "Sentiment analysis",
-      "Language translation (like Google Translate)",
-      "Chatbots",
-      "Text summarization",
-      "Speech recognition",
-    ],
-    relatedTerms: ["AI", "Machine Learning", "Computational Linguistics", "Sentiment Analysis", "Tokenization"], // Removed duplicate "Sentiment Analysis"
-    relatedTools: [
-      {
-        name: " spaCy",
-        description: "An open-source software library for advanced natural language processing in Python.",
-        link: "https://spacy.io/",
-      },
-    ],
-    relatedBlogPosts: [],
-    sources: [],
-  },
-  // Add data for other terms you have content for in the glossary
-  "big-data": {
-    title: "Big Data",
-    abbreviation: null,
-    definition: [
-      "Big data refers to extremely large datasets that may be analyzed computationally to reveal patterns, trends, and associations.",
-    ],
-    examples: [],
-    relatedTerms: ["Data Science"],
-    relatedTools: [],
-    relatedBlogPosts: [],
-    sources: [],
-  },
-  chatbot: {
-    title: "Chatbot",
-    abbreviation: null,
-    definition: [
-      "A computer program designed to simulate conversation with human users, especially over the Internet.",
-    ],
-    examples: [],
-    relatedTerms: ["NLP", "AI"],
-    relatedTools: [],
-    relatedBlogPosts: [],
-    sources: [],
-  },
-  "cloud-computing": {
-    title: "Cloud Computing",
-    abbreviation: null,
-    definition: [
-      "The practice of using a network of remote servers hosted on the Internet to store, manage, and process data.",
-    ],
-    examples: [],
-    relatedTerms: [],
-    relatedTools: [],
-    relatedBlogPosts: [],
-    sources: [],
-  },
-  "data-science": {
-    title: "Data Science",
-    abbreviation: null,
-    definition: [
-      "An interdisciplinary field that uses scientific methods, processes, algorithms and systems to extract knowledge from structured and unstructured data.",
-    ],
-    examples: [],
-    relatedTerms: ["Big Data", "Machine Learning"],
-    relatedTools: [],
-    relatedBlogPosts: [],
-    sources: [],
-  },
-  // Placeholder for terms M through Z that have content in your glossary
-  // Ensure they exist here with their slug as the key if you want them to be linkable
-  // Otherwise, the related terms links will be inactive as designed.
-}
-
-// The rest of the component code remains the same
 export default function TermPage() {
   const params = useParams()
-  const termSlug = params.termSlug as string
+  const router = useRouter()
+  const termSlug = params.name as string
 
-  const termData = termsData[termSlug]
+  const [termData, setTermData] = useState<ExtendedGlossaryTerm | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!termData) {
+  useEffect(() => {
+    const fetchTerm = async () => {
+      try {
+        setIsLoading(true)
+        const data = await getGlossaryTerm(termSlug)
+        setTermData(data)
+        setError(null)
+      } catch (err) {
+        console.error("Error fetching term:", err)
+        setError("Failed to load the term. Please try again later.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTerm()
+  }, [termSlug])
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+          <p className="mt-4 text-gray-600">Loading term information...</p>
+        </div>
+        <Footer />
+      </>
+    )
+  }
+
+  // Error state
+  if (error || !termData) {
     return (
       <>
         <Header />
         <div className="min-h-screen bg-white flex flex-col items-center justify-center text-center px-4">
           <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-3">Term Not Found</h1>
           <p className="text-sm md:text-base text-[#6b7280] max-w-md mx-auto">
-            The AI term you are looking for does not exist in our glossary.
+            {error || "The AI term you are looking for does not exist in our glossary."}
           </p>
           <Link href="/glossary" passHref>
             <Button className="bg-[#a855f7] hover:bg-[#9333ea] text-white mt-5 text-sm px-4 py-2">
@@ -253,22 +78,21 @@ export default function TermPage() {
             </Button>
           </Link>
         </div>
-        {/* <Footer /> */}
+        <Footer />
       </>
     )
   }
 
-  const {
-    title,
-    abbreviation,
-    pronunciation,
-    definition,
-    examples,
-    relatedTerms,
-    relatedTools,
-    relatedBlogPosts,
-    sources,
-  } = termData
+  // Format the date for display
+  const formattedDate = new Date(termData.updated_at).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+
+  // Estimate read time (1 minute per 200 words)
+  const wordCount = termData.definition.split(/\s+/).length
+  const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200))
 
   return (
     <>
@@ -282,17 +106,31 @@ export default function TermPage() {
             </Link>
           </div>
 
-          {/* Term Title */}
-          <h1 className="text-3xl md:text-4xl font-bold text-[#111827] mb-2">
-            {title} {abbreviation && <span className="text-gray-500 ml-2">({abbreviation})</span>}
-          </h1>
-          {pronunciation && <p className="text-sm text-gray-500 mb-6">{pronunciation}</p>}
+          {/* Term Title and Metadata */}
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-[#111827] mb-2">
+              {termData.title}{" "}
+              {termData.abbreviation && <span className="text-gray-500 ml-2">({termData.abbreviation})</span>}
+            </h1>
+            {termData.pronunciation && <p className="text-sm text-gray-500 mb-2">{termData.pronunciation}</p>}
+
+            <div className="flex items-center text-sm text-gray-500 space-x-4">
+              <div className="flex items-center">
+                <Calendar className="w-4 h-4 mr-1" />
+                <span>Updated {formattedDate}</span>
+              </div>
+              <div className="flex items-center">
+                <Clock className="w-4 h-4 mr-1" />
+                <span>{readTimeMinutes} min read</span>
+              </div>
+            </div>
+          </div>
 
           {/* Definition Section */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">Definition</h2>
             <div className="text-gray-700 space-y-4">
-              {definition.map((paragraph: string, index: number) => (
+              {termData.definition_paragraphs.map((paragraph, index) => (
                 <p key={index} className="text-base leading-relaxed">
                   {paragraph}
                 </p>
@@ -301,11 +139,11 @@ export default function TermPage() {
           </div>
 
           {/* Examples Section */}
-          {examples && examples.length > 0 && (
+          {termData.examples && termData.examples.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">Examples</h2>
               <ul className="list-disc list-inside text-gray-700 space-y-2">
-                {examples.map((example: string, index: number) => (
+                {termData.examples.map((example, index) => (
                   <li key={index} className="text-base">
                     {example}
                   </li>
@@ -315,24 +153,18 @@ export default function TermPage() {
           )}
 
           {/* Related Terms Section */}
-          {relatedTerms && relatedTerms.length > 0 && (
+          {termData.relatedTerms && termData.relatedTerms.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">Related Terms</h2>
               <div className="flex flex-wrap gap-2">
-                {relatedTerms.map((term: string, index: number) => {
+                {termData.relatedTerms.map((term, index) => {
                   const termSlugLink = `/terms/${slugify(term)}`
-                  const relatedTermHasData = !!termsData[slugify(term)]
 
                   return (
                     <Link
                       key={index}
-                      href={relatedTermHasData ? termSlugLink : "#"}
-                      passHref={relatedTermHasData}
-                      className={`rounded-full px-3 py-1 text-sm ${
-                        relatedTermHasData
-                          ? "bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
-                          : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                      }`}
+                      href={termSlugLink}
+                      className="rounded-full px-3 py-1 text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
                     >
                       {term}
                     </Link>
@@ -343,15 +175,31 @@ export default function TermPage() {
           )}
 
           {/* Related AI Tools Section */}
-          {relatedTools && relatedTools.length > 0 && (
+          {termData.relatedTools && termData.relatedTools.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">
                 Related AI Tools
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {relatedTools.map((tool: any, index: number) => (
+                {termData.relatedTools.map((tool, index) => (
                   <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
-                    <h3 className="text-lg font-semibold text-[#111827] mb-2">{tool.name}</h3>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-lg font-semibold text-[#111827]">{tool.name}</h3>
+                      {tool.isFree !== undefined && (
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${tool.isFree ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"}`}
+                        >
+                          {tool.isFree ? "Free" : "Premium"}
+                        </span>
+                      )}
+                    </div>
+                    {tool.category && (
+                      <div className="mb-2">
+                        <span className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded-full">
+                          {tool.category}
+                        </span>
+                      </div>
+                    )}
                     <p className="text-sm text-gray-700 mb-3">{tool.description}</p>
                     <Link
                       href={tool.link}
@@ -359,7 +207,7 @@ export default function TermPage() {
                       rel="noopener noreferrer"
                       className="text-sm text-[#a855f7] flex items-center hover:underline"
                     >
-                      Learn More <ExternalLink className="w-4 h-4 ml-1" />
+                      Try Tool <ExternalLink className="w-4 h-4 ml-1" />
                     </Link>
                   </div>
                 ))}
@@ -368,30 +216,43 @@ export default function TermPage() {
           )}
 
           {/* Related Blog Posts Section */}
-          {relatedBlogPosts && relatedBlogPosts.length > 0 && (
+          {termData.relatedBlogPosts && termData.relatedBlogPosts.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">
                 Related Blog Posts
               </h2>
-              <ul className="space-y-2">
-                {relatedBlogPosts.map((post: any, index: number) => (
-                  <li key={index}>
-                    <Link href={post.link} className="text-base text-[#a855f7] hover:underline">
-                      {post.title}
+              <div className="space-y-4">
+                {termData.relatedBlogPosts.map((post, index) => (
+                  <div
+                    key={index}
+                    className="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors"
+                  >
+                    <Link href={post.link} className="block">
+                      <h3 className="text-lg font-semibold text-[#a855f7] hover:underline mb-1">{post.title}</h3>
+                      {post.description && <p className="text-sm text-gray-600 mb-2">{post.description}</p>}
+                      <div className="flex items-center text-xs text-gray-500">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        <span>
+                          {new Date(post.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
                     </Link>
-                    {post.date && <span className="text-sm text-gray-500 ml-2">({post.date})</span>}
-                  </li>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
           {/* Sources Section */}
-          {sources && sources.length > 0 && (
+          {termData.sources && termData.sources.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">Sources</h2>
               <ul className="space-y-2">
-                {sources.map((source: any, index: number) => (
+                {termData.sources.map((source, index) => (
                   <li key={index}>
                     <Link
                       href={source.link}

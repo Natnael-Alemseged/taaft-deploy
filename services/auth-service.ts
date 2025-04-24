@@ -32,16 +32,15 @@ const createFormData = (data: Record<string, string>) => {
 // Login with username and password
 // Alternative approach without createFormData helper
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
-  const formData = new URLSearchParams();
-  formData.append('username', credentials.username);
-  formData.append('password', credentials.password);
-console.log(process.env.NEXT_PUBLIC_API_URL);
-console.log("base url is");
+  const formData = new URLSearchParams()
+  formData.append("username", credentials.username)
+  formData.append("password", credentials.password)
+  // Use the environment variable for API URL
   // ... rest of the function body (axios.post call etc.) remains the same
   const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/token`, formData, {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      "Accept": "application/json"
+      Accept: "application/json",
     },
   })
 
@@ -50,7 +49,7 @@ console.log("base url is");
 
   localStorage.setItem("access_token", access_token)
   if (refresh_token) {
-    localStorage.setItem("refresh_token", refresh_token);
+    localStorage.setItem("refresh_token", refresh_token)
   }
 
   const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
@@ -126,19 +125,17 @@ export const handleGoogleCallback = async (code: string) => {
   // Store tokens
   localStorage.setItem("access_token", access_token) // Changed key to access_token
   if (refresh_token) {
-    localStorage.setItem("refresh_token", refresh_token); // Store refresh token if available
+    localStorage.setItem("refresh_token", refresh_token) // Store refresh token if available
   }
-
 
   // Store user data (if returned by callback endpoint, otherwise call getCurrentUser)
   if (user) {
-    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("user", JSON.stringify(user))
   } else {
     // If callback doesn't return user, call getCurrentUser after storing tokens
     // const currentUser = await getCurrentUser();
     // if(currentUser) localStorage.setItem("user", JSON.stringify(currentUser));
   }
-
 
   // Return relevant data
   return { access_token, token_type, refresh_token, user } // Return tokens and user

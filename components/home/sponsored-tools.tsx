@@ -112,7 +112,6 @@ export default function SponsoredTools() {
         <div
           ref={scrollRef}
           className="flex gap-6 overflow-x-auto scroll-smooth transition-all duration-300 focus:outline-none scrollbar-hide"
-
           style={{ scrollSnapType: "x mandatory" }}
           tabIndex={0} // Make it focusable
           role="region" // Indicate this is a section of content

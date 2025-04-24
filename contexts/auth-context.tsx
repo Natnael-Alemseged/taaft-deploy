@@ -3,10 +3,10 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import {
   login as loginService,
-  register as registerService,
   logout as logoutService,
   getCurrentUser, // Assume this service uses a stored token
-  initiateGoogleLogin, register,
+  initiateGoogleLogin,
+  register,
   // Assume loginService now returns { access_token, refresh_token, user? }
 } from "@/services/auth-service"
 
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Token is valid and user data fetched
             setUser(currentUser)
             // Ensure user data is also in localStorage if needed elsewhere
-            localStorage.setItem("user", JSON.stringify(currentUser)); // Keep user data in LS if needed
+            localStorage.setItem("user", JSON.stringify(currentUser)) // Keep user data in LS if needed
           } else {
             // Token might be expired or invalid, clear storage
             console.warn("Stored token invalid, clearing auth data.")
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: { username: string; password: string }) => {
     setIsLoading(true) // Set loading before the process begins
     try {
-      console.log(`base url is ${process.env.NEXT_PUBLIC_API_URL}`);
+      console.log(`base url is ${process.env.NEXT_PUBLIC_API_URL}`)
 
       // Call the login service - assume it returns { access_token, refresh_token, user? }
       const response = await loginService(credentials)
@@ -112,13 +112,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem("access_token")
         localStorage.removeItem("refresh_token")
         localStorage.removeItem("user")
-        setUser(null);
-        throw new Error("Login failed: Could not fetch user data."); // Propagate error
+        setUser(null)
+        throw new Error("Login failed: Could not fetch user data.") // Propagate error
       }
       // -----------------------------
 
       // If everything succeeded, no explicit return needed, Promise resolves
-
     } catch (error) {
       // Handle login service errors (e.g., invalid credentials)
       console.error("Login failed:", error)
@@ -134,18 +133,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // or you could place it explicitly here. Let's keep it inside catch/try
       // or ensure it's called *after* getCurrentUser succeeds/fails.
       // Placing it here ensures it's always false after the login attempt completes.
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
   // Logout function: Clears storage and state
   const logout = () => {
-    logoutService() // Call API logout if applicable
-    // Clear tokens and user from storage
-    localStorage.removeItem("access_token")
-    localStorage.removeItem("refresh_token")
-    localStorage.removeItem("user")
-    setUser(null) // Clear user state
+    try {
+      logoutService() // Call API logout if applicable
+    } catch (error) {
+      console.error("Error during logout:", error)
+    } finally {
+      // Always clear tokens and user from storage
+      localStorage.removeItem("access_token")
+      localStorage.removeItem("refresh_token")
+      localStorage.removeItem("user")
+      setUser(null) // Clear user state
+    }
   }
 
   // loginWithGoogle function (likely handled via redirect, initAuth will pick up tokens)
@@ -161,28 +165,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.location.href = url
     } catch (error) {
       console.error("Google login initiation error:", error)
-      setIsLoading(false); // Set loading to false if initiation fails
+      setIsLoading(false) // Set loading to false if initiation fails
       throw error // Re-throw for component handling
     }
     // setIsLoading(false) is NOT in finally here because window.location.href will unload the page.
     // If initiation fails before redirect, the catch block handles setting isLoading to false.
   }
 
-
   return (
-      <AuthContext.Provider
-          value={{
-            user,
-            isAuthenticated: !!user,
-            isLoading,
-            login,
-            register, // Make sure register's login call is updated if register flow changes
-            logout,
-            loginWithGoogle,
-          }}
-      >
-        {children}
-      </AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        register, // Make sure register's login call is updated if register flow changes
+        logout,
+        loginWithGoogle,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   )
 }
 
