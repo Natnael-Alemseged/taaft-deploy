@@ -1,5 +1,5 @@
 "use client"; // Keep this as it's a Client Component
-
+import { FaStar } from 'react-icons/fa';
 import { useEffect } from "react";
 import Link from "next/link";
 import { Bookmark, Share2, ExternalLink, Check } from "lucide-react";
@@ -150,17 +150,36 @@ export default function ToolDetail() {
                 </div>
               </div>
 
-              {/* Screenshot */}
-              {tool?.screenshotUrls && safeTool.screenshotUrls.length > 0 && (
+
+              {/* Screenshot Section */}
+              {safeTool.screenshotUrls && safeTool.screenshotUrls.length > 0 && (
                   <div className="mb-12">
                     <h2 className="text-xl font-bold text-[#111827] mb-6">Screenshots</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {tool.screenshotUrls.map((screenshot, index) => (
-                          <div key={index} className="border border-[#e5e7eb] rounded-lg overflow-hidden">
+                      {safeTool.screenshotUrls.map((screenshot, index) => (
+                          <div
+                              key={index}
+                              className="border border-[#e5e7eb] rounded-lg overflow-hidden"
+                              style={{
+                                width: '100%',
+                                maxWidth: '952px', // Max width constraint
+                                height: 'fit-content', // "Hug" behavior
+                                aspectRatio: '952/643.5' // Maintain original ratio (≈1.48)
+                              }}
+                          >
                             <img
-                                src={screenshot || "/placeholder.svg"}
-                                alt={`${tool?.name} screenshot ${index + 1}`}
-                                className="w-full h-auto"
+                                src={screenshot}
+                                alt={`${safeTool?.name} screenshot ${index + 1}`}
+                                className="w-full h-auto object-cover"
+                                style={{
+                                  maxHeight: '643.5px', // Constrain height
+                                  width: '100%' // Fill available width
+                                }}
+                                loading="lazy"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                                  (e.target as HTMLImageElement).className = "w-full h-auto";
+                                }}
                             />
                           </div>
                       ))}
@@ -214,8 +233,16 @@ export default function ToolDetail() {
                         <div key={review.id} className="border border-[#e5e7eb] rounded-lg p-4 mb-4">
                           <div className="flex items-center mb-2">
                             <h4 className="font-semibold text-[#111827] mr-2">{review.user.name}</h4>
-                            {/* You might want to display the rating here using stars or a number */}
-                            <span className="text-sm text-[#a855f7]">Rating: {review.rating}/5</span>
+                            {/* Star rating component */}
+                            <div className="flex items-center">
+                              {Array.from({ length: 5 }, (_, index) => (
+
+                                  <FaStar
+                                      key={index}
+                                      className={`w-4 h-4 mr-1 ${index + 1 <= review.rating ? 'text-yellow-500' : 'text-gray-300'}`}
+                                  />
+                              ))}
+                            </div>
                           </div>
                           <p className="text-[#4b5563]">{review.content}</p>
                           <p className="text-sm text-[#6b7280] mt-2">

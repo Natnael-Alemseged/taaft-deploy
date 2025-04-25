@@ -76,8 +76,7 @@ export function withFallbackTool(tool?: Partial<Tool>): {
   return {
     name: tool?.name ?? "AI Image Creator",
     category: tool?.category ?? "Image Generation",
-    description:
-        tool?.description ??
+    description: tool?.description?.trim() || // Handle empty strings
         "Generate amazing images from text prompts in seconds with AI. Simply describe the image you have in mind and let AI work its magic. Explore different artistic styles and unleash your creativity.",
     pricing: tool?.pricing ?? "Free",
     website: tool?.website ?? "https://aiimagecreator.com", // Placeholder URL
@@ -90,7 +89,7 @@ export function withFallbackTool(tool?: Partial<Tool>): {
       "Commercial license (check website for details)",
     ],
     screenshotUrls: tool?.screenshotUrls ?? [
-      "https://via.placeholder.com/800x450?text=AI+Image+Creator+Screenshot+1", // Placeholder
+      "https://eq47oznpfsr.exactdn.com/wp-content/uploads/2024/08/What-Is-AI-Featured.jpg?lossy=1&quality=70&w=1280&ssl=1", // Placeholder
     ],
     relatedTools: tool?.relatedTools ?? [
       {
