@@ -521,7 +521,7 @@ export const getPopularTools = async (limit?: number) => {
       headers["Authorization"] = `Bearer ${token}`
     }
 
-    const response = await apiClient.get<{ tools: Tool[] }>("/tools/", {
+    const response = await apiClient.get<{ tools: Tool[] }>("/public/tools/sponsored/", {
       params: { limit, sort: "popular" },
       headers,
     })
