@@ -98,57 +98,6 @@ export const createChatSession = async (title: string): Promise<ChatSession> => 
   }
 }
 
-// Send a message to a specific chat session
-// export const sendChatMessage = async (
-//   sessionId: string,
-//   message: string,
-//   model = "gpt4",
-//   systemPrompt = "You are a helpful assistant.",
-//   metadata?: Record<string, any>,
-// ): Promise<{ message: Message; toolRecommendations?: any[] }> => {
-//   try {
-//     console.log(`Sending message to session ${sessionId} with model ${model}`)
-//
-//     // Create the request payload
-//     const payload = {
-//       message,
-//       model,
-//       system_prompt: systemPrompt,
-//       ...(metadata && { metadata }),
-//     }
-//
-//     // Make the API request
-//     const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload)
-//
-//     console.log(`Response received for session ${sessionId}`)
-//
-//     return {
-//       message: {
-//         role: "assistant",
-//         content: response.data.message,
-//         id: response.data.message_id,
-//         timestamp: new Date(response.data.timestamp),
-//       },
-//       toolRecommendations: response.data.tool_recommendations,
-//     }
-//   } catch (error: any) {
-//     console.error(`Error sending message to session ${sessionId}:`, error)
-//
-//     // Log more detailed error information
-//     if (error.response) {
-//       console.error("Error response data:", error.response.data)
-//       console.error("Error response status:", error.response.status)
-//     } else if (error.request) {
-//       console.error("No response received:", error.request)
-//     } else {
-//       console.error("Error message:", error.message)
-//     }
-//
-//     throw error
-//   }
-// }
-
-
 
 export const sendChatMessage = async (
     sessionId: string,
@@ -156,7 +105,7 @@ export const sendChatMessage = async (
     model = "gpt4",
     systemPrompt = "You are a helpful assistant.",
     metadata?: Record<string, any>,
-): Promise<{ message: Message; toolRecommendations?: string[] }> => {
+): Promise<{ message: Message; toolRecommendations?: string[]; data?: any }> => {
   try {
     console.log(`Sending message to session ${sessionId} with model ${model}`);
 
@@ -175,6 +124,9 @@ export const sendChatMessage = async (
 
     const rawResponseMessage = response.data.message;
 
+    console.log("response api is:"+rawResponseMessage);
+
+
     // Extract options if present
     let options: string[] = [];
     const optionsPattern = "options =";
@@ -188,23 +140,18 @@ export const sendChatMessage = async (
       let cleanedOptionsString = optionsStringRaw.trim();
 
       // Now remove the leading '[' and trailing ']' if they exist
-      // The regex /^\[|\]$/g targets '[' at the start or ']' at the end
-      // after trimming, this should work reliably.
       cleanedOptionsString = cleanedOptionsString.replace(/^\[|\]$/g, '').trim();
-
 
       // Split by comma, trim, and remove quotes from each option
       options = cleanedOptionsString.split(',').map(option =>
           option.trim().replace(/'/g, '').replace(/"/g, '')
       ).filter(option => option.length > 0); // Filter out any empty strings
-
     }
 
     // Clean the message content (remove "options = ..." part)
     const cleanedMessage = optionsIndex !== -1
         ? rawResponseMessage.substring(0, optionsIndex).trim()
         : rawResponseMessage.trim();
-
 
     return {
       message: {
@@ -214,11 +161,11 @@ export const sendChatMessage = async (
         timestamp: new Date(response.data.timestamp),
       },
       toolRecommendations: options.length > 0 ? options : undefined,
+      data: response.data // Include the entire response data
     };
   } catch (error: any) {
     console.error(`Error sending message to session ${sessionId}:`, error);
 
-    // Log more detailed error information
     if (error.response) {
       console.error("Error response data:", error.response.data);
       console.error("Error response status:", error.response.status);

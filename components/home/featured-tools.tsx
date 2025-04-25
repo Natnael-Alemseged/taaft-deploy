@@ -78,80 +78,85 @@ export default function FeaturedTools() {
   }
 
   return (
-    <section className="py-12">
-      <div className="container mx-auto px-4">
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Featured AI Tools</h2>
-          <Link href="/browse" className="flex items-center text-sm text-purple-600 hover:underline">
-            View all <ChevronRight className="ml-1 h-4 w-4" />
-          </Link>
-        </div>
-
-        {isLoading && (
-          <div className="flex justify-center py-12">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600"></div>
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">Featured AI Tools</h2>
+            <Link href="/browse" className="flex items-center text-sm text-purple-600 hover:underline">
+              View all <ChevronRight className="ml-1 h-4 w-4" />
+            </Link>
           </div>
-        )}
 
-        {!isLoading && data?.tools && (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {data.tools.map((tool) => (
-              <Card
-                key={tool.id}
-                className="max-w-sm overflow-hidden rounded-2xl border border-gray-200 shadow-lg w-full mx-auto"
-              >
-                <CardContent className="p-0">
-                  <div className="p-4">
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+          {isLoading && (
+              <div className="flex justify-center py-12">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600"></div>
+              </div>
+          )}
+
+          {!isLoading && data?.tools && (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                {data.tools.map((tool) => (
+                    <Card
+                        key={tool.id}
+                        className="max-w-sm overflow-hidden rounded-2xl border border-gray-200 shadow-lg w-full mx-auto"
+                    >
+                      <CardContent className="p-0">
+                        <div className="p-4">
+                          <div className="mb-2 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
                         <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
                           {tool.category}
                         </span>
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass(tool.pricing)}`}>
+                              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass(tool.pricing)}`}>
                           {formatPricingLabel(tool.pricing)}
                         </span>
-                      </div>
-                      {tool.isFeatured && (
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}>
+                            </div>
+                            {tool.isFeatured && (
+                                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}>
                           Featured
                         </span>
-                      )}
-                    </div>
+                            )}
+                          </div>
 
-                    <h3 className="mb-1 text-lg font-semibold text-gray-900">{tool.name}</h3>
-                    <p className="mb-4 text-sm text-gray-600">{tool.description}</p>
+                          <h3 className="mb-1 text-lg font-semibold text-gray-900">{tool.name}</h3>
+                          {/* Modified line */}
+                          <p className="mb-4 text-sm text-gray-600">
+                            {tool.description && tool.description.length > 120 // Adjust 120 to your desired length
+                                ? `${tool.description.substring(0, 120)}...`
+                                : tool.description}
+                          </p>
 
-                    <div className="mb-4 flex flex-wrap gap-2">
-                      {(tool.features || []).slice(0, 3).map((feature, index) => (
-                        <span key={index} className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600">
+                          <div className="mb-4 flex flex-wrap gap-2">
+                            {(tool.features || []).slice(0, 3).map((feature, index) => (
+                                <span key={index} className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600">
                           {feature}
                         </span>
-                      ))}
-                    </div>
+                            ))}
+                          </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <button
-                          className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
-                          onClick={() => handleSaveToggle(tool.id, !!tool.savedByUser)}
-                        >
-                          <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
-                        </button>
-                        <button className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
-                          <Share2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <Button className="bg-purple-600 text-white hover:bg-purple-700" asChild>
-                        <Link href={`/tools/${tool.id}`}>Try Tool</Link>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <button
+                                  className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
+                                  onClick={() => handleSaveToggle(tool.id, !!tool.savedByUser)}
+                              >
+                                <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
+                              </button>
+                              <button className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
+                                <Share2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                            <Button className="bg-purple-600 text-white hover:bg-purple-700" asChild>
+                              <Link href={`/tools/${tool.id}`}>Try Tool</Link>
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                ))}
+              </div>
+          )}
+        </div>
+      </section>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, Bookmark, Grid, List, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { useSearchTools } from "@/hooks/use-search"
 import { useSaveTool, useUnsaveTool } from "@/hooks/use-tools"
 import { useAuth } from "@/contexts/auth-context"
 import type { Tool } from "@/types/tool"
+import { useSearchParams } from "next/navigation"
 
 interface SearchResultsProps {
   query: string
@@ -23,13 +24,67 @@ export default function SearchResults({ query, category }: SearchResultsProps) {
   const [page, setPage] = useState(1)
   const limit = 12
   const { isAuthenticated } = useAuth()
+  const searchParams = useSearchParams()
+
+  // Add useEffect at the top of the component to handle chat tools
+  useEffect(() => {
+    // Check if we have tools data from chat in sessionStorage
+    if (typeof window !== "undefined" && searchParams.get("source") === "chat") {
+      try {
+        const chatToolsJson = sessionStorage.getItem("chatResponseTools")
+        if (chatToolsJson) {
+          const chatTools = JSON.parse(chatToolsJson)
+          console.log("Found tools data from chat:", chatTools)
+
+          // Transform the chat tools data to match the expected format
+          if (Array.isArray(chatTools) && chatTools.length > 0) {
+            const transformedTools = chatTools.map((tool) => ({
+              id: tool.unique_id || tool.objectID,
+              name: tool.name || "Unknown Tool",
+              slug: tool.unique_id || tool.objectID,
+              category: "AI Tool", // Default category
+              description: tool.description || "No description available",
+              pricing: tool.price?.toLowerCase().includes("free") ? "free" : "premium",
+              isFeatured: Number.parseFloat(tool.rating || "0") > 4.5,
+              savedByUser: false,
+              features: [],
+              website: tool.link || "#",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              status: "approved" as const,
+              hasFreeVersion: tool.price?.toLowerCase().includes("free"),
+              contactName: "",
+              contactEmail: "",
+            }))
+
+            // Don't invalidate sessionStorage immediately to allow refreshing
+            // sessionStorage.removeItem("chatResponseTools")
+
+            // Set data as if it came from the API
+            // We're bypassing the actual API call here
+            if (!isLoading && data === undefined) {
+              // Only override if we don't have data yet
+              data = {
+                tools: transformedTools,
+                total: transformedTools.length,
+                categories: ["AI Tool"],
+                pricingOptions: ["free", "premium"],
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing chat tools data:", error)
+      }
+    }
+  }, [searchParams])
 
   // Convert selected categories and pricing to query format
   const categoryParam = selectedCategories.length > 0 ? selectedCategories.join(",") : undefined
   const pricingParam = selectedPricing.length > 0 ? selectedPricing.join(",") : undefined
 
   // Use the search API
-  const { data, isLoading, isError } = useSearchTools({
+  let { data, isLoading, isError } = useSearchTools({
     query,
     category: categoryParam,
     pricing: pricingParam,
@@ -42,7 +97,7 @@ export default function SearchResults({ query, category }: SearchResultsProps) {
 
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+        prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
     )
     setPage(1) // Reset to first page when changing filters
   }
@@ -66,10 +121,10 @@ export default function SearchResults({ query, category }: SearchResultsProps) {
   }
 
   const title = query
-    ? `Search results for "${query}"`
-    : category
-      ? `Recommended AI Tools for ${category}`
-      : "Recommended AI Tools"
+      ? `Search results for "${query}"`
+      : category
+          ? `Recommended AI Tools for ${category}`
+          : "Recommended AI Tools"
 
   const getBadgeClass = (label: string) => {
     switch (label) {
@@ -108,310 +163,310 @@ export default function SearchResults({ query, category }: SearchResultsProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <main className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <div className="mb-6">
-          <Link href="/" className="flex items-center text-sm text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Tools
-          </Link>
-          <div className="mt-2 flex items-center text-sm text-gray-500">
-            <Link href="/" className="hover:text-gray-900">
-              Home
+      <div className="min-h-screen bg-white">
+        <main className="container mx-auto px-4 py-8">
+          {/* Breadcrumb */}
+          <div className="mb-6">
+            <Link href="/" className="flex items-center text-sm text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Tools
             </Link>
-            <span className="mx-2">&gt;</span>
-            <span>Search</span>
-          </div>
-        </div>
-
-        {/* AI Assistant message */}
-        <div className="mb-8 rounded-lg border border-purple-100 bg-purple-50 p-4">
-          <div className="flex items-start">
-            <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-purple-100">
-              <span className="text-sm font-medium text-purple-600">AI</span>
-            </div>
-            <div>
-              <div className="font-medium">AI Assistant</div>
-              <p className="text-sm text-gray-700">
-                {query
-                  ? `Here are the search results for "${query}". You can refine your search using the filters.`
-                  : category
-                    ? `Here are the recommended tools for ${category}. Feel free to explore or refine using the filters.`
-                    : "Here are some AI tools you might find useful. Use the filters to refine your search."}
-              </p>
+            <div className="mt-2 flex items-center text-sm text-gray-500">
+              <Link href="/" className="hover:text-gray-900">
+                Home
+              </Link>
+              <span className="mx-2">&gt;</span>
+              <span>Search</span>
             </div>
           </div>
-        </div>
 
-        <div className="flex flex-col lg:flex-row">
-          {/* Sidebar filters */}
-          <div className="mb-6 w-full lg:mb-0 lg:w-64 lg:pr-8">
-            <div className="rounded-lg border border-gray-200 p-4">
-              <h3 className="mb-4 font-medium">Categories</h3>
-              <div className="space-y-2">
-                {categories.map((cat) => (
-                  <label key={cat} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                      checked={selectedCategories.includes(cat)}
-                      onChange={() => toggleCategory(cat)}
-                    />
-                    <span className="ml-2 text-sm">{cat}</span>
-                  </label>
-                ))}
+          {/* AI Assistant message */}
+          <div className="mb-8 rounded-lg border border-purple-100 bg-purple-50 p-4">
+            <div className="flex items-start">
+              <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-purple-100">
+                <span className="text-sm font-medium text-purple-600">AI</span>
               </div>
-
-              <h3 className="mb-4 mt-6 font-medium">Pricing</h3>
-              <div className="space-y-2">
-                {pricing.map((price) => (
-                  <label key={price} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                      checked={selectedPricing.includes(price)}
-                      onChange={() => togglePricing(price)}
-                    />
-                    <span className="ml-2 text-sm">{formatPricingLabel(price)}</span>
-                  </label>
-                ))}
+              <div>
+                <div className="font-medium">AI Assistant</div>
+                <p className="text-sm text-gray-700">
+                  {query
+                      ? `Here are the search results for "${query}". You can refine your search using the filters.`
+                      : category
+                          ? `Here are the recommended tools for ${category}. Feel free to explore or refine using the filters.`
+                          : "Here are some AI tools you might find useful. Use the filters to refine your search."}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Main content */}
-          <div className="flex-1">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold">{title}</h2>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`rounded p-1 ${viewMode === "grid" ? "bg-purple-100 text-purple-600" : "text-gray-400"}`}
-                >
-                  <Grid className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`rounded p-1 ${viewMode === "list" ? "bg-purple-100 text-purple-600" : "text-gray-400"}`}
-                >
-                  <List className="h-5 w-5" />
-                </button>
+          <div className="flex flex-col lg:flex-row">
+            {/* Sidebar filters */}
+            <div className="mb-6 w-full lg:mb-0 lg:w-64 lg:pr-8">
+              <div className="rounded-lg border border-gray-200 p-4">
+                <h3 className="mb-4 font-medium">Categories</h3>
+                <div className="space-y-2">
+                  {categories.map((cat) => (
+                      <label key={cat} className="flex items-center">
+                        <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            checked={selectedCategories.includes(cat)}
+                            onChange={() => toggleCategory(cat)}
+                        />
+                        <span className="ml-2 text-sm">{cat}</span>
+                      </label>
+                  ))}
+                </div>
+
+                <h3 className="mb-4 mt-6 font-medium">Pricing</h3>
+                <div className="space-y-2">
+                  {pricing.map((price) => (
+                      <label key={price} className="flex items-center">
+                        <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            checked={selectedPricing.includes(price)}
+                            onChange={() => togglePricing(price)}
+                        />
+                        <span className="ml-2 text-sm">{formatPricingLabel(price)}</span>
+                      </label>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Loading state */}
-            {isLoading && (
-              <div className="flex items-center justify-center py-12">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600"></div>
+            {/* Main content */}
+            <div className="flex-1">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-xl font-bold">{title}</h2>
+                <div className="flex items-center space-x-2">
+                  <button
+                      onClick={() => setViewMode("grid")}
+                      className={`rounded p-1 ${viewMode === "grid" ? "bg-purple-100 text-purple-600" : "text-gray-400"}`}
+                  >
+                    <Grid className="h-5 w-5" />
+                  </button>
+                  <button
+                      onClick={() => setViewMode("list")}
+                      className={`rounded p-1 ${viewMode === "list" ? "bg-purple-100 text-purple-600" : "text-gray-400"}`}
+                  >
+                    <List className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
-            )}
 
-            {/* Error state */}
-            {isError && (
-              <div className="rounded-lg bg-red-50 p-4 text-center">
-                <p className="text-red-600">Failed to load results. Please try again.</p>
-                <Button
-                  onClick={() => window.location.reload()}
-                  className="mt-4 bg-red-600 text-white hover:bg-red-700"
-                >
-                  Retry
-                </Button>
-              </div>
-            )}
+              {/* Loading state */}
+              {isLoading && (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600"></div>
+                  </div>
+              )}
 
-            {/* Empty state */}
-            {!isLoading && !isError && data?.tools.length === 0 && (
-              <div className="rounded-lg bg-gray-50 p-8 text-center">
-                <p className="mb-4 text-lg text-gray-600">No results found for your search criteria.</p>
-                <p className="mb-6 text-gray-500">Try adjusting your filters or search with different keywords.</p>
-                <Button
-                  onClick={() => {
-                    setSelectedCategories([])
-                    setSelectedPricing([])
-                  }}
-                  className="bg-purple-600 text-white hover:bg-purple-700"
-                >
-                  Clear Filters
-                </Button>
-              </div>
-            )}
+              {/* Error state */}
+              {isError && (
+                  <div className="rounded-lg bg-red-50 p-4 text-center">
+                    <p className="text-red-600">Failed to load results. Please try again.</p>
+                    <Button
+                        onClick={() => window.location.reload()}
+                        className="mt-4 bg-red-600 text-white hover:bg-red-700"
+                    >
+                      Retry
+                    </Button>
+                  </div>
+              )}
 
-            {/* List View (Grid Layout) */}
-            {!isLoading && !isError && data?.tools.length > 0 && viewMode === "list" && (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {data.tools.map((tool) => (
-                  <Card key={tool.id} className="overflow-hidden border border-gray-200">
-                    <CardContent className="p-4">
-                      <h3 className="mb-1 text-lg font-semibold">{tool.name}</h3>
-                      <div className="mb-2 flex flex-wrap gap-1">
+              {/* Empty state */}
+              {!isLoading && !isError && data?.tools.length === 0 && (
+                  <div className="rounded-lg bg-gray-50 p-8 text-center">
+                    <p className="mb-4 text-lg text-gray-600">No results found for your search criteria.</p>
+                    <p className="mb-6 text-gray-500">Try adjusting your filters or search with different keywords.</p>
+                    <Button
+                        onClick={() => {
+                          setSelectedCategories([])
+                          setSelectedPricing([])
+                        }}
+                        className="bg-purple-600 text-white hover:bg-purple-700"
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+              )}
+
+              {/* List View (Grid Layout) */}
+              {!isLoading && !isError && data?.tools.length > 0 && viewMode === "list" && (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {data.tools.map((tool) => (
+                        <Card key={tool.id} className="overflow-hidden border border-gray-200">
+                          <CardContent className="p-4">
+                            <h3 className="mb-1 text-lg font-semibold">{tool.name}</h3>
+                            <div className="mb-2 flex flex-wrap gap-1">
                         <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
                           {tool.category}
                         </span>
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass(tool.pricing)}`}>
+                              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass(tool.pricing)}`}>
                           {formatPricingLabel(tool.pricing)}
                         </span>
-                        {tool.isFeatured && (
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}>
+                              {tool.isFeatured && (
+                                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}>
                             Featured
                           </span>
-                        )}
-                      </div>
-                      <p className="mb-3 text-sm text-gray-600">{tool.description}</p>
+                              )}
+                            </div>
+                            <p className="mb-3 text-sm text-gray-600">{tool.description}</p>
 
-                      <div className="mb-4 flex flex-wrap gap-1">
-                        {tool.features &&
-                          tool.features.slice(0, 3).map((tag, idx) => (
-                            <span key={idx} className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                            <div className="mb-4 flex flex-wrap gap-1">
+                              {tool.features &&
+                                  tool.features.slice(0, 3).map((tag, idx) => (
+                                      <span key={idx} className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
                               {tag}
                             </span>
-                          ))}
-                      </div>
+                                  ))}
+                            </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1">
-                          <button
-                            className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
-                            onClick={() => handleSaveToggle(tool)}
-                          >
-                            <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
-                          </button>
-                          <button className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
-                            <Share2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                        <Button className="rounded-full bg-purple-600 hover:bg-purple-700" asChild>
-                          <Link href={`/tools/${tool.id}`}>
-                            Try Tool
-                            <svg
-                              className="ml-1 h-4 w-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                              ></path>
-                            </svg>
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-1">
+                                <button
+                                    className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
+                                    onClick={() => handleSaveToggle(tool)}
+                                >
+                                  <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
+                                </button>
+                                <button className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
+                                  <Share2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                              <Button className="rounded-full bg-purple-600 hover:bg-purple-700" asChild>
+                                <Link href={`/tools/${tool.id}`}>
+                                  Try Tool
+                                  <svg
+                                      className="ml-1 h-4 w-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                    ></path>
+                                  </svg>
+                                </Link>
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                    ))}
+                  </div>
+              )}
 
-            {/* Grid View (Vertical List) */}
-            {!isLoading && !isError && data?.tools.length > 0 && viewMode === "grid" && (
-              <div className="space-y-4">
-                {data.tools.map((tool) => (
-                  <Card key={tool.id} className="overflow-hidden border border-gray-200">
-                    <CardContent className="p-4">
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                        <div>
-                          <h3 className="mb-1 text-lg font-semibold">{tool.name}</h3>
-                          <div className="mb-2 flex flex-wrap gap-1">
+              {/* Grid View (Vertical List) */}
+              {!isLoading && !isError && data?.tools.length > 0 && viewMode === "grid" && (
+                  <div className="space-y-4">
+                    {data.tools.map((tool) => (
+                        <Card key={tool.id} className="overflow-hidden border border-gray-200">
+                          <CardContent className="p-4">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                              <div>
+                                <h3 className="mb-1 text-lg font-semibold">{tool.name}</h3>
+                                <div className="mb-2 flex flex-wrap gap-1">
                             <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
                               {tool.category}
                             </span>
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass(tool.pricing)}`}
-                            >
+                                  <span
+                                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass(tool.pricing)}`}
+                                  >
                               {formatPricingLabel(tool.pricing)}
                             </span>
-                            {tool.isFeatured && (
-                              <span
-                                className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}
-                              >
+                                  {tool.isFeatured && (
+                                      <span
+                                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}
+                                      >
                                 Featured
                               </span>
-                            )}
-                          </div>
-                          <p className="mb-2 text-sm text-gray-600">{tool.description}</p>
-                          <div className="flex flex-wrap gap-1">
-                            {tool.features &&
-                              tool.features.slice(0, 3).map((tag, idx) => (
-                                <span key={idx} className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                                  )}
+                                </div>
+                                <p className="mb-2 text-sm text-gray-600">{tool.description}</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {tool.features &&
+                                      tool.features.slice(0, 3).map((tag, idx) => (
+                                          <span key={idx} className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
                                   {tag}
                                 </span>
-                              ))}
-                          </div>
-                        </div>
-                        <div className="mt-4 flex items-center md:mt-0">
-                          <div className="flex items-center space-x-2 mr-4">
-                            <button
-                              className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
-                              onClick={() => handleSaveToggle(tool)}
-                            >
-                              <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
-                            </button>
-                            <button className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
-                              <Share2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                          <Button className="rounded-full bg-purple-600 hover:bg-purple-700" asChild>
-                            <Link href={`/tools/${tool.id}`}>
-                              Try Tool
-                              <svg
-                                className="ml-1 h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                ></path>
-                              </svg>
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                                      ))}
+                                </div>
+                              </div>
+                              <div className="mt-4 flex items-center md:mt-0">
+                                <div className="flex items-center space-x-2 mr-4">
+                                  <button
+                                      className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
+                                      onClick={() => handleSaveToggle(tool)}
+                                  >
+                                    <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
+                                  </button>
+                                  <button className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
+                                    <Share2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                                <Button className="rounded-full bg-purple-600 hover:bg-purple-700" asChild>
+                                  <Link href={`/tools/${tool.id}`}>
+                                    Try Tool
+                                    <svg
+                                        className="ml-1 h-4 w-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="2"
+                                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                      ></path>
+                                    </svg>
+                                  </Link>
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                    ))}
+                  </div>
+              )}
 
-            {/* Pagination */}
-            {!isLoading && !isError && data?.tools.length > 0 && data.total > limit && (
-              <div className="mt-8 flex justify-center">
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="border-gray-200"
-                  >
-                    Previous
-                  </Button>
-                  <span className="flex items-center px-4 text-sm text-gray-600">
+              {/* Pagination */}
+              {!isLoading && !isError && data?.tools.length > 0 && data.total > limit && (
+                  <div className="mt-8 flex justify-center">
+                    <div className="flex space-x-2">
+                      <Button
+                          variant="outline"
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          disabled={page === 1}
+                          className="border-gray-200"
+                      >
+                        Previous
+                      </Button>
+                      <span className="flex items-center px-4 text-sm text-gray-600">
                     Page {page} of {Math.ceil(data.total / limit)}
                   </span>
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage((p) => p + 1)}
-                    disabled={page * limit >= data.total}
-                    className="border-gray-200"
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            )}
+                      <Button
+                          variant="outline"
+                          onClick={() => setPage((p) => p + 1)}
+                          disabled={page * limit >= data.total}
+                          className="border-gray-200"
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+              )}
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
   )
 }

@@ -12,6 +12,7 @@ import { useClickOutside } from "@/hooks/use-click-outside"
 import { useChatCompletion, useChatSessions, useChatSessionMessages, useCreateChatSession } from "@/hooks/use-chat"
 import type { Message } from "@/services/chat-service"
 
+
 interface ChatInterfaceProps {
   isOpen: boolean
   onClose: () => void
@@ -19,7 +20,58 @@ interface ChatInterfaceProps {
   isRelativeToParent?: boolean
 }
 
+
+
+function ChatResponsePopup({ message, formattedData, onClose }: ChatResponsePopupProps) {
+  const router = useRouter()
+
+  const handleNavigate = () => {
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("chatResponseTools", JSON.stringify(formattedData));
+        console.log("Data successfully stored in sessionStorage");
+        router.push("/search?source=chat");
+      } catch (error) {
+        console.error("Error storing data in sessionStorage:", error);
+        // Optionally display an error to the user
+      }
+    }
+  }
+
+  return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Response</h2>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <p className="text-xs text-gray-800 mb-4">{message}</p>
+
+          <Button onClick={handleNavigate}>
+            Go to tools
+          </Button>
+        </div>
+      </div>
+  )
+}
+
 export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToParent = false }: ChatInterfaceProps) {
+  const [showResponsePopup, setShowResponsePopup] = useState(false);
+  const [popupContent, setPopupContent] = useState<{
+    message: string;
+    formattedData?: any;
+  }>({ message: '' });
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
@@ -131,57 +183,64 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
 
   // Handle sending a message
   const handleSendMessage = async (content?: string) => {
-    const messageContent = content || input.trim()
-    if (!messageContent) return
+    const messageContent = content || input.trim();
+    if (!messageContent) return;
 
-    const userMessage: Message = { role: "user", content: messageContent }
-    setMessages((prev) => [...prev, userMessage])
-    if (!content) setInput("") // Only clear input if it's not a recommendation
-    setError(null)
-    setToolRecommendations([])
+    const userMessage: Message = { role: "user", content: messageContent };
+    setMessages((prev) => [...prev, userMessage]);
+    if (!content) setInput(""); // Only clear input if it's not a recommendation
+    setError(null);
+    setToolRecommendations([]);
 
     try {
-      let chatId = activeChatId
+      let chatId = activeChatId;
       if (!chatId) {
-        console.log("No active chat ID, creating new session")
+        console.log("No active chat ID, creating new session");
         try {
-          // Use the first 50 characters or a default title for the new session
-          const sessionTitle = messageContent.substring(0, 50) || "New Chat"
-          const newSession = await createChatSession.mutateAsync(sessionTitle)
-          console.log("New session created:", newSession._id)
-          setActiveChatId(newSession._id)
-          chatId = newSession._id
-          await refetchSessions()
+          const sessionTitle = messageContent.substring(0, 50) || "New Chat";
+          const newSession = await createChatSession.mutateAsync(sessionTitle);
+          console.log("New session created:", newSession._id);
+          setActiveChatId(newSession._id);
+          chatId = newSession._id;
+          await refetchSessions();
         } catch (sessionError) {
-          console.error("Failed to create chat session:", sessionError)
-          setError("Failed to create a new chat session. Please try again.")
-          return
+          console.error("Failed to create chat session:", sessionError);
+          setError("Failed to create a new chat session. Please try again.");
+          return;
         }
       }
 
-      console.log(`Sending message to chat ID: ${chatId}`)
+      console.log(`Sending message to chat ID: ${chatId}`);
 
       const response = await chatCompletion.mutateAsync({
         sessionId: chatId,
-        message: messageContent, // Use messageContent here
+        message: messageContent,
         model: "gpt4",
         systemPrompt: "You are a helpful assistant.",
-      })
+      });
 
-      console.log("Response received:", response)
-      setMessages((prev) => [...prev, response.message])
+      console.log("Response received:", response);
+      setMessages((prev) => [...prev, response.message]);
+
+      // Check for formatted_data in the response
+      if (response.data?.formatted_data) {
+        setPopupContent({
+          message: response.message.content,
+          formattedData: response.data.formatted_data
+        });
+        setShowResponsePopup(true);
+      }
 
       // Handle tool recommendations if any
       if (response.toolRecommendations && response.toolRecommendations.length > 0) {
-        console.log("Tool recommendations received:", response.toolRecommendations)
-        // Assuming toolRecommendations is an array of strings as per the rendering logic
-        setToolRecommendations(response.toolRecommendations)
+        console.log("Tool recommendations received:", response.toolRecommendations);
+        setToolRecommendations(response.toolRecommendations);
       }
     } catch (error) {
-      console.error("Error in chat completion:", error)
-      setError("Sorry, I couldn't process your request. Please try again later.")
+      console.error("Error in chat completion:", error);
+      setError("Sorry, I couldn't process your request. Please try again later.");
     }
-  }
+  };
 
   // Handle selecting a chat session
   const handleSelectSession = (sessionId: string) => {
@@ -221,6 +280,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
   if (!isOpen) return null
 
   return (
+
       <div
           ref={chatContainerRef}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20"
@@ -429,6 +489,13 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
             </div>
           </div>
         </div>
+        {showResponsePopup && (
+            <ChatResponsePopup
+                message={popupContent.message}
+                formattedData={popupContent.formattedData}
+                onClose={() => setShowResponsePopup(false)}
+            />
+        )}
       </div>
   )
 }

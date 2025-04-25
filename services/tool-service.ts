@@ -493,7 +493,7 @@ export const getFeaturedTools = async (limit?: number) => {
     }
 
     // Make API call to get featured tools
-    const response = await apiClient.get<{ tools: Tool[] }>("/tools", {
+    const response = await apiClient.get<{ tools: Tool[] }>("/public/tools/featured", {
       params: { limit: limit, featured: true },
       headers: headers,
     })
