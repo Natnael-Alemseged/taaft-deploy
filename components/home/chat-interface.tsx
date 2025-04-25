@@ -4,25 +4,18 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Send, Search, Bot, Plus, MessageSquare, AlertTriangle, RefreshCw } from "lucide-react"
+import { Send, Search, Bot, Plus, MessageSquare, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import clsx from "clsx"
 import { useClickOutside } from "@/hooks/use-click-outside"
-import {
-  useChatCompletion,
-  useChatSuggestions,
-  useChatSessions,
-  useChatSessionMessages,
-  useCreateChatSession,
-} from "@/hooks/use-chat"
+import { useChatCompletion, useChatSessions, useChatSessionMessages, useCreateChatSession } from "@/hooks/use-chat"
 import type { Message } from "@/services/chat-service"
-import websocketService from "@/services/websocket-service"
 
 interface ChatInterfaceProps {
   isOpen: boolean
   onClose: () => void
-  inputRef: React.RefObject<HTMLInputElement> // Ref to the chat input
+  inputRef: React.RefObject<HTMLInputElement>
   isRelativeToParent?: boolean
 }
 
@@ -31,19 +24,17 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
   const [input, setInput] = useState("")
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
   const [showSessions, setShowSessions] = useState(false)
-  const [isCreatingNewChat, setIsCreatingNewChat] = useState(false)
-  const [connectionStatus, setConnectionStatus] = useState<string>("disconnected")
   const [chatPosition, setChatPosition] = useState<{ top: number; left: number } | null>(null)
-  const [isFallbackMode, setIsFallbackMode] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [toolRecommendations, setToolRecommendations] = useState<any[]>([])
 
   const chatEndRef = useRef<HTMLDivElement>(null)
-  const chatRef = useRef<HTMLDivElement>(null) // Ref for the main chat box div
+  const chatRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   // Use the chat API
   const chatCompletion = useChatCompletion()
-  const { data: suggestionsData } = useChatSuggestions()
   const { data: chatSessions, isLoading: isLoadingSessions, refetch: refetchSessions } = useChatSessions()
   const { data: sessionMessages, isLoading: isLoadingMessages } = useChatSessionMessages(
     activeChatId || "",
@@ -51,81 +42,42 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
   )
   const createChatSession = useCreateChatSession()
 
-  const suggestions = suggestionsData || [
-    "How is AI affecting my business?",
-    "Want only tools with a free plan?",
-    "Looking for video-focused tools?",
-    "Show me e-commerce AI tools",
-  ]
+  // Check for existing sessions first
+  useEffect(() => {
+    if (isOpen && !activeChatId && !isLoadingMessages) {
+      console.log("Checking for existing chat sessions")
+      refetchSessions()
+        .then((result) => {
+          if (result.data && result.data.length > 0) {
+            // Use the most recent session
+            const mostRecentSession = result.data[0]
+            console.log(`Using existing session: ${mostRecentSession._id}`)
+            setActiveChatId(mostRecentSession._id)
+            // Messages will be loaded via the useChatSessionMessages hook
+          } else {
+            console.log("No existing sessions found, will create a new one when needed")
+            setMessages([
+              {
+                role: "assistant",
+                content: "Hi! I'm your AI assistant. How can I help you today?",
+              },
+            ])
+          }
+        })
+        .catch((err) => {
+          console.error("Error checking for existing sessions:", err)
+          setMessages([
+            {
+              role: "assistant",
+              content: "Hi! I'm your AI assistant. How can I help you today?",
+            },
+          ])
+        })
+    }
+  }, [isOpen, activeChatId, isLoadingMessages, refetchSessions])
 
   // Use the click outside hook
   useClickOutside(chatRef as React.RefObject<HTMLElement>, onClose)
-
-  // Effect to initialize WebSocket connection and listeners
-  useEffect(() => {
-    if (isOpen) {
-      // Connect to WebSocket
-      websocketService.connect().catch(console.error)
-
-      // Set up WebSocket event listeners
-      const handleConnectionChange = () => {
-        setConnectionStatus(websocketService.getConnectionState())
-        setIsFallbackMode(websocketService.isFallbackMode())
-      }
-
-      const handleChatResponseChunk = (data: any) => {
-        if (data.type === "chat_response_chunk" && data.chat_id === activeChatId) {
-          // Update the last assistant message with the new chunk
-          setMessages((prevMessages) => {
-            const lastMessage = prevMessages[prevMessages.length - 1]
-            if (lastMessage && lastMessage.role === "assistant") {
-              // Update the last message
-              const updatedMessages = [...prevMessages]
-              updatedMessages[updatedMessages.length - 1] = {
-                ...lastMessage,
-                content: lastMessage.content + data.content_chunk,
-              }
-              return updatedMessages
-            } else {
-              // Add a new assistant message
-              return [...prevMessages, { role: "assistant", content: data.content_chunk }]
-            }
-          })
-        }
-      }
-
-      // Listen for connection events
-      websocketService.on("connected", handleConnectionChange)
-      websocketService.on("disconnected", handleConnectionChange)
-      websocketService.on("reconnecting", handleConnectionChange)
-      websocketService.on("failed", handleConnectionChange)
-
-      // Listen for chat response chunks
-      websocketService.on("chat_response_chunk", handleChatResponseChunk)
-
-      // Check initial state
-      setConnectionStatus(websocketService.getConnectionState())
-      setIsFallbackMode(websocketService.isFallbackMode())
-
-      // Authenticate user if access token exists
-      const accessToken = localStorage.getItem("access_token")
-      const userDataStr = localStorage.getItem("user")
-
-      if (accessToken && userDataStr) {
-        const userData = JSON.parse(userDataStr)
-        websocketService.authenticateUser(userData.id, accessToken).catch(console.error)
-      }
-
-      // Cleanup function
-      return () => {
-        websocketService.off("connected", handleConnectionChange)
-        websocketService.off("disconnected", handleConnectionChange)
-        websocketService.off("reconnecting", handleConnectionChange)
-        websocketService.off("failed", handleConnectionChange)
-        websocketService.off("chat_response_chunk", handleChatResponseChunk)
-      }
-    }
-  }, [isOpen, activeChatId])
 
   // Effect to load messages from active chat session
   useEffect(() => {
@@ -133,19 +85,6 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
       setMessages(sessionMessages)
     }
   }, [sessionMessages, activeChatId])
-
-  // Effect to add initial assistant message when chat opens with no active session
-  useEffect(() => {
-    if (isOpen && messages.length === 0 && !activeChatId && !isLoadingMessages) {
-      setMessages([
-        {
-          role: "assistant",
-          content:
-            'Hi! I\'m your AI assistant. I can help you find the perfect AI tools for your needs. Try asking me something like "How is AI affecting my business?" or click one of the example prompts below.',
-        },
-      ])
-    }
-  }, [isOpen, messages.length, activeChatId, isLoadingMessages])
 
   // Effect to scroll to bottom when messages change
   useEffect(() => {
@@ -190,13 +129,6 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
     }
   }, [isOpen, inputRef])
 
-  // Handle retrying WebSocket connection
-  const handleRetryConnection = () => {
-    websocketService.resetFallbackMode()
-    setConnectionStatus("connecting")
-    setIsFallbackMode(false)
-  }
-
   // Handle sending a message
   const handleSendMessage = async () => {
     if (!input.trim()) return
@@ -204,122 +136,46 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
     const userMessage: Message = { role: "user", content: input }
     setMessages((prev) => [...prev, userMessage])
     setInput("")
+    setError(null)
+    setToolRecommendations([])
 
     try {
-      // Create a new chat session if none is active
       let chatId = activeChatId
       if (!chatId) {
-        // Create a temporary chat ID
-        chatId = `chat_${Date.now()}`
-        setActiveChatId(chatId)
-
-        // Create a new chat session in the background
+        console.log("No active chat ID, creating new session")
         try {
           const newSession = await createChatSession.mutateAsync(input.substring(0, 50))
-          setActiveChatId(newSession.id)
-          chatId = newSession.id
-          refetchSessions() // Refresh the sessions list
-        } catch (error) {
-          console.error("Failed to create chat session:", error)
-          // Continue with temporary chat ID
+          console.log("New session created:", newSession._id)
+          setActiveChatId(newSession._id)
+          chatId = newSession._id
+          await refetchSessions()
+        } catch (sessionError) {
+          console.error("Failed to create chat session:", sessionError)
+          setError("Failed to create a new chat session. Please try again.")
+          return
         }
       }
 
-      // Send the message via WebSocket or fallback
-      const allMessages = [...messages, userMessage]
-      const response = await chatCompletion.mutateAsync({ messages: allMessages, chatId })
+      console.log(`Sending message to chat ID: ${chatId}`)
 
-      // Check if response contains navigation command
-      const responseContent = response.message.content
-      const navigationMatch = responseContent.match(/NAVIGATE_TO:([^\s]+)/)
+      const response = await chatCompletion.mutateAsync({
+        sessionId: chatId,
+        message: input,
+        model: "gpt4",
+        systemPrompt: "You are a helpful assistant.",
+      })
 
-      if (navigationMatch && navigationMatch[1]) {
-        // Extract navigation path
-        const navigationPath = navigationMatch[1]
+      console.log("Response received:", response)
+      setMessages((prev) => [...prev, response.message])
 
-        // Add the response message with the navigation instruction stripped out
-        const cleanResponse = responseContent.replace(/NAVIGATE_TO:[^\s]+\s*/, "")
-        setMessages((prev) => [...prev, { ...response.message, content: cleanResponse }])
-
-        // Navigate after a short delay
-        setTimeout(() => {
-          onClose()
-          router.push(navigationPath)
-        }, 1000)
-      } else {
-        setMessages((prev) => [...prev, response.message])
+      // Handle tool recommendations if any
+      if (response.toolRecommendations && response.toolRecommendations.length > 0) {
+        console.log("Tool recommendations received:", response.toolRecommendations)
+        setToolRecommendations(response.toolRecommendations)
       }
     } catch (error) {
       console.error("Error in chat completion:", error)
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "I'm sorry, I encountered an error. Please try again or ask a different question.",
-        },
-      ])
-    }
-  }
-
-  // Handle clicking on a suggestion
-  const handleSuggestionClick = async (suggestion: string) => {
-    const userMessage: Message = { role: "user", content: suggestion }
-    setMessages((prev) => [...prev, userMessage])
-    setInput("")
-
-    try {
-      // Create a new chat session if none is active
-      let chatId = activeChatId
-      if (!chatId) {
-        // Create a temporary chat ID
-        chatId = `chat_${Date.now()}`
-        setActiveChatId(chatId)
-
-        // Create a new chat session in the background
-        try {
-          const newSession = await createChatSession.mutateAsync(suggestion.substring(0, 50))
-          setActiveChatId(newSession.id)
-          chatId = newSession.id
-          refetchSessions() // Refresh the sessions list
-        } catch (error) {
-          console.error("Failed to create chat session:", error)
-          // Continue with temporary chat ID
-        }
-      }
-
-      // Send the message via WebSocket or fallback
-      const allMessages = [...messages, userMessage]
-      const response = await chatCompletion.mutateAsync({ messages: allMessages, chatId })
-
-      // Check if response contains navigation command
-      const responseContent = response.message.content
-      const navigationMatch = responseContent.match(/NAVIGATE_TO:([^\s]+)/)
-
-      if (navigationMatch && navigationMatch[1]) {
-        // Extract navigation path
-        const navigationPath = navigationMatch[1]
-
-        // Add the response message with the navigation instruction stripped out
-        const cleanResponse = responseContent.replace(/NAVIGATE_TO:[^\s]+\s*/, "")
-        setMessages((prev) => [...prev, { ...response.message, content: cleanResponse }])
-
-        // Navigate after a short delay
-        setTimeout(() => {
-          onClose()
-          router.push(navigationPath)
-        }, 1000)
-      } else {
-        setMessages((prev) => [...prev, response.message])
-      }
-    } catch (error) {
-      console.error("Error in chat completion:", error)
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "I'm sorry, I encountered an error. Please try again or ask a different question.",
-        },
-      ])
+      setError("Sorry, I couldn't process your request. Please try again later.")
     }
   }
 
@@ -327,20 +183,36 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
   const handleSelectSession = (sessionId: string) => {
     setActiveChatId(sessionId)
     setShowSessions(false)
+    setToolRecommendations([])
   }
 
   // Handle creating a new chat
-  const handleNewChat = () => {
-    setActiveChatId(null)
-    setMessages([
-      {
-        role: "assistant",
-        content:
-          'Hi! I\'m your AI assistant. I can help you find the perfect AI tools for your needs. Try asking me something like "How is AI affecting my business?" or click one of the example prompts below.',
-      },
-    ])
-    setShowSessions(false)
-    setIsCreatingNewChat(true)
+  const handleNewChat = async () => {
+    try {
+      const newSession = await createChatSession.mutateAsync("New Chat")
+      setActiveChatId(newSession._id)
+      setMessages([
+        {
+          role: "assistant",
+          content: "Hi! I'm your AI assistant. How can I help you today?",
+        },
+      ])
+      setShowSessions(false)
+      setToolRecommendations([])
+      await refetchSessions()
+    } catch (error) {
+      console.error("Failed to create new chat:", error)
+      setError("Failed to create a new chat. Please try again.")
+    }
+  }
+
+  // Handle tool recommendation click
+  const handleToolRecommendationClick = (tool: any) => {
+    // Navigate to the tool page
+    if (tool.id) {
+      onClose()
+      router.push(`/tools/${tool.id}`)
+    }
   }
 
   // Don't render if not open
@@ -361,46 +233,37 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                 position: "fixed",
                 top: `${chatPosition.top}px`,
                 left: `${chatPosition.left}px`,
-                transform: "none", // Override any transform
+                transform: "none",
               }
             : {}
         }
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex h-[500px] flex-col rounded-xl border border-gray-200">
+          {/* Error Banner */}
+          {error && (
+            <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
+              <div className="flex items-center">
+                <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
+                <span className="text-xs text-amber-700">{error}</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setError(null)
+                }}
+                className="text-xs text-purple-600 hover:text-purple-700"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
           {/* Chat header */}
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
             <div className="flex items-center">
               <Bot className="h-6 w-6 text-purple-600" />
               <span className="ml-2 text-base font-semibold text-gray-800">AI Assistant</span>
-              {isFallbackMode ? (
-                <div className="ml-2 flex items-center text-xs text-amber-600">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  <span className="mr-2">Using fallback mode</span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleRetryConnection()
-                    }}
-                    className="flex items-center text-purple-600 hover:text-purple-700"
-                  >
-                    <RefreshCw className="h-3 w-3 mr-1" />
-                    <span>Retry</span>
-                  </button>
-                </div>
-              ) : (
-                connectionStatus !== "connected" && (
-                  <span className="ml-2 text-xs text-yellow-500">
-                    {connectionStatus === "connecting"
-                      ? "Connecting..."
-                      : connectionStatus === "reconnecting"
-                        ? "Reconnecting..."
-                        : connectionStatus === "failed"
-                          ? "Connection failed"
-                          : "Offline"}
-                  </span>
-                )
-              )}
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -453,10 +316,10 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                 ) : (
                   chatSessions.map((session) => (
                     <button
-                      key={session.id}
-                      onClick={() => handleSelectSession(session.id)}
+                      key={session._id}
+                      onClick={() => handleSelectSession(session._id)}
                       className={`flex items-center w-full p-2 text-left text-sm hover:bg-gray-100 rounded-md ${
-                        activeChatId === session.id ? "bg-purple-50 text-purple-700" : ""
+                        activeChatId === session._id ? "bg-purple-50 text-purple-700" : ""
                       }`}
                     >
                       <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
@@ -510,18 +373,18 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
             <div ref={chatEndRef} />
           </div>
 
-          {/* Suggestions */}
-          {messages.length <= 2 && !activeChatId && (
+          {/* Tool Recommendations */}
+          {toolRecommendations.length > 0 && (
             <div className="border-t border-gray-100 px-4 py-3">
-              <p className="mb-2 text-xs text-gray-500">Try these examples:</p>
+              <p className="mb-2 text-xs text-gray-500">Recommended Tools:</p>
               <div className="flex flex-wrap gap-2">
-                {suggestions.map((suggestion, index) => (
+                {toolRecommendations.map((tool, index) => (
                   <button
                     key={index}
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className="rounded-full border border-gray-300 bg-gray-100 px-3 py-1 text-xs text-gray-700 hover:bg-gray-200 transition-colors"
+                    onClick={() => handleToolRecommendationClick(tool)}
+                    className="rounded-full border border-purple-300 bg-purple-50 px-3 py-1 text-xs text-purple-700 hover:bg-purple-100 transition-colors"
                   >
-                    {suggestion}
+                    {tool.name || tool.id}
                   </button>
                 ))}
               </div>
@@ -542,7 +405,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      e.preventDefault() // Prevent form submission
+                      e.preventDefault()
                       handleSendMessage()
                     }
                   }}

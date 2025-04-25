@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react"
 import Header from "@/components/header"
 import Footer from "@/components/ui/footer"
-import { ChevronRight, ExternalLink, Calendar, Clock } from "lucide-react"
+import { ChevronRight, Calendar, Clock } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { getGlossaryTermBySlug, type ExtendedGlossaryTerm, getGlossaryTerm } from "@/services/glossary-service"
+import { getGlossaryTerm } from "@/services/glossary-service"
 
 // Helper function to convert a term title into a URL-friendly slug
 function slugify(text: string): string {
@@ -21,12 +21,25 @@ function slugify(text: string): string {
     .replace(/-+$/, "") // Trim - from end of text
 }
 
+// Type definition based on the API response
+interface GlossaryTerm {
+  id: string
+  name: string
+  definition: string
+  related_terms: string[]
+  tool_references: any[]
+  categories: string[]
+  created_at: string
+  updated_at: string
+  first_letter: string
+}
+
 export default function TermPage() {
   const params = useParams()
   const router = useRouter()
-  const termSlug = params.name as string
+  const termSlug = params.termSlug as string
 
-  const [termData, setTermData] = useState<ExtendedGlossaryTerm | null>(null)
+  const [termData, setTermData] = useState<GlossaryTerm | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -94,6 +107,36 @@ export default function TermPage() {
   const wordCount = termData.definition.split(/\s+/).length
   const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200))
 
+  // Extract name and abbreviation from the term name if it's in the format "Term Name (Abbr)"
+  let termTitle = termData.name
+  let abbreviation: string | null = null
+  const nameMatch = termData.name.match(/^(.*?)\s*$$(.*?)$$$/)
+  if (nameMatch) {
+    termTitle = nameMatch[1]
+    abbreviation = nameMatch[2]
+  }
+
+  // Split the definition into paragraphs if it contains line breaks
+  const definitionParagraphs = termData.definition.includes("\n")
+    ? termData.definition.split("\n").filter((p) => p.trim())
+    : [termData.definition]
+
+  // For blog posts, use static placeholders since they're not from the API
+  const relatedBlogPosts = [
+    {
+      title: `Understanding ${termData.name}: A Beginner's Guide`,
+      link: `/blog/understanding-${slugify(termData.name)}`,
+      date: new Date().toISOString().split("T")[0],
+      description: `Explore the fundamentals of ${termData.name.toLowerCase()} and its impact on various industries.`,
+    },
+    {
+      title: `The Future of ${termData.name}: Trends and Predictions`,
+      link: `/blog/future-of-${slugify(termData.name)}`,
+      date: new Date().toISOString().split("T")[0],
+      description: `What's next for ${termData.name.toLowerCase()}? Discover the emerging trends shaping the future.`,
+    },
+  ]
+
   return (
     <>
       <Header />
@@ -109,10 +152,8 @@ export default function TermPage() {
           {/* Term Title and Metadata */}
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-[#111827] mb-2">
-              {termData.title}{" "}
-              {termData.abbreviation && <span className="text-gray-500 ml-2">({termData.abbreviation})</span>}
+              {termTitle} {abbreviation && <span className="text-gray-500 ml-2">({abbreviation})</span>}
             </h1>
-            {termData.pronunciation && <p className="text-sm text-gray-500 mb-2">{termData.pronunciation}</p>}
 
             <div className="flex items-center text-sm text-gray-500 space-x-4">
               <div className="flex items-center">
@@ -130,7 +171,7 @@ export default function TermPage() {
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">Definition</h2>
             <div className="text-gray-700 space-y-4">
-              {termData.definition_paragraphs.map((paragraph, index) => (
+              {definitionParagraphs.map((paragraph, index) => (
                 <p key={index} className="text-base leading-relaxed">
                   {paragraph}
                 </p>
@@ -138,26 +179,12 @@ export default function TermPage() {
             </div>
           </div>
 
-          {/* Examples Section */}
-          {termData.examples && termData.examples.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">Examples</h2>
-              <ul className="list-disc list-inside text-gray-700 space-y-2">
-                {termData.examples.map((example, index) => (
-                  <li key={index} className="text-base">
-                    {example}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
           {/* Related Terms Section */}
-          {termData.relatedTerms && termData.relatedTerms.length > 0 && (
+          {termData.related_terms && termData.related_terms.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">Related Terms</h2>
               <div className="flex flex-wrap gap-2">
-                {termData.relatedTerms.map((term, index) => {
+                {termData.related_terms.map((term, index) => {
                   const termSlugLink = `/terms/${slugify(term)}`
 
                   return (
@@ -174,102 +201,51 @@ export default function TermPage() {
             </div>
           )}
 
-          {/* Related AI Tools Section */}
-          {termData.relatedTools && termData.relatedTools.length > 0 && (
+          {/* Categories Section */}
+          {termData.categories && termData.categories.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">
-                Related AI Tools
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {termData.relatedTools.map((tool, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-lg font-semibold text-[#111827]">{tool.name}</h3>
-                      {tool.isFree !== undefined && (
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${tool.isFree ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"}`}
-                        >
-                          {tool.isFree ? "Free" : "Premium"}
-                        </span>
-                      )}
+              <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">Categories</h2>
+              <div className="flex flex-wrap gap-2">
+                {termData.categories.map((category, index) => (
+                  <span key={index} className="rounded-full px-3 py-1 text-sm bg-gray-100 text-gray-700">
+                    {category}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Related Blog Posts Section - Using static placeholders */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">
+              Related Blog Posts
+            </h2>
+            <div className="space-y-4">
+              {relatedBlogPosts.map((post, index) => (
+                <div
+                  key={index}
+                  className="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors"
+                >
+                  <Link href={post.link} className="block">
+                    <h3 className="text-lg font-semibold text-[#a855f7] hover:underline mb-1">{post.title}</h3>
+                    {post.description && <p className="text-sm text-gray-600 mb-2">{post.description}</p>}
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      <span>
+                        {new Date(post.date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
                     </div>
-                    {tool.category && (
-                      <div className="mb-2">
-                        <span className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded-full">
-                          {tool.category}
-                        </span>
-                      </div>
-                    )}
-                    <p className="text-sm text-gray-700 mb-3">{tool.description}</p>
-                    <Link
-                      href={tool.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-[#a855f7] flex items-center hover:underline"
-                    >
-                      Try Tool <ExternalLink className="w-4 h-4 ml-1" />
-                    </Link>
-                  </div>
-                ))}
-              </div>
+                  </Link>
+                </div>
+              ))}
             </div>
-          )}
-
-          {/* Related Blog Posts Section */}
-          {termData.relatedBlogPosts && termData.relatedBlogPosts.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">
-                Related Blog Posts
-              </h2>
-              <div className="space-y-4">
-                {termData.relatedBlogPosts.map((post, index) => (
-                  <div
-                    key={index}
-                    className="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors"
-                  >
-                    <Link href={post.link} className="block">
-                      <h3 className="text-lg font-semibold text-[#a855f7] hover:underline mb-1">{post.title}</h3>
-                      {post.description && <p className="text-sm text-gray-600 mb-2">{post.description}</p>}
-                      <div className="flex items-center text-xs text-gray-500">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        <span>
-                          {new Date(post.date).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Sources Section */}
-          {termData.sources && termData.sources.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">Sources</h2>
-              <ul className="space-y-2">
-                {termData.sources.map((source, index) => (
-                  <li key={index}>
-                    <Link
-                      href={source.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-base text-[#a855f7] hover:underline flex items-center"
-                    >
-                      {source.name} <ExternalLink className="w-4 h-4 ml-1" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          </div>
         </main>
       </div>
-      <Footer />
     </>
   )
 }

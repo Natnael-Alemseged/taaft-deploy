@@ -196,7 +196,7 @@ export default function Glossary() {
   const renderTermCard = (term: GlossaryTerm) => (
     <div key={term.id} className="border border-[#e5e7eb] rounded-lg p-4 md:p-6 hover:shadow-sm transition-shadow">
       {/* Link to individual term page - adjust href as needed */}
-      <Link href={`/terms/${slugify(term.name)}`} className="block">
+      <Link href={`/terms/${slugify(term.id)}`} className="block">
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-lg font-semibold text-[#111827]">{term.name}</h3>
           <ChevronRight className="w-5 h-5 text-[#a855f7]" />

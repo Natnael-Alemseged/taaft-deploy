@@ -3,46 +3,45 @@ import type { Tool, ToolSubmission } from "@/types/tool"
 
 // Get all tools with optional filtering, searching, and pagination
 export const getTools = async (params?: {
-  category?: string // Maps to 'category' or similar API param (lowercase)
-  search?: string // Maps to 'q' API param
-  page?: number // Used to calculate 'skip' API param
-  limit?: number // Maps to 'limit' API param
+  category?: string
+  search?: string
+  page?: number
+  limit?: number
 }) => {
   try {
-    // Construct the API query parameters based on the received params
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+    }
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`
+    }
+
     const apiParams: Record<string, any> = {}
 
-    // Map 'search' parameter to 'q' for the API
     if (params?.search) {
       apiParams.q = params.search
     }
 
-    // Determine the limit to use
-    const limit = params?.limit ?? 12 // Use 12 as default limit if none provided
-    apiParams.limit = limit // Map 'limit' parameter directly
+    const limit = params?.limit ?? 12
+    apiParams.limit = limit
 
-    // Calculate 'skip' from 'page' and the determined limit
-    // Default page to 1 if not provided
     const page = params?.page ?? 1
-    apiParams.skip = (page - 1) * limit // Calculate skip
+    apiParams.skip = (page - 1) * limit
 
-    // Map 'category' parameter if provided and not "All Categories" (lowercase)
-    // Ensure the category value sent matches what your API expects (e.g., slug or name lowercase)
     if (params?.category && params.category !== "all categories" && params.category !== "all-categories") {
-      apiParams.category = params.category // Assuming API accepts 'category' param
+      apiParams.category = params.category
     }
 
-    // Make the API call using the constructed parameters
-    // Use "/tools/search" if that's your endpoint, or "/tools" if it accepts these params
     const response = await apiClient.get<{ tools: Tool[]; total: number }>("/tools", {
-      params: apiParams, // Pass the constructed apiParams object
+      params: apiParams,
+      headers: headers, // Include the headers with the token
     })
 
-    // Return the response data
     return response.data
   } catch (error) {
     console.error("Error fetching tools:", error)
-    // Return mock data if API call fails
     return getMockTools(params)
   }
 }
@@ -479,8 +478,7 @@ function getMockToolById(id: string): Tool {
   }
 }
 
-// Get featured tools
-// Example of how it *would* look to send the token client-side
+// Get featured tools - No static data fallback, only return what API provides
 export const getFeaturedTools = async (limit?: number) => {
   try {
     // This works client-side but needs alternative for server-side rendering
@@ -494,20 +492,19 @@ export const getFeaturedTools = async (limit?: number) => {
       headers["Authorization"] = `Bearer ${token}` // Add Authorization header if token exists
     }
 
-    // Note: This endpoint structure might differ from /tools or /tools/search
+    // Make API call to get featured tools
     const response = await apiClient.get<{ tools: Tool[] }>("/tools", {
-      // Assuming /tools endpoint for featured
       params: { limit: limit, featured: true },
-      headers: headers, // Include the headers object here
+      headers: headers,
     })
 
+    // Return exactly what the API returns, no static fallback
     return response.data
   } catch (error) {
     console.error("Error fetching featured tools:", error)
 
-    // Return mock featured tools
-    const mockTools = getMockTools({ limit }).tools.filter((tool) => tool.isFeatured)
-    return { tools: mockTools }
+    // Return empty array instead of mock data to ensure no static data is displayed
+    return { tools: [] }
   }
 }
 

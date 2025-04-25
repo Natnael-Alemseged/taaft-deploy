@@ -1,0 +1,134 @@
+
+
+
+###search
+GET https://taaft-backend.onrender.com/tools/search?q=korbit
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDU1NTQ3NDJ9.TyUhfxWIdDPNb6lw5pq4dy7trZGqnD1ofCXU_XN4EKc
+
+<> 2025-04-25T062117.200.json
+<> 2025-04-25T062104.200.json
+<> 2025-04-25T061150.401.json
+<> 2025-04-25T061126.401.json
+<> 2025-04-24T091249.200.json
+<> 2025-04-24T090442.200.json
+
+###
+GET https://taaft-backend.onrender.com/auth/me
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODA3NjQ3ZTFhZmQzMzQ4MTc4NTUwNDIiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOnRydWUsImV4cCI6MTc0NTUxMzk2OX0.aKs-7wbxNY87EHp9MAmI9Bxs3Yk59IZZtGmGvfUjOPY
+
+<> 2025-04-25T061157.401.json
+<> 2025-04-24T185956.200.json
+<> 2025-04-24T092436.200.json
+
+
+
+
+###
+POST https://taaft-backend.onrender.com/api/chat/sessions
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODA3NjQ3ZTFhZmQzMzQ4MTc4NTUwNDIiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOnRydWUsImV4cCI6MTc0NTUxMzk2OX0.aKs-7wbxNY87EHp9MAmI9Bxs3Yk59IZZtGmGvfUjOPY
+Content-Type: application/json
+
+{
+  "title": "My First Chat Session",
+  "user_id": "6807647e1afd334817855042",
+  "model": "default",
+  "system_prompt": "You are a helpful assistant."
+}
+<> 2025-04-24T230145.201.json
+<> 2025-04-24T230141.201.json
+<> 2025-04-24T191853.201.json
+<> 2025-04-24T190157.403.json
+<> 2025-04-24T190036.403.json
+<> 2025-04-24T190019.401.json
+<> 2025-04-24T092450.201.json
+<> 2025-04-24T092108.422.json
+
+
+
+
+
+
+
+### Get chat suggestions
+GET https://taaft-backend.onrender.com/api/chat/suggestions
+Accept: application/json
+
+<> 2025-04-24T230154.404.json
+<> 2025-04-24T190204.404.json
+<> 2025-04-24T185619.404.json
+<> 2025-04-24T185612.404.json
+
+### Get chat sessions (paginated)
+### Get chat sessions for a specific user (paginated)
+GET https://taaft-backend.onrender.com/api/chat/sessions?user_id=6807647e1afd334817855042&skip=0&limit=20
+Accept: application/json
+
+
+
+<> 2025-04-24T230205.200.json
+<> 2025-04-24T190504.200.json
+<> 2025-04-24T190347.400.json
+<> 2025-04-24T190253.400.json
+<> 2025-04-24T190211.400.json
+<> 2025-04-24T185628.400.json
+
+### Get messages for a specific chat session
+GET https://taaft-backend.onrender.com/api/chat/sessions/6809d92f8f4a3ca025d202d3/messages
+Accept: application/json
+
+<> 2025-04-25T071437.200.json
+<> 2025-04-25T060805.200.json
+<> 2025-04-25T060420.200.json
+<> 2025-04-24T231001.200.json
+<> 2025-04-24T190525.200.json
+
+### Create a new chat session
+POST https://taaft-backend.onrender.com/api/chat/sessions
+Content-Type: application/json
+
+{
+  "title": "My New Chat Session"
+}
+
+<> 2025-04-24T231102.201.json
+
+### Send chat messages (and get AI response)
+### Send a chat message and receive a response (non-streaming)
+POST https://taaft-backend.onrender.com/api/chat/sessions/{{sessionId}}/messages
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODA3NjQ3ZTFhZmQzMzQ4MTc4NTUwNDIiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOnRydWUsImV4cCI6MTc0NTUxMzk2OX0.aKs-7wbxNY87EHp9MAmI9Bxs3Yk59IZZtGmGvfUjOPY
+Content-Type: application/json
+Accept: application/json
+
+{
+  "message": "alright what are some ai tools i could use",
+  "model": "gpt4",
+  "system_prompt": "alright what are some ai tools i could use",
+  "metadata": {
+    "topic": "AI fun fact"
+  }
+}
+
+<> 2025-04-25T072819.200.json
+<> 2025-04-25T071506.200.json
+<> 2025-04-25T062338.200.json
+<> 2025-04-25T060914.200.json
+<> 2025-04-24T230438.200.json
+<> 2025-04-24T192425.200.json
+<> 2025-04-24T190714.403.json
+<> 2025-04-24T190647.401.json
+
+
+### @name variables
+@sessionId = 6809d92f8f4a3ca025d202d3
+
+### tools
+GET https://taaft-backend.onrender.com/tools/13720d61-bc8f-54ff-815c-074b22154d59
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDU1NTQ3NDJ9.TyUhfxWIdDPNb6lw5pq4dy7trZGqnD1ofCXU_XN4EKc
+Content-Type: application/json
+Accept: application/json
+
+<> 2025-04-25T061919.200.json
+

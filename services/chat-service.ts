@@ -1,206 +1,52 @@
 import apiClient from "@/lib/api-client"
-import websocketService from "./websocket-service"
+import { getUserIdFromLocalStorage } from "@/lib/session"
 
 export interface Message {
   role: "user" | "assistant"
   content: string
+  id?: string
+  timestamp?: Date
 }
 
 export interface ChatSession {
-  id: string
+  _id: string
   title: string
+  user_id: string
+  model: string
+  system_prompt: string
   created_at: string
   updated_at: string
-  messages: Message[]
-}
-
-export interface ChatCompletionRequest {
-  messages: Message[]
+  message_count: number
+  is_active: boolean
+  metadata: any
 }
 
 export interface ChatCompletionResponse {
-  message: Message
-}
-
-// Get chat completion (for AI assistant) using WebSocket or REST API fallback
-export const getChatCompletion = async (messages: Message[], chatId?: string): Promise<ChatCompletionResponse> => {
-  // Check if we should use the fallback mode
-  if (websocketService.isFallbackMode()) {
-    return getChatCompletionFallback(messages, chatId)
-  }
-
-  return new Promise((resolve, reject) => {
-    // Get user data from localStorage
-    const userDataStr = localStorage.getItem("user")
-    const accessToken = localStorage.getItem("access_token")
-
-    if (!userDataStr || !accessToken) {
-      reject(new Error("User not authenticated"))
-      return
-    }
-
-    const userData = JSON.parse(userDataStr)
-    const userId = userData.id
-
-    // Generate a new chat ID if not provided
-    const currentChatId = chatId || `chat_${Date.now()}`
-
-    // Get the last user message
-    const lastUserMessage = messages.filter((msg) => msg.role === "user").pop()
-
-    if (!lastUserMessage) {
-      reject(new Error("No user message found"))
-      return
-    }
-
-    // Set up listener for chat response
-    const messageHandler = (data: any) => {
-      if (data.type === "chat_response" && data.chat_id === currentChatId) {
-        // Complete message received
-        websocketService.off("chat_response", messageHandler)
-        websocketService.off("failed", failureHandler)
-
-        resolve({
-          message: {
-            role: "assistant",
-            content: data.content,
-          },
-        })
-      } else if (data.type === "chat_response_chunk" && data.chat_id === currentChatId) {
-        // Handle streaming chunks if needed
-        // This would be used for real-time updates to the UI
-      }
-    }
-
-    // Set up a listener for WebSocket failures
-    const failureHandler = () => {
-      websocketService.off("chat_response", messageHandler)
-      websocketService.off("failed", failureHandler)
-
-      // Fall back to REST API
-      getChatCompletionFallback(messages, chatId).then(resolve).catch(reject)
-    }
-
-    websocketService.on("chat_response", messageHandler)
-    websocketService.on("failed", failureHandler)
-
-    // Ensure WebSocket is connected
-    websocketService
-      .connect()
-      .then(() => {
-        // If we've switched to fallback mode during connection, use the fallback
-        if (websocketService.isFallbackMode()) {
-          websocketService.off("chat_response", messageHandler)
-          websocketService.off("failed", failureHandler)
-
-          return getChatCompletionFallback(messages, chatId).then(resolve).catch(reject)
-        }
-
-        // Authenticate user if needed
-        return websocketService.authenticateUser(userId, accessToken)
-      })
-      .then(() => {
-        // If we've switched to fallback mode during authentication, use the fallback
-        if (websocketService.isFallbackMode()) {
-          websocketService.off("chat_response", messageHandler)
-          websocketService.off("failed", failureHandler)
-
-          return getChatCompletionFallback(messages, chatId).then(resolve).catch(reject)
-        }
-
-        // Send chat message
-        return websocketService.sendChatMessage(
-          currentChatId,
-          userId,
-          lastUserMessage.content,
-          "gpt-3.5-turbo", // Default model, could be made configurable
-          accessToken,
-        )
-      })
-      .catch((error) => {
-        console.error("Error in WebSocket chat completion:", error)
-        websocketService.off("chat_response", messageHandler)
-        websocketService.off("failed", failureHandler)
-
-        // Fall back to REST API
-        getChatCompletionFallback(messages, chatId).then(resolve).catch(reject)
-      })
-  })
-}
-
-// Fallback to REST API if WebSocket fails
-export const getChatCompletionFallback = async (messages: Message[], chatId?: string) => {
-  console.log("Using REST API fallback for chat completion")
-
-  // Get user data from localStorage
-  const userDataStr = localStorage.getItem("user")
-  const accessToken = localStorage.getItem("access_token")
-
-  if (!userDataStr || !accessToken) {
-    throw new Error("User not authenticated")
-  }
-
-  const userData = JSON.parse(userDataStr)
-  const userId = userData.id
-
-  // Prepare the request body
-  const requestBody: any = {
-    messages: messages,
-    user_id: userId,
-  }
-
-  // Add chat ID if provided
-  if (chatId) {
-    requestBody.chat_id = chatId
-  }
-
-  // Make the API request
-  const response = await apiClient.post<ChatCompletionResponse>("/api/chat/completion", requestBody)
-  return response.data
-}
-
-// Get chat suggestions
-export const getChatSuggestions = async () => {
-  try {
-    const response = await apiClient.get<{ suggestions: string[] }>("/api/chat/suggestions")
-    return response.data
-  } catch (error) {
-    console.error("Error fetching chat suggestions:", error)
-    // Return default suggestions if API call fails
-    return {
-      suggestions: [
-        "How is AI affecting my business?",
-        "Want only tools with a free plan?",
-        "Looking for video-focused tools?",
-        "Show me e-commerce AI tools",
-      ],
-    }
-  }
+  message: string
+  chat_id: string
+  message_id: string
+  timestamp: string
+  model: string
+  metadata?: any
+  tool_recommendations?: any[]
 }
 
 // Get user's chat sessions with pagination parameters
 export const getChatSessions = async (skip = 0, limit = 20): Promise<ChatSession[]> => {
   try {
-    // Get user data from localStorage
-    const userDataStr = localStorage.getItem("user")
-    if (!userDataStr) {
-      console.error("User data not found in localStorage")
+    const userId = getUserIdFromLocalStorage()
+    if (!userId) {
+      console.error("User ID not found in localStorage")
       return []
     }
 
-    const userData = JSON.parse(userDataStr)
-    const userId = userData.id
-
-    // Make the API request with the required parameters
-    const response = await apiClient.get<{ sessions: ChatSession[] }>("/api/chat/sessions", {
-      params: {
-        user_id: userId,
-        skip,
-        limit,
-      },
+    console.log(`Fetching chat sessions for user ${userId}, skip=${skip}, limit=${limit}`)
+    const response = await apiClient.get<ChatSession[]>("/api/chat/sessions", {
+      params: { user_id: userId, skip, limit },
     })
 
-    return response.data.sessions
+    console.log(`Retrieved ${response.data.length} chat sessions`)
+    return response.data || []
   } catch (error) {
     console.error("Error fetching chat sessions:", error)
     return []
@@ -210,22 +56,20 @@ export const getChatSessions = async (skip = 0, limit = 20): Promise<ChatSession
 // Get messages for a specific chat session
 export const getChatSessionMessages = async (sessionId: string): Promise<Message[]> => {
   try {
-    // Get user data from localStorage
-    const userDataStr = localStorage.getItem("user")
-    if (!userDataStr) {
-      console.error("User data not found in localStorage")
-      return []
-    }
+  console.log(`Fetching messages for session ${sessionId}`)
+    const response = await apiClient.get<any[]>(`/api/chat/sessions/${sessionId}/messages`)
 
-    const userData = JSON.parse(userDataStr)
-    const userId = userData.id
 
-    const response = await apiClient.get<{ messages: Message[] }>(`/api/chat/sessions/${sessionId}/messages`, {
-      params: {
-        user_id: userId,
-      },
-    })
-    return response.data.messages
+    // Transform the API response to our Message format
+    const messages: Message[] = response.data.map((msg) => ({
+      role: msg.role === "assistant" ? "assistant" : "user",
+      content: msg.content,
+      id: msg._id,
+      timestamp: new Date(msg.timestamp),
+    }))
+
+    console.log(`Retrieved ${messages.length} messages for session ${sessionId}`)
+    return messages
   } catch (error) {
     console.error(`Error fetching messages for session ${sessionId}:`, error)
     return []
@@ -234,20 +78,72 @@ export const getChatSessionMessages = async (sessionId: string): Promise<Message
 
 // Create a new chat session
 export const createChatSession = async (title: string): Promise<ChatSession> => {
-  // Get user data from localStorage
-  const userDataStr = localStorage.getItem("user")
+  try {
+    const userId = getUserIdFromLocalStorage()
+    if (!userId) {
+      throw new Error("User ID not found in localStorage")
+    }
 
-  if (!userDataStr) {
-    throw new Error("User data not found in localStorage")
+    console.log(`Creating new chat session with title "${title}" for user ${userId}`)
+    const response = await apiClient.post<ChatSession>("/api/chat/sessions", {
+      title: title || "New Chat",
+      user_id: userId,
+    })
+
+    console.log(`Created new chat session with ID ${response.data._id}`)
+    return response.data
+  } catch (error) {
+    console.error("Failed to create chat session:", error)
+    throw error
   }
+}
 
-  const userData = JSON.parse(userDataStr)
-  const userId = userData.id
+// Send a message to a specific chat session
+export const sendChatMessage = async (
+  sessionId: string,
+  message: string,
+  model = "gpt4",
+  systemPrompt = "You are a helpful assistant.",
+  metadata?: Record<string, any>,
+): Promise<{ message: Message; toolRecommendations?: any[] }> => {
+  try {
+    console.log(`Sending message to session ${sessionId} with model ${model}`)
 
-  const response = await apiClient.post<ChatSession>("/api/chat/sessions", {
-    title,
-    user_id: userId,
-  })
+    // Create the request payload
+    const payload = {
+      message,
+      model,
+      system_prompt: systemPrompt,
+      ...(metadata && { metadata }),
+    }
 
-  return response.data
+    // Make the API request
+    const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload)
+
+    console.log(`Response received for session ${sessionId}`)
+
+    return {
+      message: {
+        role: "assistant",
+        content: response.data.message,
+        id: response.data.message_id,
+        timestamp: new Date(response.data.timestamp),
+      },
+      toolRecommendations: response.data.tool_recommendations,
+    }
+  } catch (error: any) {
+    console.error(`Error sending message to session ${sessionId}:`, error)
+
+    // Log more detailed error information
+    if (error.response) {
+      console.error("Error response data:", error.response.data)
+      console.error("Error response status:", error.response.status)
+    } else if (error.request) {
+      console.error("No response received:", error.request)
+    } else {
+      console.error("Error message:", error.message)
+    }
+
+    throw error
+  }
 }
