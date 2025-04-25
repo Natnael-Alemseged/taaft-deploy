@@ -94,7 +94,12 @@ export default function ToolCard({ tool }: ToolCardProps) {
         <p className="text-sm text-[#4b5563] dark:text-gray-400 mb-4 flex-grow">
           {" "}
           {/* Added dark mode, flex-grow */}
-          {tool.description}
+          {/*{tool.description}    /!* Modified line *!/*/}
+          <p className="mb-4 text-sm text-gray-600">
+            {tool.description && tool.description.length > 120 // Adjust 120 to your desired length
+                ? `${tool.description.substring(0, 120)}...`
+                : tool.description}
+          </p>
         </p>
         {/* Tags */}
         {/* Use optional chaining and check if tags is an array */}
