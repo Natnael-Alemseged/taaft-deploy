@@ -194,21 +194,29 @@ export default function Glossary() {
 
   // Function to render a single glossary term card
   const renderTermCard = (term: GlossaryTerm) => (
-    <div key={term.id} className="border border-[#e5e7eb] rounded-lg p-4 md:p-6 hover:shadow-sm transition-shadow">
-      {/* Link to individual term page - adjust href as needed */}
-      <Link href={`/terms/${slugify(term.id)}`} className="block">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-semibold text-[#111827]">{term.name}</h3>
-          <ChevronRight className="w-5 h-5 text-[#a855f7]" />
-        </div>
-        <p className="text-sm text-[#4b5563] mb-2">{term.definition}</p>
-        {/* Optional: Add 'Read more' link if /terms/[slug] page exists */}
-        {/* <span className="text-sm text-[#a855f7] inline-flex items-center">
-                Read more →
-             </span> */}
-      </Link>
-    </div>
-  )
+      <div
+          key={term.id}
+          className="rounded-xl border border-gray-200 overflow-hidden hover:shadow transition-shadow"
+      >
+        <Link href={`/terms/${slugify(term.id)}`} className="block">
+          {/* Top header section */}
+          <div className="bg-gray-50 px-4 py-3 flex items-start justify-between">
+            <h3 className="text-base font-semibold text-gray-900">{term.name}</h3>
+            <ChevronRight className="w-4 h-4 text-purple-500 mt-1" />
+          </div>
+
+          {/* Definition text */}
+          <div className="px-4 py-4">
+            <p className="text-sm text-gray-600 whitespace-pre-line mb-4">
+              {term.definition}
+            </p>
+            <span className="text-sm text-purple-500 font-medium inline-flex items-center gap-1">
+          Read more <ChevronRight className="w-4 h-4" />
+        </span>
+          </div>
+        </Link>
+      </div>
+  );
 
   // Render nothing if there's an error fetching data
   if (isError) {
