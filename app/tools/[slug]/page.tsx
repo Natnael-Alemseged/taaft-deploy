@@ -13,47 +13,49 @@ import { useRouter } from "next/navigation";
 import { use } from "react"; // Import the 'use' hook
 /// if api fails use fallback
 import { withFallbackTool } from "@/lib/utils";
-
-
-
-
-interface ToolDetailPageProps {
-  params: {
-    slug: string;
-  };
-}
 import { useParams } from 'next/navigation';
+import LoadingToolDetailSkeleton from "@/components/skeletons/loading-tool-detail-skeleton";
 
 export default function ToolDetail() {
   const params = useParams();
   const slug = params?.slug as string;
-
-
   const router = useRouter();
+
+  // Always call hooks unconditionally at the top level
   const { data: tool, isLoading, isError } = useTool(slug);
   const { isAuthenticated } = useAuth();
   const saveTool = useSaveTool();
   const unsaveTool = useUnsaveTool();
-  const safeTool = withFallbackTool(tool);
+
+  // Handle redirects in useEffect
   useEffect(() => {
-    if (isError) {
-      // Redirect to 404 or handle error state
+    if (isError || (!isLoading && !tool)) {
       router.push("/404");
     }
-  }, [isError, router]);
+  }, [isError, router, tool, isLoading]);
 
+  // Handle save toggle
   const handleSaveToggle = () => {
-    if (!isAuthenticated || !tool) {
-      // Handle unauthenticated state
-      return;
-    }
-
+    if (!isAuthenticated || !tool) return;
     if (tool?.savedByUser) {
       unsaveTool.mutate(tool.id);
     } else {
       saveTool.mutate(tool.id);
     }
   };
+
+  // Show loading state
+  if (isLoading) {
+    return <LoadingToolDetailSkeleton />;
+  }
+
+  // Return null briefly while we might redirect
+  if (!tool) {
+    return null;
+  }
+
+
+  const safeTool = withFallbackTool(tool ?? {});
 
   const getBadgeClass = (label: string) => {
     switch (label) {
@@ -72,7 +74,6 @@ export default function ToolDetail() {
     }
   };
 
-  // Helper function to format pricing option label
   const formatPricingLabel = (pricing: string): string => {
     switch (pricing) {
       case "free":
@@ -89,25 +90,6 @@ export default function ToolDetail() {
         return pricing.charAt(0).toUpperCase() + pricing.slice(1);
     }
   };
-
-  if (isLoading) {
-    return (
-        <div className="min-h-screen bg-white">
-          <Header />
-          <main className="max-w-6xl mx-auto px-4 py-8">
-            <div className="flex justify-center items-center min-h-[500px]">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600"></div>
-            </div>
-          </main>
-          <Footer />
-        </div>
-    );
-  }
-
-  if (!tool) {
-    return null; // Will redirect in useEffect
-  }
-
   return (
       <div className="min-h-screen bg-white">
         <Header />
@@ -137,11 +119,11 @@ export default function ToolDetail() {
               </div>
             </div>
             <div className="mt-4 md:mt-0 flex items-center gap-4">
-              <Button className="bg-[#a855f7] hover:bg-[#9333ea] text-white px-6 py-2 rounded-full flex items-center">
-                <a href={safeTool?.website} target="_blank" rel="noopener noreferrer">
-                  Try This Tool <ExternalLink className="w-4 h-4 ml-2" />
-                </a>
-              </Button>
+              {/*<Button className="bg-[#a855f7] hover:bg-[#9333ea] text-white px-6 py-2 rounded-full flex items-center">*/}
+              {/*  <a href={safeTool?.website} target="_blank" rel="noopener noreferrer">*/}
+              {/*    Try This Tool <ExternalLink className="w-4 h-4 ml-2" />*/}
+              {/*  </a>*/}
+              {/*</Button>*/}
             </div>
           </div>
 
@@ -186,6 +168,63 @@ export default function ToolDetail() {
                   </div>
               )}
 
+              {/* Pricing */}
+              {safeTool?.pricingPlans && safeTool.pricingPlans.length > 0 && (
+                  <div className="mb-12">
+                    <h2 className="text-xl font-bold text-[#111827] mb-6">Pricing</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {safeTool.pricingPlans.map((plan) => (
+                          <div
+                              key={plan.name}
+                              className={`border rounded-lg p-6 transition-transform duration-200 cursor-pointer ${
+                                  plan.isFeatured ? 'shadow-md border-[#a855f7] scale-105' : 'border-[#e5e7eb] hover:shadow-md hover:scale-102'
+                              }`}
+                              onClick={() => {
+                                // You can add logic here to handle plan selection,
+                                // e.g., storing the selected plan in state or redirecting.
+                                console.log(`Selected: ${plan.name}`);
+                              }}
+                          >
+                            {plan.isFeatured && (
+                                <div className="absolute top-0 right-0 bg-[#a855f7] text-white text-xs py-1 px-2 rounded-tl-lg rounded-br-sm">
+                                  POPULAR
+                                </div>
+                            )}
+                            <h3 className="text-lg font-semibold text-[#111827] mb-2">{plan.name}</h3>
+                            <p className="text-2xl font-bold text-[#a855f7] mb-4">{plan.price}<span className="text-sm text-[#4b5563] ml-1">/mo</span></p>
+                            <p className="text-sm text-[#6b7280] mb-4">{plan.description}</p>
+                            <ul className="list-disc list-inside text-[#4b5563] mb-4">
+                              {plan.features.map((feature, index) => (
+                                  <li key={index}>{feature}</li>
+                              ))}
+                            </ul>
+                            <Button className={`w-full ${plan.isFeatured ? 'bg-[#a855f7] hover:bg-[#9333ea]' : 'bg-white text-[#a855f7] border border-[#a855f7] hover:bg-[#f5f0ff]'} text-white px-4 py-2 rounded-md`}>
+                              <a href={plan.ctaUrl} className={plan.isFeatured ? '' : 'text-[#a855f7]'}>{plan.ctaText}</a>
+                            </Button>
+                          </div>
+                      ))}
+                    </div>
+                  </div>
+              )}
+              {/* User Reviews */}
+              {safeTool?.reviews && safeTool.reviews.length > 0 && (
+                  <div className="mb-12">
+                    <h2 className="text-xl font-bold text-[#111827] mb-6">User Reviews</h2>
+                    {safeTool.reviews.map((review) => (
+                        <div key={review.id} className="border border-[#e5e7eb] rounded-lg p-4 mb-4">
+                          <div className="flex items-center mb-2">
+                            <h4 className="font-semibold text-[#111827] mr-2">{review.user.name}</h4>
+                            {/* You might want to display the rating here using stars or a number */}
+                            <span className="text-sm text-[#a855f7]">Rating: {review.rating}/5</span>
+                          </div>
+                          <p className="text-[#4b5563]">{review.content}</p>
+                          <p className="text-sm text-[#6b7280] mt-2">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                    ))}
+                  </div>
+              )}
               {/* Related Tools */}
               {safeTool?.relatedTools && safeTool.relatedTools.length > 0 && (
                   <div>
@@ -228,6 +267,14 @@ export default function ToolDetail() {
             {/* Right Column - Sidebar */}
             <div className="md:col-span-1">
               <div className="border border-[#e5e7eb] rounded-lg p-6 sticky top-8">
+                <div className="mb-6">
+                  <Button className="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white py-3 rounded-md flex items-center justify-center">
+                    <a href={safeTool?.website} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                      Try This Tool <ExternalLink className="w-4 h-4 ml-2" />
+                    </a>
+                  </Button>
+                </div>
+
                 {safeTool?.logoUrl && (
                     <div className="mb-4 flex justify-center">
                       <img
@@ -238,7 +285,7 @@ export default function ToolDetail() {
                     </div>
                 )}
 
-                <h3 className="font-semibold text-[#111827] mb-4">Use Cases</h3>
+                <h3 className="font-semibold text-[#111827] mb-2">Use Cases</h3>
                 <div className="flex flex-wrap gap-2 mb-6">
                   {safeTool?.features?.slice(0, 5).map((feature, index) => (
                       <span key={index} className="text-sm bg-[#f3f4f6] text-[#6b7280] px-3 py-1 rounded-full">
