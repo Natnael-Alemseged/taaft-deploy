@@ -1,19 +1,19 @@
 "use client"; // Keep this as it's a Client Component
 import { FaStar } from 'react-icons/fa';
-import { useEffect } from "react";
+import { SetStateAction, useEffect, useState} from "react";
 import Link from "next/link";
-import { Bookmark, Share2, ExternalLink, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useTool } from "@/hooks/use-tools";
-import { useSaveTool, useUnsaveTool } from "@/hooks/use-tools";
-import { useAuth } from "@/contexts/auth-context";
+import {Bookmark, Share2, ExternalLink, Check} from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {useTool} from "@/hooks/use-tools";
+import {useSaveTool, useUnsaveTool} from "@/hooks/use-tools";
+import {useAuth} from "@/contexts/auth-context";
 import Header from "@/components/header";
 import Footer from "@/components/ui/footer";
-import { useRouter } from "next/navigation";
-import { use } from "react"; // Import the 'use' hook
+import {useRouter} from "next/navigation";
+import {use} from "react"; // Import the 'use' hook
 /// if api fails use fallback
-import { withFallbackTool } from "@/lib/utils";
-import { useParams } from 'next/navigation';
+import {withFallbackTool} from "@/lib/utils";
+import {useParams} from 'next/navigation';
 import LoadingToolDetailSkeleton from "@/components/skeletons/loading-tool-detail-skeleton";
 
 export default function ToolDetail() {
@@ -22,10 +22,17 @@ export default function ToolDetail() {
   const router = useRouter();
 
   // Always call hooks unconditionally at the top level
-  const { data: tool, isLoading, isError } = useTool(slug);
-  const { isAuthenticated } = useAuth();
+  const {data: tool, isLoading, isError} = useTool(slug);
+  const {isAuthenticated} = useAuth();
   const saveTool = useSaveTool();
   const unsaveTool = useUnsaveTool();
+
+  const [selectedPlan, setSelectedPlan] = useState(null); // State to manage the selected plan
+
+  // Handle Plan Click (toggle selection)
+  const handlePlanClick = (planName: SetStateAction<null>) => {
+    setSelectedPlan(selectedPlan === planName ? null : planName); // Deselect if it's already selected
+  };
 
   // Handle redirects in useEffect
   useEffect(() => {
@@ -187,22 +194,20 @@ export default function ToolDetail() {
                   </div>
               )}
 
+
               {/* Pricing */}
               {safeTool?.pricingPlans && safeTool.pricingPlans.length > 0 && (
                   <div className="mb-12">
                     <h2 className="text-xl font-bold text-[#111827] mb-6">Pricing</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {safeTool.pricingPlans.map((plan) => (
+                      {safeTool.pricingPlans.map((plan, index) => (
                           <div
                               key={plan.name}
-                              className={`border rounded-lg p-6 transition-transform duration-200 cursor-pointer ${
-                                  plan.isFeatured ? 'shadow-md border-[#a855f7] scale-105' : 'border-[#e5e7eb] hover:shadow-md hover:scale-102'
-                              }`}
-                              onClick={() => {
-                                // You can add logic here to handle plan selection,
-                                // e.g., storing the selected plan in state or redirecting.
-                                console.log(`Selected: ${plan.name}`);
-                              }}
+                              className={`relative border rounded-lg p-6 transition-transform duration-200 cursor-pointer 
+                  ${selectedPlan === plan.name ? 'border-4 border-[#a855f7] scale-105' : 'border-[#e5e7eb] hover:shadow-md hover:scale-102'}
+                  ${plan.isFeatured ? 'shadow-md border-[#a855f7]' : ''}
+                `}
+                              onClick={() => handlePlanClick(plan.name)}
                           >
                             {plan.isFeatured && (
                                 <div className="absolute top-0 right-0 bg-[#a855f7] text-white text-xs py-1 px-2 rounded-tl-lg rounded-br-sm">
@@ -210,21 +215,34 @@ export default function ToolDetail() {
                                 </div>
                             )}
                             <h3 className="text-lg font-semibold text-[#111827] mb-2">{plan.name}</h3>
-                            <p className="text-2xl font-bold text-[#a855f7] mb-4">{plan.price}<span className="text-sm text-[#4b5563] ml-1">/mo</span></p>
+                            <p className="text-2xl font-bold text-[#a855f7] mb-4">
+                              {plan.price}
+                              <span className="text-sm text-[#4b5563] ml-1">/mo</span>
+                            </p>
                             <p className="text-sm text-[#6b7280] mb-4">{plan.description}</p>
                             <ul className="list-disc list-inside text-[#4b5563] mb-4">
                               {plan.features.map((feature, index) => (
                                   <li key={index}>{feature}</li>
                               ))}
                             </ul>
-                            <Button className={`w-full ${plan.isFeatured ? 'bg-[#a855f7] hover:bg-[#9333ea]' : 'bg-white text-[#a855f7] border border-[#a855f7] hover:bg-[#f5f0ff]'} text-white px-4 py-2 rounded-md`}>
-                              <a href={plan.ctaUrl} className={plan.isFeatured ? '' : 'text-[#a855f7]'}>{plan.ctaText}</a>
+                            <Button
+                                className={`w-full ${
+                                    plan.isFeatured
+                                        ? 'bg-[#a855f7] hover:bg-[#9333ea]'
+                                        : 'bg-white text-[#a855f7] border border-[#a855f7] hover:bg-[#f5f0ff]'
+                                } text-white px-4 py-2 rounded-md`}
+                            >
+                              <a href={plan.ctaUrl} className={plan.isFeatured ? '' : 'text-[#a855f7]'}>
+                                {plan.ctaText}
+                              </a>
                             </Button>
                           </div>
                       ))}
                     </div>
                   </div>
               )}
+
+
               {/* User Reviews */}
               {safeTool?.reviews && safeTool.reviews.length > 0 && (
                   <div className="mb-12">
