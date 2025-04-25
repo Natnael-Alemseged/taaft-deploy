@@ -2,10 +2,11 @@ export interface Tool {
   id: string
   name: string
   slug: string
-  website: string
+  link: string
   category: string
   description: string
   features: string[]
+  keywords: string[]
   pricing: "free" | "freemium" | "subscription" | "one-time" | "usage-based"
   hasFreeVersion: boolean
   logoUrl?: string
@@ -29,4 +30,5 @@ export interface ToolSubmission {
   hasFreeVersion: boolean
   contactName: string
   contactEmail: string
+
 }

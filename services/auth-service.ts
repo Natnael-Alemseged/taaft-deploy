@@ -33,38 +33,38 @@ const createFormData = (data: Record<string, string>) => {
 // Alternative approach without createFormData helper
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   try {
-  const formData = new URLSearchParams()
-  formData.append("username", credentials.username)
-  formData.append("password", credentials.password)
-  // Use the environment variable for API URL
-  // ... rest of the function body (axios.post call etc.) remains the same
-  const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/token`, formData, {
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json",
-    },
-  })
+    const formData = new URLSearchParams()
+    formData.append("username", credentials.username)
+    formData.append("password", credentials.password)
+    // Use the environment variable for API URL
+    // ... rest of the function body (axios.post call etc.) remains the same
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/token`, formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+      },
+    })
 
-  // ... rest of token storage and user fetching
-  const { access_token, token_type, refresh_token } = response.data
+    // ... rest of token storage and user fetching
+    const { access_token, token_type, refresh_token } = response.data
 
-  localStorage.setItem("access_token", access_token)
-  if (refresh_token) {
-    localStorage.setItem("refresh_token", refresh_token)
-  }
+    localStorage.setItem("access_token", access_token)
+    if (refresh_token) {
+      localStorage.setItem("refresh_token", refresh_token)
+    }
 
-  const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-    headers: {
-      Authorization: `${token_type} ${access_token}`,
-      Accept: "application/json",
-    },
-  })
+    const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      headers: {
+        Authorization: `${token_type} ${access_token}`,
+        Accept: "application/json",
+      },
+    })
 
-  const user = userResponse.data
-  localStorage.setItem("user", JSON.stringify(user))
+    const user = userResponse.data
+    localStorage.setItem("user", JSON.stringify(user))
 
-  return { access_token, refresh_token, token_type, user }}
-catch (error: any) {
+    return { access_token, refresh_token, token_type, user }
+  } catch (error: any) {
     if (error.response?.status === 401) {
       throw new Error("Invalid Email or password ")
     }
