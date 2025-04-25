@@ -99,15 +99,66 @@ export const createChatSession = async (title: string): Promise<ChatSession> => 
 }
 
 // Send a message to a specific chat session
+// export const sendChatMessage = async (
+//   sessionId: string,
+//   message: string,
+//   model = "gpt4",
+//   systemPrompt = "You are a helpful assistant.",
+//   metadata?: Record<string, any>,
+// ): Promise<{ message: Message; toolRecommendations?: any[] }> => {
+//   try {
+//     console.log(`Sending message to session ${sessionId} with model ${model}`)
+//
+//     // Create the request payload
+//     const payload = {
+//       message,
+//       model,
+//       system_prompt: systemPrompt,
+//       ...(metadata && { metadata }),
+//     }
+//
+//     // Make the API request
+//     const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload)
+//
+//     console.log(`Response received for session ${sessionId}`)
+//
+//     return {
+//       message: {
+//         role: "assistant",
+//         content: response.data.message,
+//         id: response.data.message_id,
+//         timestamp: new Date(response.data.timestamp),
+//       },
+//       toolRecommendations: response.data.tool_recommendations,
+//     }
+//   } catch (error: any) {
+//     console.error(`Error sending message to session ${sessionId}:`, error)
+//
+//     // Log more detailed error information
+//     if (error.response) {
+//       console.error("Error response data:", error.response.data)
+//       console.error("Error response status:", error.response.status)
+//     } else if (error.request) {
+//       console.error("No response received:", error.request)
+//     } else {
+//       console.error("Error message:", error.message)
+//     }
+//
+//     throw error
+//   }
+// }
+
+
+
 export const sendChatMessage = async (
-  sessionId: string,
-  message: string,
-  model = "gpt4",
-  systemPrompt = "You are a helpful assistant.",
-  metadata?: Record<string, any>,
-): Promise<{ message: Message; toolRecommendations?: any[] }> => {
+    sessionId: string,
+    message: string,
+    model = "gpt4",
+    systemPrompt = "You are a helpful assistant.",
+    metadata?: Record<string, any>,
+): Promise<{ message: Message; toolRecommendations?: string[] }> => {
   try {
-    console.log(`Sending message to session ${sessionId} with model ${model}`)
+    console.log(`Sending message to session ${sessionId} with model ${model}`);
 
     // Create the request payload
     const payload = {
@@ -115,35 +166,68 @@ export const sendChatMessage = async (
       model,
       system_prompt: systemPrompt,
       ...(metadata && { metadata }),
-    }
+    };
 
     // Make the API request
-    const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload)
+    const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload);
 
-    console.log(`Response received for session ${sessionId}`)
+    console.log(`Response received for session ${sessionId}`);
+
+    const rawResponseMessage = response.data.message;
+
+    // Extract options if present
+    let options: string[] = [];
+    const optionsPattern = "options =";
+    const optionsIndex = rawResponseMessage.indexOf(optionsPattern);
+
+    if (optionsIndex !== -1) {
+      // Extract the part after "options ="
+      const optionsStringRaw = rawResponseMessage.substring(optionsIndex + optionsPattern.length);
+
+      // Trim whitespace from both ends first
+      let cleanedOptionsString = optionsStringRaw.trim();
+
+      // Now remove the leading '[' and trailing ']' if they exist
+      // The regex /^\[|\]$/g targets '[' at the start or ']' at the end
+      // after trimming, this should work reliably.
+      cleanedOptionsString = cleanedOptionsString.replace(/^\[|\]$/g, '').trim();
+
+
+      // Split by comma, trim, and remove quotes from each option
+      options = cleanedOptionsString.split(',').map(option =>
+          option.trim().replace(/'/g, '').replace(/"/g, '')
+      ).filter(option => option.length > 0); // Filter out any empty strings
+
+    }
+
+    // Clean the message content (remove "options = ..." part)
+    const cleanedMessage = optionsIndex !== -1
+        ? rawResponseMessage.substring(0, optionsIndex).trim()
+        : rawResponseMessage.trim();
+
 
     return {
       message: {
         role: "assistant",
-        content: response.data.message,
+        content: cleanedMessage,
         id: response.data.message_id,
         timestamp: new Date(response.data.timestamp),
       },
-      toolRecommendations: response.data.tool_recommendations,
-    }
+      toolRecommendations: options.length > 0 ? options : undefined,
+    };
   } catch (error: any) {
-    console.error(`Error sending message to session ${sessionId}:`, error)
+    console.error(`Error sending message to session ${sessionId}:`, error);
 
     // Log more detailed error information
     if (error.response) {
-      console.error("Error response data:", error.response.data)
-      console.error("Error response status:", error.response.status)
+      console.error("Error response data:", error.response.data);
+      console.error("Error response status:", error.response.status);
     } else if (error.request) {
-      console.error("No response received:", error.request)
+      console.error("No response received:", error.request);
     } else {
-      console.error("Error message:", error.message)
+      console.error("Error message:", error.message);
     }
 
-    throw error
+    throw error;
   }
-}
+};

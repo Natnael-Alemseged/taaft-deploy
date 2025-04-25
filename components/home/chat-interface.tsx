@@ -37,8 +37,8 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
   const chatCompletion = useChatCompletion()
   const { data: chatSessions, isLoading: isLoadingSessions, refetch: refetchSessions } = useChatSessions()
   const { data: sessionMessages, isLoading: isLoadingMessages } = useChatSessionMessages(
-    activeChatId || "",
-    !!activeChatId,
+      activeChatId || "",
+      !!activeChatId,
   )
   const createChatSession = useCreateChatSession()
 
@@ -47,32 +47,32 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
     if (isOpen && !activeChatId && !isLoadingMessages) {
       console.log("Checking for existing chat sessions")
       refetchSessions()
-        .then((result) => {
-          if (result.data && result.data.length > 0) {
-            // Use the most recent session
-            const mostRecentSession = result.data[0]
-            console.log(`Using existing session: ${mostRecentSession._id}`)
-            setActiveChatId(mostRecentSession._id)
-            // Messages will be loaded via the useChatSessionMessages hook
-          } else {
-            console.log("No existing sessions found, will create a new one when needed")
+          .then((result) => {
+            if (result.data && result.data.length > 0) {
+              // Use the most recent session
+              const mostRecentSession = result.data[0]
+              console.log(`Using existing session: ${mostRecentSession._id}`)
+              setActiveChatId(mostRecentSession._id)
+              // Messages will be loaded via the useChatSessionMessages hook
+            } else {
+              console.log("No existing sessions found, will create a new one when needed")
+              setMessages([
+                {
+                  role: "assistant",
+                  content: "Hi! I'm your AI assistant. How can I help you today?",
+                },
+              ])
+            }
+          })
+          .catch((err) => {
+            console.error("Error checking for existing sessions:", err)
             setMessages([
               {
                 role: "assistant",
                 content: "Hi! I'm your AI assistant. How can I help you today?",
               },
             ])
-          }
-        })
-        .catch((err) => {
-          console.error("Error checking for existing sessions:", err)
-          setMessages([
-            {
-              role: "assistant",
-              content: "Hi! I'm your AI assistant. How can I help you today?",
-            },
-          ])
-        })
+          })
     }
   }, [isOpen, activeChatId, isLoadingMessages, refetchSessions])
 
@@ -130,12 +130,13 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
   }, [isOpen, inputRef])
 
   // Handle sending a message
-  const handleSendMessage = async () => {
-    if (!input.trim()) return
+  const handleSendMessage = async (content?: string) => {
+    const messageContent = content || input.trim()
+    if (!messageContent) return
 
-    const userMessage: Message = { role: "user", content: input }
+    const userMessage: Message = { role: "user", content: messageContent }
     setMessages((prev) => [...prev, userMessage])
-    setInput("")
+    if (!content) setInput("") // Only clear input if it's not a recommendation
     setError(null)
     setToolRecommendations([])
 
@@ -144,7 +145,9 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
       if (!chatId) {
         console.log("No active chat ID, creating new session")
         try {
-          const newSession = await createChatSession.mutateAsync(input.substring(0, 50))
+          // Use the first 50 characters or a default title for the new session
+          const sessionTitle = messageContent.substring(0, 50) || "New Chat"
+          const newSession = await createChatSession.mutateAsync(sessionTitle)
           console.log("New session created:", newSession._id)
           setActiveChatId(newSession._id)
           chatId = newSession._id
@@ -160,7 +163,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
 
       const response = await chatCompletion.mutateAsync({
         sessionId: chatId,
-        message: input,
+        message: messageContent, // Use messageContent here
         model: "gpt4",
         systemPrompt: "You are a helpful assistant.",
       })
@@ -171,6 +174,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
       // Handle tool recommendations if any
       if (response.toolRecommendations && response.toolRecommendations.length > 0) {
         console.log("Tool recommendations received:", response.toolRecommendations)
+        // Assuming toolRecommendations is an array of strings as per the rendering logic
         setToolRecommendations(response.toolRecommendations)
       }
     } catch (error) {
@@ -207,222 +211,224 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
   }
 
   // Handle tool recommendation click
-  const handleToolRecommendationClick = (tool: any) => {
-    // Navigate to the tool page
-    if (tool.id) {
-      onClose()
-      router.push(`/tools/${tool.id}`)
-    }
+  const handleToolRecommendationClick = async (tool: string) => {
+    // Send the recommendation text as a message
+    // Wrap in a block to ensure the handler returns void for onClick
+    handleSendMessage(tool)
   }
 
   // Don't render if not open
   if (!isOpen) return null
 
   return (
-    <div
-      ref={chatContainerRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20"
-      onClick={onClose}
-    >
       <div
-        ref={chatRef}
-        className="rounded-xl bg-white shadow-2xl transition-all duration-300 ease-in-out w-full max-w-2xl"
-        style={
-          chatPosition
-            ? {
-                position: "fixed",
-                top: `${chatPosition.top}px`,
-                left: `${chatPosition.left}px`,
-                transform: "none",
-              }
-            : {}
-        }
-        onClick={(e) => e.stopPropagation()}
+          ref={chatContainerRef}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20"
+          // onClick={onClose} // Removing this to prevent closing when clicking the overlay
       >
-        <div className="flex h-[500px] flex-col rounded-xl border border-gray-200">
-          {/* Error Banner */}
-          {error && (
-            <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
-              <div className="flex items-center">
-                <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
-                <span className="text-xs text-amber-700">{error}</span>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setError(null)
-                }}
-                className="text-xs text-purple-600 hover:text-purple-700"
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
-
-          {/* Chat header */}
-          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-            <div className="flex items-center">
-              <Bot className="h-6 w-6 text-purple-600" />
-              <span className="ml-2 text-base font-semibold text-gray-800">AI Assistant</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setShowSessions(!showSessions)}
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
-              >
-                <MessageSquare className="h-5 w-5" />
-              </button>
-              <button
-                onClick={onClose}
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Chat sessions sidebar */}
-          {showSessions && (
-            <div className="absolute top-14 right-0 z-10 w-64 bg-white border border-gray-200 rounded-bl-lg shadow-lg max-h-[calc(100%-4rem)] overflow-y-auto">
-              <div className="p-3 border-b border-gray-100">
-                <h3 className="font-medium text-gray-700">Chat History</h3>
-              </div>
-              <div className="p-2">
-                <button
-                  onClick={handleNewChat}
-                  className="flex items-center w-full p-2 text-left text-sm hover:bg-gray-100 rounded-md"
-                >
-                  <Plus className="h-4 w-4 mr-2 text-purple-600" />
-                  New Chat
-                </button>
-
-                {isLoadingSessions ? (
-                  <div className="p-3 text-center text-sm text-gray-500">Loading...</div>
-                ) : !chatSessions || chatSessions.length === 0 ? (
-                  <div className="p-3 text-center text-sm text-gray-500">No chat history</div>
-                ) : (
-                  chatSessions.map((session) => (
-                    <button
-                      key={session._id}
-                      onClick={() => handleSelectSession(session._id)}
-                      className={`flex items-center w-full p-2 text-left text-sm hover:bg-gray-100 rounded-md ${
-                        activeChatId === session._id ? "bg-purple-50 text-purple-700" : ""
-                      }`}
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="truncate">{session.title}</span>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Chat messages */}
-          <div className="flex-1 overflow-y-auto p-4 text-sm">
-            {isLoadingMessages ? (
-              <div className="flex justify-center items-center h-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
-              </div>
-            ) : (
-              messages.map((message, index) => (
-                <div key={index} className={`mb-4 flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                  {message.role === "assistant" && index === 0 && (
-                    <div className="mb-1 text-xs text-gray-600 font-medium absolute -top-5 left-0">AI Assistant</div>
-                  )}
-                  <div
-                    className={clsx(
-                      "rounded-lg p-3 max-w-[80%]",
-                      message.role === "user" ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-800",
-                      message.role === "assistant" && index === 0 && "relative mt-5",
-                    )}
+        <div
+            ref={chatRef}
+            className="rounded-xl bg-white shadow-2xl transition-all duration-300 ease-in-out w-full max-w-2xl"
+            style={
+              chatPosition
+                  ? {
+                    position: "fixed",
+                    top: `${chatPosition.top}px`,
+                    left: `${chatPosition.left}px`,
+                    transform: "none",
+                  }
+                  : {}
+            }
+            onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex h-[500px] flex-col rounded-xl border border-gray-200">
+            {/* Error Banner */}
+            {error && (
+                <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
+                  <div className="flex items-center">
+                    <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
+                    <span className="text-xs text-amber-700">{error}</span>
+                  </div>
+                  <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setError(null)
+                      }}
+                      className="text-xs text-purple-600 hover:text-purple-700"
                   >
-                    {message.content}
+                    Dismiss
+                  </button>
+                </div>
+            )}
+
+            {/* Chat header */}
+            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+              <div className="flex items-center">
+                <Bot className="h-6 w-6 text-purple-600" />
+                <span className="ml-2 text-base font-semibold text-gray-800">AI Assistant</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                    onClick={() => setShowSessions(!showSessions)}
+                    className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+                >
+                  <MessageSquare className="h-5 w-5" />
+                </button>
+                <button
+                    onClick={onClose} // This is fine as onClose is () => void
+                    className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+                >
+                  <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Chat sessions sidebar */}
+            {showSessions && (
+                <div className="absolute top-14 right-0 z-10 w-64 bg-white border border-gray-200 rounded-bl-lg shadow-lg max-h-[calc(100%-4rem)] overflow-y-auto">
+                  <div className="p-3 border-b border-gray-100">
+                    <h3 className="font-medium text-gray-700">Chat History</h3>
+                  </div>
+                  <div className="p-2">
+                    <button
+                        // Corrected: Use block body for async handler in onClick
+                        onClick={() => { handleNewChat(); }}
+                        className="flex items-center w-full p-2 text-left text-sm hover:bg-gray-100 rounded-md"
+                    >
+                      <Plus className="h-4 w-4 mr-2 text-purple-600" />
+                      New Chat
+                    </button>
+
+                    {isLoadingSessions ? (
+                        <div className="p-3 text-center text-sm text-gray-500">Loading...</div>
+                    ) : !chatSessions || chatSessions.length === 0 ? (
+                        <div className="p-3 text-center text-sm text-gray-500">No chat history</div>
+                    ) : (
+                        chatSessions.map((session) => (
+                            <button
+                                key={session._id}
+                                // This handler is not async, so () => ... is fine
+                                onClick={() => handleSelectSession(session._id)}
+                                className={`flex items-center w-full p-2 text-left text-sm hover:bg-gray-100 rounded-md ${
+                                    activeChatId === session._id ? "bg-purple-50 text-purple-700" : ""
+                                }`}
+                            >
+                              <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
+                              <span className="truncate">{session.title}</span>
+                            </button>
+                        ))
+                    )}
                   </div>
                 </div>
-              ))
             )}
-            {chatCompletion.isPending && (
-              <div className="mr-auto max-w-[80%]">
-                <div className="flex items-center space-x-2 rounded-lg bg-gray-100 p-3 text-gray-800">
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
-                  <div
-                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
-                  <div
-                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                    style={{ animationDelay: "0.4s" }}
-                  ></div>
-                </div>
-              </div>
-            )}
-            <div ref={chatEndRef} />
-          </div>
 
-          {/* Tool Recommendations */}
-          {toolRecommendations.length > 0 && (
-            <div className="border-t border-gray-100 px-4 py-3">
-              <p className="mb-2 text-xs text-gray-500">Recommended Tools:</p>
-              <div className="flex flex-wrap gap-2">
-                {toolRecommendations.map((tool, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleToolRecommendationClick(tool)}
-                    className="rounded-full border border-purple-300 bg-purple-50 px-3 py-1 text-xs text-purple-700 hover:bg-purple-100 transition-colors"
-                  >
-                    {tool.name || tool.id}
-                  </button>
-                ))}
-              </div>
+            {/* Chat messages */}
+            <div className="flex-1 overflow-y-auto p-4 text-sm">
+              {isLoadingMessages ? (
+                  <div className="flex justify-center items-center h-full">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
+                  </div>
+              ) : (
+                  messages.map((message, index) => (
+                      <div key={index} className={`mb-4 flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                        {message.role === "assistant" && index === 0 && (
+                            <div className="mb-1 text-xs text-gray-600 font-medium absolute -top-5 left-0">AI Assistant</div>
+                        )}
+                        <div
+                            className={clsx(
+                                "rounded-lg p-3 max-w-[80%]",
+                                message.role === "user" ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-800",
+                                message.role === "assistant" && index === 0 && "relative mt-5",
+                            )}
+                        >
+                          {message.content}
+                        </div>
+                      </div>
+                  ))
+              )}
+              {chatCompletion.isPending && (
+                  <div className="mr-auto max-w-[80%]">
+                    <div className="flex items-center space-x-2 rounded-lg bg-gray-100 p-3 text-gray-800">
+                      <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
+                      <div
+                          className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                          style={{ animationDelay: "0.2s" }}
+                      ></div>
+                      <div
+                          className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                          style={{ animationDelay: "0.4s" }}
+                      ></div>
+                    </div>
+                  </div>
+              )}
+              <div ref={chatEndRef} />
             </div>
-          )}
 
-          {/* Input area */}
-          <div className="border-t border-gray-100 p-4">
-            <div className="flex items-center space-x-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Ask me anything..."
-                  className="w-full rounded-full border-gray-300 pl-10 pr-4 text-sm focus:border-purple-500 focus:ring-purple-500"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      handleSendMessage()
-                    }
-                  }}
-                />
+            {/* Tool Recommendations */}
+            {toolRecommendations.length > 0 && (
+                <div className="border-t border-gray-100 px-4 py-3">
+                  <p className="mb-2 text-xs text-gray-500">Recommendations:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {toolRecommendations.map((tool, index) => (
+                        <button
+                            key={index}
+                            // Corrected: Use block body for async handler in onClick
+                            onClick={() => { handleToolRecommendationClick(tool); }}
+                            className="rounded-full border border-purple-300 bg-purple-50 px-3 py-1 text-xs text-purple-700 hover:bg-purple-100 transition-colors"
+                        >
+                          {tool}
+                        </button>
+                    ))}
+                  </div>
+                </div>
+            )}
+            {/* Input area */}
+            <div className="border-t border-gray-100 p-4">
+              <div className="flex items-center space-x-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                      ref={inputRef}
+                      type="text"
+                      placeholder="Ask me anything..."
+                      className="w-full rounded-full border-gray-300 pl-10 pr-4 text-sm focus:border-purple-500 focus:ring-purple-500"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          // Corrected: Use block body for async handler
+                          handleSendMessage()
+                        }
+                      }}
+                  />
+                </div>
+                <Button
+                    // Corrected: Use block body for async handler
+                    onClick={() => { handleSendMessage(); }}
+                    className="rounded-full bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
+                    disabled={chatCompletion.isPending || !input.trim()}
+                >
+                  Send <Send className="ml-1 h-4 w-4" />
+                  <span className="sr-only">Send message</span>
+                </Button>
               </div>
-              <Button
-                onClick={handleSendMessage}
-                className="rounded-full bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 disabled:opacity-50 disabled:pointer-events-none"
-                disabled={chatCompletion.isPending || !input.trim()}
-              >
-                Send <Send className="ml-1 h-4 w-4" />
-                <span className="sr-only">Send message</span>
-              </Button>
             </div>
           </div>
         </div>
       </div>
-    </div>
   )
 }
