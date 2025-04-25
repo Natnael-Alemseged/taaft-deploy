@@ -32,6 +32,7 @@ const createFormData = (data: Record<string, string>) => {
 // Login with username and password
 // Alternative approach without createFormData helper
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
+  try {
   const formData = new URLSearchParams()
   formData.append("username", credentials.username)
   formData.append("password", credentials.password)
@@ -62,7 +63,13 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
   const user = userResponse.data
   localStorage.setItem("user", JSON.stringify(user))
 
-  return { access_token, refresh_token, token_type, user }
+  return { access_token, refresh_token, token_type, user }}
+catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error("Invalid Email or password ")
+    }
+    throw error
+  }
 }
 
 // Register new user (assuming it doesn't return tokens directly, relies on subsequent login)
