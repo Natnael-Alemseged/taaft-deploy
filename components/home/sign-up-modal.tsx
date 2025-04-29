@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react" // Import useEffect
 import type React from "react"
 
 import { X } from "lucide-react" // Import X icon
@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button" // Assuming Button component is 
 import Image from "next/image" // Assuming Image component is available
 import { useAuth } from "@/contexts/auth-context" // Assuming this path is correct
 import { useRouter } from "next/navigation" // Correct import for App Router
+// Import the Google SSO initiation function from your auth service
+import {  initiateGoogleLogin } from "@/services/auth-service";
+
 
 interface SignUpModalProps {
   isOpen: boolean
@@ -23,6 +26,18 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
   const [isLoading, setIsLoading] = useState(false) // Local loading state for the form submission
   const { register } = useAuth() // Assuming useAuth hook provides the register function
   const router = useRouter()
+
+  // Effect to clear form and errors when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setName("");
+      setEmail("");
+      setPassword("");
+      setSubscribeToNewsLetter(false);
+      setError("");
+    }
+  }, [isOpen]); // Dependency on isOpen prop
+
 
   if (!isOpen) return null
 
@@ -51,36 +66,65 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
     }
   }
 
+  // Handle Google SSO initiation for Sign Up
+  const handleGoogleSignup = async () => {
+    setError(""); // Clear previous errors
+    setIsLoading(true); // Indicate loading state
+
+    try {
+      // Call the service function to initiate Google SSO redirect
+      // The page will redirect, so the rest of the process happens on the callback page
+      await initiateGoogleLogin();
+      // No need to set isLoading(false) here if the redirect is successful
+    } catch (err: any) {
+      console.error("Google signup initiation failed:", err);
+      const errorMessage = err.message || err.response?.data?.detail || "Failed to initiate Google sign up. Please try again.";
+      setError(errorMessage);
+      setIsLoading(false); // Set loading false if initiation fails before redirect
+    }
+    // No finally block needed here as successful initiation leads to redirect
+  };
+
+
   return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         {/* Adjusted max-w-md and padding for potential smaller screens */}
-        <div className="bg-white rounded-2xl w-full max-w-sm md:max-w-md relative p-6 md:p-8 animate-in fade-in zoom-in duration-300 overflow-y-auto max-h-[95vh]"> {/* Added max-h and overflow-y-auto */}
+        {/* Added overflow-y-auto and max-h-[95vh] to ensure scrollability if content exceeds viewport height */}
+        {/* The absolute positioned close button should remain visible at the top right within this container */}
+        <div className="bg-white rounded-2xl w-full max-w-sm md:max-w-md relative p-6 md:p-8 animate-in fade-in zoom-in duration-300 overflow-y-auto max-h-[95vh]">
           <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
             <X size={24} />
           </button>
 
           <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">Create an Account</h2> {/* Adjusted text size */}
-            <p className="text-gray-500 text-sm md:text-base">Join our community of AI enthusiasts</p> {/* Adjusted text size */}
+            <h2 className="text-2xl md:text-2xl font-bold mb-2">Create an Account</h2> {/* Adjusted text size */}
+            <p className="text-gray-500 text-xs md:text-base">Join our community of AI enthusiasts</p> {/* Adjusted text size */}
           </div>
 
           {/* Google Sign Up Button */}
-          <button className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-lg p-3 mb-6 hover:bg-gray-50 transition-colors">
-            <Image src="/google-logo.svg" alt="Google" width={20} height={20} />
+          {/* Added onClick handler and disabled state */}
+          <button
+              type="button" // Explicitly set type to button
+              onClick={handleGoogleSignup} // Call the new handler
+              disabled={isLoading} // Disable while loading (form submission or SSO initiation)
+              className="w-full flex items-center justify-center gap-1 border border-gray-300 rounded-md p-2 text-sm mb-4 hover:bg-gray-50 transition-colors"
+          >
+            <Image src="/google-logo.svg" alt="Google" width={16} height={16} />
             <span>Continue with Google</span>
           </button>
 
-          <div className="flex items-center gap-4 mb-6">
+
+          <div className="flex items-center gap-3 mb-6">
             <div className="h-px bg-gray-300 flex-1"></div>
             <span className="text-gray-500 text-sm">OR CONTINUE WITH EMAIL</span>
             <div className="h-px bg-gray-300 flex-1"></div>
           </div>
 
-          {error && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
+          {error && <div className="mb-4 p-2 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label htmlFor="name" className="block text-lg font-medium mb-2">
+              <label htmlFor="name" className="block text-md font-medium mb-2">
                 Name
               </label>
               <input
@@ -95,7 +139,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-lg font-medium mb-2">
+              <label htmlFor="email" className="block text-md font-medium mb-2">
                 Email
               </label>
               <input
@@ -110,7 +154,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-lg font-medium mb-2">
+              <label htmlFor="password" className="block text-md font-medium mb-2">
                 Password
               </label>
               <input

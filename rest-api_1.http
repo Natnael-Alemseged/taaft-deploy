@@ -1,3 +1,10 @@
+###get sso providers
+GET taaft-backend.onrender.com/sso/providers
+Accept: application/json
+
+
+
+
 ###get categories
 
 GET taaft-backend.onrender.com/api/categories
