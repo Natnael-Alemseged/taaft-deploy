@@ -1,9 +1,8 @@
-###get sso providers
-GET taaft-backend.onrender.com/sso/providers
+
+###search keywords
+POST taaft-backend.onrender.com/tools/keyword-search
 Accept: application/json
-
-
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDU5NDExMDR9.mqK7jLvyEJjvuT0IkUqVi_fN82jhyAHljRa0cOqlhBA
 
 ###get categories
 
@@ -15,7 +14,7 @@ Accept: application/json
 ###search
 GET https://taaft-backend.onrender.com/tools/search?q=korbit
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDU5MjI4Njh9.eYB0r4QkbkxZ4n5ExLoIHG-jam1zZp3AxC9tkmsknsc
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDU5NDExMDR9.mqK7jLvyEJjvuT0IkUqVi_fN82jhyAHljRa0cOqlhBA
 
 <> 2025-04-25T062117.200.json
 <> 2025-04-25T062104.200.json

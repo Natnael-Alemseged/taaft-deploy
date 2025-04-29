@@ -1,214 +1,281 @@
-"use client"
+// BlogPostDetail.tsx
+"use client";
 
-import { useState } from "react"
-import Header from "@/components/header"
-import Footer from "@/components/ui/footer"
-import { ChevronRight, Calendar, Clock, User } from "lucide-react"
-import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import React from 'react';
+import Link from 'next/link'; // Assuming Next.js Link
+import Image from 'next/image'; // Assuming Next.js Image component
+import { Share2, Link as LinkIcon } from 'lucide-react'; // Icons for Share and Copy Link
+import { Button } from "@/components/ui/button"; // Assuming Button component
 
-// Helper function to convert a title into a URL-friendly slug (same as before)
-function slugify(text: string): string {
-  return text
-    .toString()
-    .toLowerCase()
-    .replace(/\s+/g, "-") // Replace spaces with -
-    .replace(/[^\w-]+/g, "") // Remove all non-word chars
-    .replace(/-+/g, "-") // Replace multiple - with single -
-    .replace(/^-+/, "") // Trim - from start of text
-    .replace(/-+$/, "") // Trim - from end of text
+// Define interfaces for the blog post data structure
+interface Author {
+  name: string;
+  bio: string;
+  avatarUrl?: string; // Optional avatar image URL
 }
 
-// Type definition for a Blog Post (using placeholder data structure)
+interface ArticleSection {
+  heading?: string; // Optional heading for a section
+  content: string; // Main content of the section
+  subsections?: { heading: string; content: string }[]; // Optional nested subsections
+}
+
+interface RelatedArticle {
+  id: string; // Unique ID for the related article
+  title: string;
+  slug: string; // URL-friendly slug
+  // Add other relevant fields like author, date, etc. if needed for display
+}
+
 interface BlogPost {
-  id: string
-  title: string
-  author: string
-  date: string
-  content: string // This will likely be rich text in a real scenario
-  tags: string[]
+  id: string; // Unique ID for the blog post
+  title: string;
+  slug: string; // URL-friendly slug for the article page
+  publishDate: string; // Date of publication
+  author: Author;
+  excerpt: string; // Short summary/introduction
+  content: ArticleSection[]; // Array of content sections
+  relatedArticles?: RelatedArticle[]; // Optional array of related articles
+  // Add other fields like cover image URL if applicable
 }
 
-// Placeholder blog post data (replace with your actual static blog content)
+// Placeholder data matching the BlogPost interface
 const placeholderBlogPost: BlogPost = {
-  id: "123",
-  title: "Understanding AI: A Beginner's Guide",
-  author: "Sarah Johnson",
-  date: "2025-04-26",
-  content: `
-    Artificial intelligence has become an integral part of our daily lives, from virtual assistants to recommendation systems. This guide aims to demystify AI and help you understand its fundamental concepts.
+  id: 'understanding-ai-beginners-guide',
+  title: 'Understanding AI: A Beginner\'s Guide',
+  slug: 'understanding-ai-beginners-guide',
+  publishDate: '2025-04-10',
+  author: {
+    name: 'Sarah Johnson',
+    bio: 'AI researcher and tech enthusiast with 10 years of experience in machine learning and artificial Intelligence.',
+    avatarUrl: '/placeholder-avatar.png', // Placeholder avatar image
+  },
+  excerpt: 'Artificial Intelligence has become an integral part of our daily lives, from virtual assistants to recommendation systems. This guide aims to demystify AI and help you understand its fundamental concepts.',
+  content: [
+    {
+      heading: 'What is Artificial Intelligence?',
+      content: 'AI refers to computer systems designed to perform tasks that typically require human intelligence. These tasks include visual perception, speech recognition, decision-making, and language translation.\n\nAI systems can be either narrow (designed for specific tasks) or general (capable of performing any intellectual task).',
+    },
+    {
+      heading: 'Key Components of AI Systems',
+      content: 'Modern AI systems rely on several key components: data collection, machine learning algorithms, processing power, and feedback mechanisms. Each component plays a crucial role in creating intelligent behavior.',
+      subsections: [
+        { heading: 'Data Collection and Processing', content: 'Details about data collection...' },
+        { heading: 'Algorithm Development', content: 'Details about algorithm development...' },
+        { heading: 'Training and Testing', content: 'Details about training and testing...' },
+        { heading: 'Deployment and Monitoring', content: 'Details about deployment and monitoring...' },
+      ],
+    },
+    {
+      heading: 'Conclusion',
+      content: 'As AI continues to evolve, understanding its basic principles becomes increasingly important for everyone, from developers to end users.',
+    },
+  ],
+  relatedArticles: [
+    { id: 'future-of-ai', title: 'The Future of AI: Trends and Predictions', slug: 'future-of-ai' },
+    { id: 'ethics-in-ai', title: 'Ethics in Artificial Intelligence', slug: 'ethics-in-artificial-intelligence' },
+    // Add more related articles as needed
+  ],
+};
 
-    ## What is Artificial Intelligence?
 
-    AI refers to computer systems designed to perform tasks that typically require human intelligence. These tasks include visual perception, speech recognition, decision-making, and language translation.
+// The main component that will render the blog post detail
+// It accepts an optional 'blogPost' prop. If not provided, it uses placeholder data.
+export default function BlogPostDetail({ blogPost }: { blogPost?: BlogPost }) {
 
-    AI systems can be either narrow (designed for specific tasks) or general (capable of performing any intellectual task).
+  // Use the provided blogPost data if available, otherwise use placeholder data
+  const articleData = blogPost || placeholderBlogPost;
 
-    ## Key Components of AI Systems
+  // Function to format the publish date
+  const formatDate = (dateString: string) => {
+    try {
+      const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString(undefined, options);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return dateString; // Return original string if formatting fails
+    }
+  };
 
-    Modern AI systems rely on several key components: data collection, machine learning algorithms, processing power, and feedback mechanisms. Each component plays a crucial role in creating intelligent behavior.
+  // Function to handle sharing (placeholder)
+  const handleShare = () => {
+    // Implement actual sharing logic here (e.g., Web Share API)
+    console.log("Share button clicked");
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({
+        title: articleData.title,
+        text: articleData.excerpt,
+        url: window.location.href,
+      }).catch((error) => console.error('Error sharing:', error));
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      alert(`Share this article: ${window.location.href}`);
+    }
+  };
 
-    - **Data Collection and Processing:** Gathering and preparing data for AI models.
-    - **Algorithm Development:** Creating the instructions that enable AI to learn and make decisions.
-    - **Training and Testing:** Feeding data to the algorithms to learn and evaluating their performance.
-    - **Deployment and Monitoring:** Implementing the trained AI system and continuously checking its effectiveness.
+  // Function to handle copying link (placeholder)
+  const handleCopyLink = () => {
+    // Implement actual copy logic here
+    console.log("Copy Link button clicked");
+    if (typeof navigator !== 'undefined' && navigator.clipboard && window.location.href) {
+      navigator.clipboard.writeText(window.location.href)
+          .then(() => alert('Link copied to clipboard!'))
+          .catch(err => console.error('Failed to copy link:', err));
+    } else {
+      // Fallback
+      alert(`Copy this link: ${window.location.href}`);
+    }
+  };
 
-    ## Conclusion
-
-    As AI continues to evolve, understanding its basic principles becomes increasingly important for everyone, from developers to end-users.
-  `,
-  tags: ["AI Fundamentals", "Beginner's Guide", "Introduction"],
-}
-
-export default function BlogPostPage() {
-  const params = useParams()
-  const router = useRouter()
-  const blogSlug = params.blogSlug as string // Assuming your route is /blog/[blogSlug]
-
-  // For static data, we can directly use the placeholder.
-  // In a real scenario, you'd fetch data based on the slug.
-  const [blogPost, setBlogPost] = useState<BlogPost | null>(placeholderBlogPost)
-  const [isLoading, setIsLoading] = useState(false) // Not really loading static data
-  const [error, setError] = useState<string | null>(null)
-
-  // In a real implementation, you would likely have a useEffect here to fetch
-  // the blog post data based on the `blogSlug` when the API is ready.
-  // For now, we are using the placeholder.
-  // useEffect(() => {
-  //   const fetchBlogPost = async () => {
-  //     setIsLoading(true);
-  //     try {
-  //       // const data = await getBlogPost(blogSlug); // Replace with your actual API call
-  //       setBlogPost(placeholderBlogPost); // Using placeholder for now
-  //       setError(null);
-  //     } catch (err) {
-  //       console.error("Error fetching blog post:", err);
-  //       setError("Failed to load the blog post. Please try again later.");
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-  //
-  //   fetchBlogPost();
-  // }, [blogSlug]);
-
-  // Loading state (mostly for future API integration)
-  if (isLoading) {
-    return (
-      <>
-        <Header />
-        <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
-          <p className="mt-4 text-gray-600">Loading blog post...</p>
-        </div>
-        <Footer />
-      </>
-    )
-  }
-
-  // Error state (mostly for future API integration)
-  if (error || !blogPost) {
-    return (
-      <>
-        <Header />
-        <div className="min-h-screen bg-white flex flex-col items-center justify-center text-center px-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-3">Blog Post Not Found</h1>
-          <p className="text-sm md:text-base text-[#6b7280] max-w-md mx-auto">
-            {error || "The blog post you are looking for does not exist."}
-          </p>
-          {/*<Link href="/blog" passHref>*/}
-          {/*  <Button className="bg-[#a855f7] hover:bg-[#9333ea] text-white mt-5 text-sm px-4 py-2">Back to Blog</Button>*/}
-          {/*</Link>*/}
-          <Button
-              onClick={() => router.back()}
-              className="bg-[#a855f7] hover:bg-[#9333ea] text-white mt-5 text-sm px-4 py-2"
-          >
-            Back
-          </Button>
-        </div>
-        <Footer />
-      </>
-    )
-  }
-
-  // Format the date for display
-  const formattedDate = new Date(blogPost.date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-
-  // Estimate read time (1 minute per 200 words)
-  const wordCount = blogPost.content.split(/\s+/).length
-  const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200))
-
-  // Split the content into sections based on markdown headings for better rendering
-  const contentSections = blogPost.content.split(/##\s+/).filter((section) => section.trim() !== "")
-  const firstParagraph = blogPost.content.split("\n\n")[0] // Basic extraction of the first paragraph
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-white">
-        <main className="max-w-3xl mx-auto px-4 py-8">
-          {/* Back to Blog Link */}
-          <div className="mb-6">
-            <button
-                onClick={() => router.back()}
-                className="text-sm text-[#a855f7] hover:underline flex items-center"
-            >
-              <ChevronRight className="w-4 h-4 rotate-180 mr-1" />
-              Back
-            </button>
-          </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        {/* Assuming Header component is used in the layout */}
+        {/* <Header /> */}
 
-          {/* Blog Post Title and Metadata */}
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-[#111827] mb-4">{blogPost.title}</h1>
-            <div className="flex items-center text-sm text-gray-500 space-x-4 mb-2">
-              <div className="flex items-center">
-                <User className="w-4 h-4 mr-1" />
-                <span>{blogPost.author}</span>
+        <main className="container mx-auto px-4 py-12 max-w-5xl">
+          {/* Breadcrumbs */}
+          <nav className="text-sm text-gray-600 dark:text-gray-400 mb-8">
+            <Link href="/" className="hover:underline">Home</Link>
+            <span className="mx-2">/</span>
+            <Link href="/blog" className="hover:underline">Blog</Link> {/* Assuming a blog listing page */}
+            <span className="mx-2">/</span>
+            <span>{articleData.title}</span>
+          </nav>
+
+          {/* Article Header */}
+          <header className="mb-12">
+            {/* Blog Date */}
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              BLOG - {formatDate(articleData.publishDate)}
+            </p>
+            {/* Article Title */}
+            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight mb-6">
+              {articleData.title}
+            </h1>
+
+            {/* Author and Share */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-b border-gray-200 dark:border-gray-700 py-4">
+              {/* Author Info */}
+              <div className="flex items-center mb-4 sm:mb-0">
+                {articleData.author.avatarUrl && (
+                    <Image
+                        src={articleData.author.avatarUrl}
+                        alt={articleData.author.name}
+                        width={40}
+                        height={40}
+                        className="rounded-full mr-3"
+                    />
+                )}
+                <div>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{articleData.author.name}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Author</p>
+                </div>
               </div>
-              <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-1" />
-                <span>{formattedDate}</span>
-              </div>
-              <div className="flex items-center">
-                <Clock className="w-4 h-4 mr-1" />
-                <span>{readTimeMinutes} min read</span>
+
+              {/* Share Buttons */}
+              <div className="flex items-center space-x-4">
+                <Button variant="outline" size="sm" onClick={handleShare} className="flex items-center text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <Share2 className="w-4 h-4 mr-2" /> Share
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleCopyLink} className="flex items-center text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <LinkIcon className="w-4 h-4 mr-2" /> Copy Link
+                </Button>
               </div>
             </div>
-            {blogPost.tags && blogPost.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {blogPost.tags.map((tag, index) => (
-                  <span key={index} className="rounded-full px-3 py-1 text-xs bg-purple-100 text-purple-700">
-                    {tag}
-                  </span>
+          </header>
+
+          {/* Article Content and Sidebar */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {/* Main Content Column */}
+            <div className="md:col-span-2">
+              {/* Excerpt */}
+              <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
+                {articleData.excerpt}
+              </p>
+
+              {/* Content Sections */}
+              <div className="space-y-8">
+                {articleData.content.map((section, index) => (
+                    <div key={index}>
+                      {section.heading && (
+                          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                            {section.heading}
+                          </h2>
+                      )}
+                      {/* Use whitespace-pre-line to respect newline characters in content */}
+                      <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed whitespace-pre-line">
+                        {section.content}
+                      </p>
+
+                      {/* Subsections */}
+                      {section.subsections && section.subsections.length > 0 && (
+                          <div className="ml-4 border-l-2 border-gray-200 dark:border-gray-700 pl-4 space-y-6">
+                            {section.subsections.map((subsection, subIndex) => (
+                                <div key={subIndex}>
+                                  <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
+                                    {subsection.heading}
+                                  </h3>
+                                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                                    {subsection.content}
+                                  </p>
+                                </div>
+                            ))}
+                          </div>
+                      )}
+                    </div>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Blog Post Content */}
-          <div className="prose prose-sm md:prose-base lg:prose-lg xl:prose-xl max-w-none text-gray-700">
-            {/* Render the first paragraph separately */}
-            {firstParagraph && <p className="leading-relaxed">{firstParagraph}</p>}
-            {/* Render subsequent sections based on markdown headings */}
-            {contentSections.map((section, index) => {
-              const [heading, ...rest] = section.split("\n")
-              const content = rest.filter((line) => line.trim() !== "").join("\n\n")
-              return (
-                <div key={index} className="mt-6">
-                  <h2 className="text-2xl font-semibold text-[#111827] mb-2">{heading.trim()}</h2>
-                  <p className="leading-relaxed">{content}</p>
+            {/* Sidebar Column */}
+            <div className="md:col-span-1">
+              <div className="sticky top-8 space-y-8"> {/* Added sticky positioning */}
+                {/* About the Author */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">About the Author</h3>
+                  <div className="flex items-center mb-4">
+                    {articleData.author.avatarUrl && (
+                        <Image
+                            src={articleData.author.avatarUrl}
+                            alt={articleData.author.name}
+                            width={50}
+                            height={50}
+                            className="rounded-full mr-4"
+                        />
+                    )}
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">{articleData.author.name}</p>
+                      {/* Assuming a role or title could go here */}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {articleData.author.bio}
+                  </p>
                 </div>
-              )
-            })}
+
+                {/* Related Articles */}
+                {articleData.relatedArticles && articleData.relatedArticles.length > 0 && (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Related Articles</h3>
+                      <ul className="space-y-3">
+                        {articleData.relatedArticles.map(related => (
+                            <li key={related.id}>
+                              <Link href={`/blog/${related.slug}`} className="text-purple-600 dark:text-purple-400 hover:underline text-sm">
+                                {related.title}
+                              </Link>
+                            </li>
+                        ))}
+                      </ul>
+                    </div>
+                )}
+              </div>
+            </div>
           </div>
         </main>
+
+        {/* Assuming Footer component is used in the layout */}
+        {/* <Footer /> */}
       </div>
-    </>
-  )
+  );
 }
