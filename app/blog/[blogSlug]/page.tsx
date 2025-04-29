@@ -117,9 +117,15 @@ export default function BlogPostPage() {
           <p className="text-sm md:text-base text-[#6b7280] max-w-md mx-auto">
             {error || "The blog post you are looking for does not exist."}
           </p>
-          <Link href="/blog" passHref>
-            <Button className="bg-[#a855f7] hover:bg-[#9333ea] text-white mt-5 text-sm px-4 py-2">Back to Blog</Button>
-          </Link>
+          {/*<Link href="/blog" passHref>*/}
+          {/*  <Button className="bg-[#a855f7] hover:bg-[#9333ea] text-white mt-5 text-sm px-4 py-2">Back to Blog</Button>*/}
+          {/*</Link>*/}
+          <Button
+              onClick={() => router.back()}
+              className="bg-[#a855f7] hover:bg-[#9333ea] text-white mt-5 text-sm px-4 py-2"
+          >
+            Back
+          </Button>
         </div>
         <Footer />
       </>
@@ -148,9 +154,13 @@ export default function BlogPostPage() {
         <main className="max-w-3xl mx-auto px-4 py-8">
           {/* Back to Blog Link */}
           <div className="mb-6">
-            <Link href="/blog" className="text-sm text-[#a855f7] hover:underline flex items-center">
-              <ChevronRight className="w-4 h-4 rotate-180 mr-1" /> Back to Blog
-            </Link>
+            <button
+                onClick={() => router.back()}
+                className="text-sm text-[#a855f7] hover:underline flex items-center"
+            >
+              <ChevronRight className="w-4 h-4 rotate-180 mr-1" />
+              Back
+            </button>
           </div>
 
           {/* Blog Post Title and Metadata */}
