@@ -25,8 +25,11 @@ export function useTools(params?: {
   return useQuery({
     queryKey: ["tools", params?.category, params?.search, params?.page, params?.limit],
     queryFn: () => getTools(params),
-    // keepPreviousData: true, // Optional: Keeps UI responsive during transition
+    keepPreviousData: true,         // Prevent flickering on pagination
+    staleTime: 1000 * 10,           // Consider data fresh for 10 seconds
+    refetchOnWindowFocus: false,    // Avoid refetching on focus (optional)
   })
+
 }
 
 // Hook for fetching a single tool by ID

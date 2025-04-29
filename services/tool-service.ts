@@ -19,9 +19,11 @@ export const getTools = async (params?: {
     }
 
     const apiParams: Record<string, any> = {}
+    let endpoint = "/tools"
 
     if (params?.search) {
       apiParams.q = params.search
+      endpoint = "/tools/search" // Use /tools/search if a search term is provided
     }
 
     const limit = params?.limit ?? 12
@@ -34,17 +36,20 @@ export const getTools = async (params?: {
       apiParams.category = params.category
     }
 
-    const response = await apiClient.get<{ tools: Tool[]; total: number }>("/tools", {
+    const response = await apiClient.get<{ tools: Tool[]; total: number }>(endpoint, {
       params: apiParams,
-      headers: headers, // Include the headers with the token
+      headers,
     })
 
+    console.log(`Fetched from ${endpoint}:`, response.data)
     return response.data
+
   } catch (error) {
     console.error("Error fetching tools:", error)
     return getMockTools(params)
   }
 }
+
 
 // Mock data function
 function getMockTools(params?: {
