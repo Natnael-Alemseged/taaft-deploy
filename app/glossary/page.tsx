@@ -1,6 +1,6 @@
 // Glossary.tsx
 "use client"
-import { useState, useEffect, useMemo } from "react" // Added useMemo
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { ChevronRight, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button" // Assuming Button component path
@@ -8,6 +8,9 @@ import Header from "@/components/header" // Assuming Header component path
 
 import { useGlossaryGrouped } from "@/hooks/use-glossary" // Import the hook
 import type { GlossaryTerm } from "@/services/glossary-service" // Import types
+import { useAuth } from "@/contexts/auth-context"; // Import the useAuth hook
+// Import your actual Sign-in Modal component using the correct path
+import { SignInModal } from "@/components/home/sign-in-modal"; // Adjusted this path
 
 // Helper function to convert a term title into a URL-friendly slug
 function slugify(text: string): string {
@@ -23,6 +26,9 @@ function slugify(text: string): string {
 }
 
 export default function Glossary() {
+  // Fetch authentication state using the hook
+  const { isAuthenticated } = useAuth(); // Get isAuthenticated from AuthContext
+
   // Fetch grouped glossary data using the hook
   const { data: groupedGlossaryData, isLoading, isError } = useGlossaryGrouped()
 
@@ -72,6 +78,21 @@ export default function Glossary() {
 
   // State for mobile alphabetical navigation dropdown
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // State to control the visibility of the login popup/modal
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+  // Function to open the sign-in modal
+  const openSignInModal = () => {
+    console.log("Opening Sign In Modal");
+    setShowLoginPopup(true);
+  };
+
+  // Function to close the sign-in modal
+  const closeSignInModal = () => {
+    console.log("Closing Sign In Modal");
+    setShowLoginPopup(false);
+  };
 
 
   useEffect(() => {
@@ -202,6 +223,7 @@ export default function Glossary() {
       // Assuming term.id is unique and stable for keys
       <div key={term.id} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow transition-shadow bg-white dark:bg-gray-800"> {/* Added dark modes */}
         {/* Link to the individual term page */}
+        {/* Construct the href using slugify and term.id */}
         <Link href={`/terms/${slugify(term.id)}`} className="block"> {/* Assuming individual term pages exist */}
           {/* Top header section */}
           <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 flex items-start justify-between"> {/* Added dark modes */}
@@ -274,6 +296,7 @@ export default function Glossary() {
         // Use term.definition as the description
         "description": term.definition,
         // Construct the full URL for the term's page using slugify and term.id
+        // Ensure process.env.NEXT_PUBLIC_BASE_URL is correctly configured
         "url": `${process.env.NEXT_PUBLIC_BASE_URL}/terms/${slugify(term.id)}`, // Replace with your actual base URL and terms path
       };
 
@@ -312,20 +335,20 @@ export default function Glossary() {
 
           <main className="max-w-6xl mx-auto px-4 py-8">
             <div className="text-center mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold text-[#111827] dark:text-white mb-3">AI Tools Glossary</h1>{" "}
-              {/* Adjusted text color */}
+              <h1 className="text-2xl md:text-3xl font-bold text-[#111827] dark:text-white mb-3">AI Tools Glossary</h1>
               <p className="text-sm md:text-base text-[#6b7280] dark:text-gray-400 max-w-2xl mx-auto">
-                {" "}
-                {/* Adjusted text color */}
                 Explore our comprehensive glossary of AI and machine learning terms to better understand the tools in our
                 directory.
               </p>
-              {/* Assuming Sign-in demo button remains static */}
-              <Link href="/sign-in-demo" passHref>
-                <Button className="bg-[#a855f7] hover:bg-[#9333ea] text-white mt-5 text-sm px-4 py-2">
-                  Sign in Demo
-                </Button>
-              </Link>
+              {/* Conditionally render the Sign-in Demo button */}
+              {!isAuthenticated && ( // Only show if user is NOT authenticated
+                  <Button
+                      onClick={openSignInModal} // Call the function to open the login popup
+                      className="bg-[#a855f7] hover:bg-[#9333ea] text-white mt-5 text-sm px-4 py-2"
+                  >
+                    Sign in Demo
+                  </Button>
+              )}
             </div>
 
             {/* Mobile Alphabetical Navigation Dropdown */}
@@ -371,11 +394,9 @@ export default function Glossary() {
                 <div className="sticky top-8">
                   {" "}
                   {/* Adjusted top value if needed */}
-                  <h2 className="font-semibold text-[#111827] dark:text-white mb-4">Contents</h2>{" "}
-                  {/* Adjusted text color */}
+                  <h2 className="font-semibold text-[#111827] dark:text-white mb-4">Contents</h2>
                   <div className="space-y-1">
                     {allLetters.map((letter) => {
-                      // Determine if the letter has content based on the dynamic list
                       const hasContent = lettersWithContent.includes(letter)
                       const isSelected = selectedLetter === letter
 
@@ -406,7 +427,7 @@ export default function Glossary() {
                 {lettersWithContent.map((letter) => (
                     // Render a section for each letter with content
                     // Use the letter as the ID for scrolling/linking
-                    <section key={letter} id={letter} className="mb-10"> {/* Changed div to section and added id */}
+                    <section key={letter} id={letter} className="mb-10">
                       <h2 className="text-2xl font-bold text-[#a855f7] mb-4">{letter}</h2>
                       {/* Grid for terms within this letter section */}
                       <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
@@ -425,6 +446,16 @@ export default function Glossary() {
             </div>
           </main>
         </div>
+
+        {/* Render your actual Sign-in Modal component */}
+        {/* Pass the state and close function as props */}
+        <SignInModal
+            isOpen={showLoginPopup}
+            onClose={closeSignInModal}
+            // Assuming your SignInModal also needs an onSwitchToSignUp prop
+            // If not, you can remove this line.
+            onSwitchToSignUp={() => { /* Add logic to switch to sign up view, if needed */ }}
+        />
       </>
   )
 }

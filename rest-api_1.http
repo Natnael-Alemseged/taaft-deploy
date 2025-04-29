@@ -2,8 +2,9 @@
 ###search keywords
 POST taaft-backend.onrender.com/tools/keyword-search
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDU5NDExMDR9.mqK7jLvyEJjvuT0IkUqVi_fN82jhyAHljRa0cOqlhBA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDU5NTc2Nzd9.Z3IwfMT5KgCnxMCoZHF1xYV-oz2uzck0F4insDHtheA
 
+{"korbit"}
 ###get categories
 
 GET taaft-backend.onrender.com/api/categories
