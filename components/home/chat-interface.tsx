@@ -598,17 +598,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                   }}
                 />
               </div>
-              <Button
-                onClick={() => {
-                  router.push("/search?q=" + encodeURIComponent(input.trim()))
-                }}
-                className="rounded-full bg-gray-200 px-3 py-2 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none"
-                disabled={!input.trim()}
-                title="Search directly"
-              >
-                <Search className="h-4 w-4" />
-                <span className="sr-only">Search directly</span>
-              </Button>
+
               <Button
                 onClick={() => {
                   handleSendMessage()
@@ -618,6 +608,19 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
               >
                 Send <Send className="ml-1 h-4 w-4" />
                 <span className="sr-only">Send message</span>
+              </Button>
+              <Button
+                  onClick={() => {
+
+                    //todo implement getting from tool
+                    router.push("/search?q=" + encodeURIComponent(input.trim()))
+                  }}
+                  className="rounded-full bg-gray-200 px-3 py-2 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none"
+                  disabled={!input.trim()}
+                  title="Search directly"
+              >
+                <Search className="h-4 w-4" />search directly
+                <span className="sr-only">Search directly</span>
               </Button>
             </div>
           </div>

@@ -75,7 +75,7 @@ export const withFallbackTool = (tool: Tool): {
     keywords: tool.keywords || ["image generation", "AI art", "text to image", "image editor"], // More specific keywords
     pricing: tool.pricing === 0 ? "free" : "Premium" || "free",
     hasFreeVersion: tool.hasFreeVersion ?? true, // Default to true based on screenshot
-    logoUrl: tool.logoUrl || "/placeholder-image-tool.svg", // Consider a more specific placeholder
+    logoUrl: tool.logoUrl || "/robot.png", // Consider a more specific placeholder
     screenshotUrls: tool.screenshotUrls || [ // Add a placeholder screenshot URL
       "https://images.tech.co/wp-content/uploads/2024/01/15074809/AdobeStock_640654498-1-708x400.jpeg"
     ],
