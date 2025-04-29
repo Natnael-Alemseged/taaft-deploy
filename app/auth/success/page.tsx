@@ -39,10 +39,14 @@ export default function AuthSuccessPage() {
                     // The main AuthProvider's useEffect will handle fetching the user
                     // and updating the context state on the next page load.
 
-                    // 2. Redirect the user
-                    console.log("AuthSuccessPage: Tokens stored, redirecting to /");
-                    // Use replace to avoid going back to this success page
-                    router.replace('/');
+                    // 2. Trigger a full page reload
+                    console.log("AuthSuccessPage: Tokens stored, triggering full page reload.");
+                    // This forces the browser to fetch the new page and re-initialize everything,
+                    // including the AuthProvider, which will then find the tokens.
+                    window.location.reload();
+
+                    // Note: Code after window.location.reload() will not be executed.
+                    // We remove the router.replace('/') call here.
 
                 } catch (error: any) {
                     console.error("AuthSuccessPage: Caught an error during token storage:", error);
@@ -53,6 +57,7 @@ export default function AuthSuccessPage() {
                     localStorage.removeItem('user'); // Clear user data just in case
                     const errorMessage = error.message || 'storage_failed';
                     console.log(`AuthSuccessPage: Cleared tokens and redirecting to /sign-in?error=${errorMessage}`);
+                    // If storage fails, we still need to redirect away from this page
                     router.replace(`/sign-in?error=${errorMessage}`);
                 }
             } else {
