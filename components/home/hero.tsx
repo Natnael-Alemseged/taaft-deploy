@@ -27,7 +27,7 @@ export default function Hero() {
   ]
 
   // Update the handleSearchFocus function to accept an optional message parameter
-  const handleSearchFocus = (exampleMessage?: string) => {
+  const handleSearchFocus = (exampleMessage?: string | React.FocusEvent | React.MouseEvent) => {
     if (!isAuthenticated) {
       showLoginModal()
       return
@@ -35,9 +35,12 @@ export default function Hero() {
 
     setIsChatOpen(true)
 
-    // If an example message was provided, store it to be sent after chat opens
-    if (exampleMessage) {
-      // Use sessionStorage to pass the message to the chat interface
+    // Only process example message if it's a string
+    if (typeof exampleMessage === 'string') {
+      console.log(`example message is ${exampleMessage}`)
+
+      sessionStorage.removeItem("pendingChatMessage")
+      sessionStorage.setItem("shouldCreateNewSession", "true")
       sessionStorage.setItem("pendingChatMessage", exampleMessage)
     }
   }
@@ -116,36 +119,36 @@ export default function Hero() {
           </div>
 
           {/* Example buttons */}
-          <div className="mb-2 text-sm text-gray-500">💡 Try these examples:</div>
-          <div className="flex flex-wrap justify-center gap-2">
-            {exampleTags.slice(0, 3).map((example) => (
-              <Button
-                key={example}
-                variant="outline"
-                className="rounded-full border-gray-200 bg-white bg-gradient-to-br from-white via-purple-50 to-purple-100 text-xs text-gray-600 shadow-lg hover:bg-gray-50"
-                onClick={() => handleSearchFocus(example)}
-              >
-                <span className="pr-2 text-purple-300">" </span>
-                {example}
-                <span className="pl-2 text-purple-300">" </span>
-              </Button>
-            ))}
+            <div className="mb-2 text-sm text-gray-500">💡 Try these examples:</div>
+            <div className="flex flex-wrap justify-center gap-2">
+              {exampleTags.slice(0, 3).map((example) => (
+                <Button
+                  key={example}
+                  variant="outline"
+                  className="rounded-full border-gray-200 bg-white bg-gradient-to-br from-white via-purple-50 to-purple-100 text-xs text-gray-600 shadow-lg hover:bg-gray-50"
+                  onClick={() => handleSearchFocus(example)}
+                >
+                  <span className="pr-2 text-purple-300">" </span>
+                  {example}
+                  <span className="pl-2 text-purple-300">" </span>
+                </Button>
+              ))}
+            </div>
+            <div className="flex flex-wrap justify-center gap-2 mt-2">
+              {exampleTags.slice(3).map((example) => (
+                <Button
+                  key={example}
+                  variant="outline"
+                  className="rounded-full border-gray-200 bg-white bg-gradient-to-br from-white via-purple-50 to-purple-100 text-xs text-gray-600 shadow-lg hover:bg-gray-50"
+                  onClick={() => handleSearchFocus(example)}
+                >
+                  <span className="pr-2 text-purple-300">" </span>
+                  {example}
+                  <span className="pl-2 text-purple-300">" </span>
+                </Button>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap justify-center gap-2 mt-2">
-            {exampleTags.slice(3).map((example) => (
-              <Button
-                key={example}
-                variant="outline"
-                className="rounded-full border-gray-200 bg-white bg-gradient-to-br from-white via-purple-50 to-purple-100 text-xs text-gray-600 shadow-lg hover:bg-gray-50"
-                onClick={() => handleSearchFocus(example)}
-              >
-                <span className="pr-2 text-purple-300">" </span>
-                {example}
-                <span className="pl-2 text-purple-300">" </span>
-              </Button>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   )

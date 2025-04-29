@@ -14,7 +14,7 @@ import { withFallbackTool } from "@/lib/utils"
 import { useParams } from "next/navigation"
 import LoadingToolDetailSkeleton from "@/components/skeletons/loading-tool-detail-skeleton"
 // Add the import for the new tool detail service at the top
-import { getToolByUniqueId } from "@/services/tool-detail-service"
+import { getToolByUniqueId, getToolByUniqueName } from "@/services/tool-detail-service"
 import { useQueryClient } from "@tanstack/react-query"
 
 // Add queryClient in the component
@@ -39,25 +39,42 @@ export default function ToolDetail() {
     setSelectedPlan(selectedPlan === planName ? null : planName) // Deselect if it's already selected
   }
 
-  // Add useEffect to try the unique ID endpoint if the regular one fails
+  // Add useEffect to try the unique name endpoint first, then fall back to unique ID if that fails
   useEffect(() => {
-    if (isError || (!isLoading && !tool)) {
-      // Try fetching by unique ID
-      const fetchByUniqueId = async () => {
+    const fetchToolData = async () => {
+      try {
+        // First try to fetch by unique name
+        const uniqueNameTool = await getToolByUniqueName(slug)
+        if (uniqueNameTool) {
+          // Replace the tool data in the React Query cache
+          queryClient.setQueryData(["tool", slug], uniqueNameTool)
+          return
+        }
+      } catch (nameError) {
+        console.log("Name lookup failed, trying unique ID:", nameError)
+
+        // If name lookup fails, try fetching by unique ID
         try {
           const uniqueIdTool = await getToolByUniqueId(slug)
-          // Replace the tool data
           if (uniqueIdTool) {
-            // We need to replace the data in the React Query cache
+            // Replace the tool data in the React Query cache
             queryClient.setQueryData(["tool", slug], uniqueIdTool)
+            return
           }
-        } catch (uniqueIdError) {
-          console.error("Failed to fetch by unique ID as well:", uniqueIdError)
-          router.push("/404")
+        } catch (idError) {
+          console.error("Failed to fetch by unique ID as well:", idError)
+
+          // If both lookups fail and we have no tool data, redirect to 404
+          if (!tool && !isLoading) {
+            router.push("/404")
+          }
         }
       }
+    }
 
-      fetchByUniqueId()
+    // Only try these lookups if the regular endpoint failed or is still loading
+    if (isError || (!isLoading && !tool)) {
+      fetchToolData()
     }
   }, [isError, isLoading, tool, slug, router, queryClient])
 
@@ -140,12 +157,9 @@ export default function ToolDetail() {
             <div className="flex items-center gap-2">
               <div className="flex flex-wrap gap-2">
                 {safeTool?.keywords?.map((keyword, index) => (
-                    <span
-                        key={index}
-                        className="text-sm bg-[#f5f0ff] text-[#a855f7] px-3 py-1 rounded-full"
-                    >
-      {keyword}
-    </span>
+                  <span key={index} className="text-sm bg-[#f5f0ff] text-[#a855f7] px-3 py-1 rounded-full">
+                    {keyword}
+                  </span>
                 ))}
               </div>
 
@@ -337,51 +351,38 @@ export default function ToolDetail() {
             <div className="border border-[#e5e7eb] rounded-lg p-6 sticky top-8">
               <div className="mb-6">
                 <Button className="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white py-3 rounded-md flex items-center justify-center">
-                  <a
-                      href={safeTool?.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center"
-                  >
+                  <a href={safeTool?.link} target="_blank" rel="noopener noreferrer" className="flex items-center">
                     Try This Tool <ExternalLink className="w-4 h-4 ml-2" />
                   </a>
                 </Button>
               </div>
 
               {safeTool?.logoUrl && (
-                  <div className="mb-4 flex justify-center">
-                    <img
-                        src={safeTool.logoUrl || "/placeholder.svg"}
-                        alt={`${safeTool?.name} logo`}
-                        className="h-16 w-16 object-contain"
-                    />
-                  </div>
+                <div className="mb-4 flex justify-center">
+                  <img
+                    src={safeTool.logoUrl || "/placeholder.svg"}
+                    alt={`${safeTool?.name} logo`}
+                    className="h-16 w-16 object-contain"
+                  />
+                </div>
               )}
 
               <h3 className="font-semibold text-[#111827] mb-2">Use Cases</h3>
               <div className="flex flex-wrap gap-2 mb-6">
                 {safeTool?.features?.slice(0, 5).map((feature, index) => (
-                    <span
-                        key={index}
-                        className="text-sm bg-[#f3f4f6] text-[#6b7280] px-3 py-1 rounded-full"
-                    >
-          {feature}
-        </span>
+                  <span key={index} className="text-sm bg-[#f3f4f6] text-[#6b7280] px-3 py-1 rounded-full">
+                    {feature}
+                  </span>
                 ))}
               </div>
 
               <div className="border-t border-[#e5e7eb] pt-4 mb-6">
                 <h3 className="font-semibold text-[#111827] mb-2">Website</h3>
                 <div
-                    className="text-sm text-[#a855f7] hover:underline break-words max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
-                    title={safeTool?.link}
+                  className="text-sm text-[#a855f7] hover:underline break-words max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
+                  title={safeTool?.link}
                 >
-                  <a
-                      href={safeTool?.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block"
-                  >
+                  <a href={safeTool?.link} target="_blank" rel="noopener noreferrer" className="block">
                     {safeTool?.link}
                   </a>
                 </div>
@@ -390,23 +391,18 @@ export default function ToolDetail() {
               <div className="border-t border-[#e5e7eb] pt-4">
                 <h3 className="font-semibold text-[#111827] mb-2">Last Updated</h3>
                 <p className="text-sm text-[#6b7280]">
-                  {safeTool?.updatedAt
-                      ? new Date(safeTool.updatedAt).toLocaleDateString()
-                      : "N/A"}
+                  {safeTool?.updatedAt ? new Date(safeTool.updatedAt).toLocaleDateString() : "N/A"}
                 </p>
               </div>
 
               <div className="flex items-center justify-between mt-8">
                 <button
-                    className={`p-2 border border-[#e5e7eb] rounded-lg ${
-                        safeTool?.savedByUser ? "text-purple-600" : "text-gray-600"
-                    }`}
-                    onClick={handleSaveToggle}
+                  className={`p-2 border border-[#e5e7eb] rounded-lg ${
+                    safeTool?.savedByUser ? "text-purple-600" : "text-gray-600"
+                  }`}
+                  onClick={handleSaveToggle}
                 >
-                  <Bookmark
-                      className="w-5 h-5"
-                      fill={safeTool?.savedByUser ? "currentColor" : "none"}
-                  />
+                  <Bookmark className="w-5 h-5" fill={safeTool?.savedByUser ? "currentColor" : "none"} />
                 </button>
                 <button className="p-2 border border-[#e5e7eb] rounded-lg">
                   <Share2 className="w-5 h-5 text-[#6b7280]" />
@@ -414,7 +410,6 @@ export default function ToolDetail() {
               </div>
             </div>
           </div>
-
         </div>
       </main>
     </div>

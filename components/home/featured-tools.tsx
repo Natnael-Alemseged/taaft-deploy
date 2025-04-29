@@ -89,8 +89,44 @@ export default function FeaturedTools() {
         </div>
 
         {isLoading && (
-          <div className="flex justify-center py-12">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600"></div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {[...Array(4)].map((_, index) => (
+              <Card
+                key={index}
+                className="max-w-sm overflow-hidden rounded-2xl border border-gray-200 shadow-lg w-full mx-auto"
+              >
+                <CardContent className="p-0">
+                  <div className="p-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-5 w-16 bg-gray-200 rounded-full animate-pulse"></div>
+                        <div className="h-5 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+                      </div>
+                      <div className="h-5 w-16 bg-gray-200 rounded-full animate-pulse"></div>
+                    </div>
+
+                    <div className="h-6 w-3/4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                    <div className="h-4 w-full bg-gray-200 rounded animate-pulse mb-1"></div>
+                    <div className="h-4 w-full bg-gray-200 rounded animate-pulse mb-1"></div>
+                    <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse mb-4"></div>
+
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      {[...Array(3)].map((_, idx) => (
+                        <div key={idx} className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+                        <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+                      </div>
+                      <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
 

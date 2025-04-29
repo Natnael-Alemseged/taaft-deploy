@@ -97,8 +97,8 @@ export default function ToolCard({ tool }: ToolCardProps) {
           {/*{tool.description}    /!* Modified line *!/*/}
           <p className="mb-4 text-sm text-gray-600">
             {tool.description && tool.description.length > 120 // Adjust 120 to your desired length
-                ? `${tool.description.substring(0, 120)}...`
-                : tool.description}
+              ? `${tool.description.substring(0, 120)}...`
+              : tool.description}
           </p>
         </p>
         {/* Tags */}

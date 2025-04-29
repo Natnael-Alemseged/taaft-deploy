@@ -1,17 +1,3 @@
-// "use client"
-//
-// import { useState, useEffect } from "react"
-// import Link from "next/link"
-// import { ArrowLeft, Bookmark, Grid, List, Share2 } from "lucide-react"
-// import { Button } from "@/components/ui/button"
-// import { Card, CardContent } from "@/components/ui/card"
-// import Footer from "@/components/ui/footer"
-// import { useSearchTools } from "@/hooks/use-search"
-// import { useSaveTool, useUnsaveTool } from "@/hooks/use-tools"
-// import { useAuth } from "@/contexts/auth-context"
-// import type { Tool } from "@/types/tool"
-// import { useSearchParams } from "next/navigation"
-// import { clsx } from "clsx"
 //
 // interface SearchResultsProps {
 //   query: string
@@ -295,6 +281,64 @@
 //     return `${description.substring(0, limit)}...`;
 //   };
 //
+//   // Add this at the beginning of the component function, after the state declarations
+//   useEffect(() => {
+//     // Check if we have data from chat in sessionStorage
+//     const chatData = sessionStorage.getItem("chatResponseTools")
+//     const source = searchParams.get("source")
+//     if (chatData && source === "chat") {
+//       try {
+//         const parsedData = JSON.parse(chatData)
+//         if (parsedData && parsedData.hits && Array.isArray(parsedData.hits)) {
+//           // Transform the hits into the format expected by the component
+//           const transformedTools = parsedData.hits.map((hit: any) => ({
+//             id: hit.id || hit._id || `tool-${Math.random().toString(36).substr(2, 9)}`,
+//             name: hit.name || hit.title || "Unknown Tool",
+//             description: hit.description || hit.summary || "",
+//             category: hit.category || hit.type || "AI Tool",
+//             pricing: hit.pricing || "unknown",
+//             features: hit.features || [],
+//             keywords: hit.keywords || hit.tags || [],
+//             isFeatured: hit.isFeatured || false,
+//             savedByUser: hit.savedByUser || false,
+//             website: hit.link || "#",
+//             createdAt: new Date().toISOString(), // Placeholder
+//             updatedAt: new Date().toISOString(), // Placeholder
+//             status: "approved" as const, // Default status
+//             hasFreeVersion: false,
+//             contactName: "", // Placeholder
+//             contactEmail: "", // Placeholder
+//             // Add any other fields needed by your ToolCard component
+//           }))
+//
+//           //setSearchResults({
+//           //  tools: transformedTools,
+//           //  total: transformedTools.length,
+//           //  page: 1,
+//           //  limit: transformedTools.length,
+//           //  hasMore: false
+//           //})
+//           setDisplayedTools(transformedTools);
+//           setTotalResults(transformedTools.length);
+//           setAvailableCategories(Array.from(new Set(transformedTools.map(t => t.category))));
+//           setAvailablePricing(Array.from(new Set(transformedTools.map(t => t.pricing))));
+//           setIsLoadingState(false);
+//           setIsInitialLoad(false);
+//         }
+//       } catch (error) {
+//         console.error("Error parsing chat data:", error)
+//       }
+//     }
+//   }, [searchParams])
+//
+//   const [searchResults, setSearchResults] = useState<any>(null)
+//   const [isLoadingMore, setIsLoadingMore] = useState(false)
+//   const [isLoading, setIsLoading] = useState(false)
+//
+//   const loadMoreResults = () => {
+//     // Implement your load more logic here
+//   }
+//
 //   return (<>
 //           {/* Breadcrumb */}
 //           <div className="mb-6">
@@ -520,8 +564,45 @@
 //                   </div>
 //               )}
 //
+//               {/* Search Results */}
+//               {!isLoadingState && displayedTools && displayedTools.length > 0 ? (
+//                   <div className="mt-6">
+//                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+//                       {displayedTools.map((tool) => (
+//                           <ToolCard key={tool.id} tool={tool} />
+//                       ))}
+//                     </div>
+//
+//                     {/* Pagination */}
+//                     {/*searchResults.hasMore && (
+//                       <div className="mt-8 flex justify-center">
+//                         <Button
+//                           onClick={loadMoreResults}
+//                           disabled={isLoadingMore}
+//                           className="bg-purple-600 hover:bg-purple-700 text-white"
+//                         >
+//                           {isLoadingMore ? (
+//                             <>
+//                               <span className="mr-2">Loading...</span>
+//                               <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+//                             </>
+//                           ) : (
+//                             "Load More"
+//                           )}
+//                         </Button>
+//                       </div>
+//                     )*/}
+//                   </div>
+//               ) : (
+//                   !isLoadingState && (
+//                       <div className="mt-10 text-center">
+//                         <p className="text-gray-500">No results found. Try a different search term.</p>
+//                       </div>
+//                   )
+//               )}
+//
 //               {/* Display Results (List View - Grid Layout) */}
-//               {!isLoadingState && !isErrorState && displayedTools.length > 0 && viewMode === "list" && (
+//               {/*{!isLoadingState && !isErrorState && displayedTools.length > 0 && viewMode === "list" && (
 //                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 //                     {displayedTools.map((tool) => (
 //                         <Card key={tool.id} className="overflow-hidden border border-gray-200 flex flex-col"> {/* Added flex-col */}

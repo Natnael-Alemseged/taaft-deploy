@@ -56,9 +56,8 @@ export const getChatSessions = async (skip = 0, limit = 20): Promise<ChatSession
 // Get messages for a specific chat session
 export const getChatSessionMessages = async (sessionId: string): Promise<Message[]> => {
   try {
-  console.log(`Fetching messages for session ${sessionId}`)
+    console.log(`Fetching messages for session ${sessionId}`)
     const response = await apiClient.get<any[]>(`/api/chat/sessions/${sessionId}/messages`)
-
 
     // Transform the API response to our Message format
     const messages: Message[] = response.data.map((msg) => ({
@@ -98,16 +97,15 @@ export const createChatSession = async (title: string): Promise<ChatSession> => 
   }
 }
 
-
 export const sendChatMessage = async (
-    sessionId: string,
-    message: string,
-    model = "gpt4",
-    systemPrompt = "You are a helpful assistant.",
-    metadata?: Record<string, any>,
+  sessionId: string,
+  message: string,
+  model = "gpt4",
+  systemPrompt = "You are a helpful assistant.",
+  metadata?: Record<string, any>,
 ): Promise<{ message: Message; toolRecommendations?: string[]; data?: any }> => {
   try {
-    console.log(`Sending message to session ${sessionId} with model ${model}`);
+    console.log(`Sending message to session ${sessionId} with model ${model}`)
 
     // Create the request payload
     const payload = {
@@ -115,43 +113,42 @@ export const sendChatMessage = async (
       model,
       system_prompt: systemPrompt,
       ...(metadata && { metadata }),
-    };
+    }
 
     // Make the API request
-    const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload);
+    const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload)
 
-    console.log(`Response received for session ${sessionId}`);
+    console.log(`Response received for session ${sessionId}`)
 
-    const rawResponseMessage = response.data.message;
+    const rawResponseMessage = response.data.message
 
-    console.log("response api is:"+rawResponseMessage);
-
+    console.log("response api is:" + rawResponseMessage)
 
     // Extract options if present
-    let options: string[] = [];
-    const optionsPattern = "options =";
-    const optionsIndex = rawResponseMessage.indexOf(optionsPattern);
+    let options: string[] = []
+    const optionsPattern = "options ="
+    const optionsIndex = rawResponseMessage.indexOf(optionsPattern)
 
     if (optionsIndex !== -1) {
       // Extract the part after "options ="
-      const optionsStringRaw = rawResponseMessage.substring(optionsIndex + optionsPattern.length);
+      const optionsStringRaw = rawResponseMessage.substring(optionsIndex + optionsPattern.length)
 
       // Trim whitespace from both ends first
-      let cleanedOptionsString = optionsStringRaw.trim();
+      let cleanedOptionsString = optionsStringRaw.trim()
 
       // Now remove the leading '[' and trailing ']' if they exist
-      cleanedOptionsString = cleanedOptionsString.replace(/^\[|\]$/g, '').trim();
+      cleanedOptionsString = cleanedOptionsString.replace(/^\[|\]$/g, "").trim()
 
       // Split by comma, trim, and remove quotes from each option
-      options = cleanedOptionsString.split(',').map(option =>
-          option.trim().replace(/'/g, '').replace(/"/g, '')
-      ).filter(option => option.length > 0); // Filter out any empty strings
+      options = cleanedOptionsString
+        .split(",")
+        .map((option) => option.trim().replace(/'/g, "").replace(/"/g, ""))
+        .filter((option) => option.length > 0) // Filter out any empty strings
     }
 
     // Clean the message content (remove "options = ..." part)
-    const cleanedMessage = optionsIndex !== -1
-        ? rawResponseMessage.substring(0, optionsIndex).trim()
-        : rawResponseMessage.trim();
+    const cleanedMessage =
+      optionsIndex !== -1 ? rawResponseMessage.substring(0, optionsIndex).trim() : rawResponseMessage.trim()
 
     return {
       message: {
@@ -161,20 +158,20 @@ export const sendChatMessage = async (
         timestamp: new Date(response.data.timestamp),
       },
       toolRecommendations: options.length > 0 ? options : undefined,
-      data: response.data // Include the entire response data
-    };
+      data: response.data, // Include the entire response data
+    }
   } catch (error: any) {
-    console.error(`Error sending message to session ${sessionId}:`, error);
+    console.error(`Error sending message to session ${sessionId}:`, error)
 
     if (error.response) {
-      console.error("Error response data:", error.response.data);
-      console.error("Error response status:", error.response.status);
+      console.error("Error response data:", error.response.data)
+      console.error("Error response status:", error.response.status)
     } else if (error.request) {
-      console.error("No response received:", error.request);
+      console.error("No response received:", error.request)
     } else {
-      console.error("Error message:", error.message);
+      console.error("Error message:", error.message)
     }
 
-    throw error;
+    throw error
   }
-};
+}

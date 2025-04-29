@@ -34,6 +34,36 @@ export default function BrowseTools() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [page, setPage] = useState(1)
   const limit = 12 // Items per page
+  const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
+
+
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery)
+
+      // Update URL with search query
+      const current = new URLSearchParams(Array.from(searchParams.entries()))
+      if (searchQuery) {
+        current.set("q", searchQuery)
+      } else {
+        current.delete("q")
+      }
+
+      // Reset page
+      setPage(1)
+      current.delete("page")
+
+      const search = current.toString()
+      const query = search ? `?${search}` : ""
+      router.replace(`${pathname}${query}`)
+    }, 300)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [searchQuery])
+
 
   // --- Sync state with URL query parameter on mount and URL changes ---
   // This effect now correctly depends on searchParams to update state
@@ -62,14 +92,15 @@ export default function BrowseTools() {
   // Fetch tools data based on current state
   const {
     data: toolsData,
-    isLoading: isLoadingTools, // Renamed to avoid conflict
-    isError: isErrorTools, // Renamed to avoid conflict
+    isLoading: isLoadingTools,
+    isError: isErrorTools,
   } = useTools({
-    category: selectedCategory !== "all-categories" ? selectedCategory : undefined, // Pass slug if not 'all-categories'
-    search: searchQuery,
-    page, // Pass the current page number
-    limit, // Pass the limit per page
+    category: selectedCategory !== "all-categories" ? selectedCategory : undefined,
+    search: debouncedQuery,
+    page,
+    limit,
   })
+
 
   // Fetch categories data for the dropdown
   const { data: categoriesData, isLoading: isLoadingCategories, isError: isErrorCategories } = useCategories()

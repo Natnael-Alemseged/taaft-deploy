@@ -28,39 +28,19 @@ interface ChatResponsePopupProps {
 function ChatResponsePopup({ message, formattedData, onClose }: ChatResponsePopupProps) {
   const router = useRouter()
 
-
   const handleGoToTools = () => {
     // 1. Close all popups first
-    onClose();
+    onClose()
 
     // 2. Add slight delay to ensure popups are unmounted
     setTimeout(() => {
       // 3. Use replace instead of push to avoid history issues
-      router.replace('/search?source=chat');
+      router.replace("/search?source=chat")
 
       // 4. Force scroll to top in case previous modals affected scroll position
-      window.scrollTo(0, 0);
-    }, 100);
-  };
-
-  // const handleGoToTools = () => {
-  //   try {
-  //     // Store the formatted data in sessionStorage for the search page to access
-  //     if (formattedData) {
-  //       sessionStorage.setItem("chatResponseTools", JSON.stringify(formattedData))
-  //       console.log("Data successfully stored in sessionStorage")
-  //     }
-  //
-  //     // Use window.location for a hard navigation that won't be intercepted
-  //     window.location.href = "/search?source=chat"
-  //
-  //     // Don't call onClose() here - the page will reload anyway
-  //   } catch (error) {
-  //     console.error("Error storing data in sessionStorage:", error)
-  //     // If there's an error, still try to navigate
-  //     window.location.href = "/search?source=chat"
-  //   }
-  // }
+      window.scrollTo(0, 0)
+    }, 100)
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -210,23 +190,41 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
     }
   }, [isOpen, inputRef])
 
-  // Add this effect after the other useEffect hooks to handle pending messages
+// Add this effect after the other useEffect hooks to handle pending messages
   useEffect(() => {
-    // Only run when chat is open and we have an active chat ID
-    if (isOpen && activeChatId && !isLoadingMessages && messages.length > 0) {
-      // Check if there's a pending message in sessionStorage
+    if (isOpen && !isLoadingMessages && messages.length > 0) {
       const pendingMessage = sessionStorage.getItem("pendingChatMessage")
       if (pendingMessage) {
         // Clear the pending message first to prevent infinite loop
         sessionStorage.removeItem("pendingChatMessage")
-        // Send the message
-        handleSendMessage(pendingMessage)
+
+        const sendPendingMessage = async () => {
+          if (!activeChatId) {
+            try {
+              const sessionTitle = pendingMessage.substring(0, 50) || "New Chat"
+              const newSession = await createChatSession.mutateAsync(sessionTitle)
+              setActiveChatId(newSession._id)
+              await refetchSessions()
+              await handleSendMessage(pendingMessage)
+            } catch (error) {
+              console.error("Failed to create session for pending message:", error)
+            }
+          } else {
+            await handleSendMessage(pendingMessage)
+          }
+        }
+
+        sendPendingMessage()
       }
     }
   }, [isOpen, activeChatId, isLoadingMessages, messages.length])
 
+
+
+
+
   // Handle sending a message
-  const handleSendMessage = async (content?: string) => {
+  async function handleSendMessage(content?: string) {
     const messageContent = content || input.trim()
     if (!messageContent) return
 
@@ -264,21 +262,75 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
       })
 
       console.log("Response received:", response)
-      setMessages((prev) => [...prev, response.message])
 
-      // Check for formatted_data in the response
-      if (response.data?.formatted_data) {
-        setPopupContent({
-          message: response.message.content,
-          formattedData: response.data.formatted_data,
-        })
-        setShowResponsePopup(true)
+      // Extract options if present in the message content
+      let options: string[] = []
+      const rawResponseMessage = response.message.content
+      const optionsPattern = "options ="
+      const optionsIndex = rawResponseMessage.indexOf(optionsPattern)
+
+      if (optionsIndex !== -1) {
+        // Extract the part after "options ="
+        const optionsStringRaw = rawResponseMessage.substring(optionsIndex + optionsPattern.length)
+
+        // Trim whitespace from both ends first
+        let cleanedOptionsString = optionsStringRaw.trim()
+
+        // Now remove the leading '[' and trailing ']' if they exist
+        if (cleanedOptionsString.startsWith("[") && cleanedOptionsString.endsWith("]")) {
+          cleanedOptionsString = cleanedOptionsString.substring(1, cleanedOptionsString.length - 1).trim()
+        } else if (cleanedOptionsString.startsWith("[")) {
+          cleanedOptionsString = cleanedOptionsString.substring(1).trim()
+        } else if (cleanedOptionsString.endsWith("]")) {
+          cleanedOptionsString = cleanedOptionsString.substring(0, cleanedOptionsString.length - 1).trim()
+        }
+
+        // Split by comma, trim, and remove quotes from each option
+        options = cleanedOptionsString
+          .split(",")
+          .map((option) => option.trim().replace(/'/g, "").replace(/"/g, "").replace(/\]$/, ""))
+          .filter((option) => option.length > 0) // Filter out any empty strings
+
+        // Set the tool recommendations
+        if (options.length > 0) {
+          setToolRecommendations(options)
+        }
+
+        // Clean the message content (remove "options = ..." part)
+        const cleanedMessage = rawResponseMessage.substring(0, optionsIndex).trim()
+        response.message.content = cleanedMessage
       }
 
-      // Handle tool recommendations if any
+      // Check for formatted_data in the response
+      if (response.data?.formatted_data && Array.isArray(response.data.formatted_data.hits)) {
+        // Store the formatted data in sessionStorage for the search page to access
+        try {
+          sessionStorage.setItem("chatResponseTools", JSON.stringify(response.data.formatted_data))
+          console.log("Data successfully stored in sessionStorage")
+        } catch (error) {
+          console.error("Error storing data in sessionStorage:", error)
+        }
+
+        // Add the message with a special flag for UI rendering
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...response.message,
+            hasSearchResults: true,
+            formattedData: response.data.formatted_data,
+          },
+        ])
+      } else {
+        setMessages((prev) => [...prev, response.message])
+      }
+
+      // Use the tool recommendations from the response if available
       if (response.toolRecommendations && response.toolRecommendations.length > 0) {
-        console.log("Tool recommendations received:", response.toolRecommendations)
+        console.log("Tool recommendations received from response:", response.toolRecommendations)
         setToolRecommendations(response.toolRecommendations)
+      } else if (options.length > 0) {
+        console.log("Tool recommendations extracted from message:", options)
+        setToolRecommendations(options)
       }
     } catch (error) {
       console.error("Error in chat completion:", error)
@@ -448,18 +500,42 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
               </div>
             ) : (
               messages.map((message, index) => (
-                <div key={index} className={`mb-4 flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div key={index} className="mb-4 flex justify-start">
                   {message.role === "assistant" && index === 0 && (
                     <div className="mb-1 text-xs text-gray-600 font-medium absolute -top-5 left-0">AI Assistant</div>
                   )}
                   <div
                     className={clsx(
                       "rounded-lg p-3 max-w-[80%]",
-                      message.role === "user" ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-800",
+                      message.role === "user" ? "bg-purple-600 text-white ml-auto" : "bg-gray-100 text-gray-800",
                       message.role === "assistant" && index === 0 && "relative mt-5",
                     )}
                   >
                     {message.content}
+
+                    {/* Add search results button if this message has search results */}
+                    {message.role === "assistant" && message.hasSearchResults && (
+                      <div className="mt-3 pt-2 border-t border-gray-200">
+                        <button
+                          onClick={() => {
+                            // Store the formatted data in sessionStorage before navigating
+                            if (message.formattedData) {
+                              try {
+                                sessionStorage.setItem("chatResponseTools", JSON.stringify(message.formattedData))
+                                console.log("Data successfully stored in sessionStorage")
+                              } catch (error) {
+                                console.error("Error storing data in sessionStorage:", error)
+                              }
+                            }
+                            router.push("/search?source=chat")
+                          }}
+                          className="text-sm text-purple-600 hover:text-purple-800 font-medium flex items-center"
+                        >
+                          <Search className="h-4 w-4 mr-1" />
+                          View search results
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
@@ -517,14 +593,23 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault()
-                      // Corrected: Use block body for async handler
                       handleSendMessage()
                     }
                   }}
                 />
               </div>
               <Button
-                // Corrected: Use block body for async handler
+                onClick={() => {
+                  router.push("/search?q=" + encodeURIComponent(input.trim()))
+                }}
+                className="rounded-full bg-gray-200 px-3 py-2 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none"
+                disabled={!input.trim()}
+                title="Search directly"
+              >
+                <Search className="h-4 w-4" />
+                <span className="sr-only">Search directly</span>
+              </Button>
+              <Button
                 onClick={() => {
                   handleSendMessage()
                 }}

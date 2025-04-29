@@ -7,7 +7,7 @@ export interface Tool {
   description: string
   features: string[]
   keywords: string[]
-  pricing: "free" | "freemium" | "subscription" | "one-time" | "usage-based"
+  pricing: "free" | "freemium" | "subscription" | "one-time" | "usage-based" | "Premium"
   hasFreeVersion: boolean
   logoUrl?: string
   screenshotUrls?: string[]
@@ -30,5 +30,4 @@ export interface ToolSubmission {
   hasFreeVersion: boolean
   contactName: string
   contactEmail: string
-
 }

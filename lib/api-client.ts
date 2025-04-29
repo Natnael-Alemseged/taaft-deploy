@@ -73,6 +73,7 @@ apiClient.interceptors.response.use(
         }
       }
     } else if (error.response) {
+      console.log(error.response);
       // Log detailed error information for other status codes
       console.error(`API Error ${error.response.status} for ${error.config?.url}:`, error.response.data)
     } else if (error.request) {
