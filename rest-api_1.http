@@ -1,3 +1,7 @@
+###get categories
+
+GET taaft-backend.onrender.com/api/categories
+Accept: application/json
 
 
 
