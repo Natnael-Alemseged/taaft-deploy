@@ -3,23 +3,23 @@
 import { useState, useEffect, useMemo } from "react" // Added useMemo
 import Link from "next/link"
 import { ChevronRight, ChevronDown, ChevronUp } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button" // Assuming Button component path
 import Header from "@/components/header" // Assuming Header component path
 
-import { useGlossaryGrouped } from "@/hooks/use-glossary" // Import the new hook
+import { useGlossaryGrouped } from "@/hooks/use-glossary" // Import the hook
 import type { GlossaryTerm } from "@/services/glossary-service" // Import types
 
 // Helper function to convert a term title into a URL-friendly slug
 function slugify(text: string): string {
   if (!text) return "" // Handle empty or null text
   return text
-    .toString()
-    .toLowerCase()
-    .replace(/\s+/g, "-") // Replace spaces with -
-    .replace(/[^\w-]+/g, "") // Remove all non-word chars except -
-    .replace(/-+/g, "-") // Replace multiple - with single -
-    .replace(/^-+/, "") // Trim - from start of text
-    .replace(/-+$/, "") // Trim - from end of text
+      .toString()
+      .toLowerCase()
+      .replace(/\s+/g, "-") // Replace spaces with -
+      .replace(/[^\w-]+/g, "") // Remove all non-word chars except -
+      .replace(/-+/g, "-") // Replace multiple - with single -
+      .replace(/^-+/, "") // Trim - from start of text
+      .replace(/-+$/, "") // Trim - from end of text
 }
 
 export default function Glossary() {
@@ -35,40 +35,44 @@ export default function Glossary() {
   }, [groupedGlossaryData]) // Recalculate only when groupedGlossaryData changes
 
   const allLetters = useMemo(
-    () => [
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F",
-      "G",
-      "H",
-      "I",
-      "J",
-      "K",
-      "L",
-      "M",
-      "N",
-      "O",
-      "P",
-      "Q",
-      "R",
-      "S",
-      "T",
-      "U",
-      "V",
-      "W",
-      "X",
-      "Y",
-      "Z",
-    ],
-    [],
+      () => [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+      ],
+      [],
   ) // This list is static
 
   // State for the currently selected letter in navigation
   // Initialize with the first letter that has content once data is loaded
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
+
+  // State for mobile alphabetical navigation dropdown
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
 
   useEffect(() => {
     // Set initial selected letter once lettersWithContent is determined
@@ -90,8 +94,8 @@ export default function Glossary() {
 
       // Get all section elements that correspond to letters with content
       const sections = lettersWithContent
-        .map((letter) => document.getElementById(letter))
-        .filter((section): section is HTMLElement => section !== null) // Filter out nulls
+          .map((letter) => document.getElementById(letter))
+          .filter((section): section is HTMLElement => section !== null) // Filter out nulls
 
       for (const section of sections) {
         const rect = section.getBoundingClientRect()
@@ -163,6 +167,7 @@ export default function Glossary() {
           window.history.pushState(null, "", `#${letter}`)
           // Update the selected state immediately
           setSelectedLetter(letter)
+          setIsMobileNavOpen(false); // Close mobile nav on click
         }
       }
     }
@@ -194,35 +199,38 @@ export default function Glossary() {
 
   // Function to render a single glossary term card
   const renderTermCard = (term: GlossaryTerm) => (
-    <div key={term.id} className="rounded-xl border border-gray-200 overflow-hidden hover:shadow transition-shadow">
-      <Link href={`/terms/${slugify(term.id)}`} className="block">
-        {/* Top header section */}
-        <div className="bg-gray-50 px-4 py-3 flex items-start justify-between">
-          <h3 className="text-base font-semibold text-gray-900">{term.name}</h3>
-          <ChevronRight className="w-4 h-4 text-purple-500 mt-1" />
-        </div>
+      // Assuming term.id is unique and stable for keys
+      <div key={term.id} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow transition-shadow bg-white dark:bg-gray-800"> {/* Added dark modes */}
+        {/* Link to the individual term page */}
+        <Link href={`/terms/${slugify(term.id)}`} className="block"> {/* Assuming individual term pages exist */}
+          {/* Top header section */}
+          <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 flex items-start justify-between"> {/* Added dark modes */}
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">{term.name}</h3> {/* Added dark modes */}
+            <ChevronRight className="w-4 h-4 text-purple-500 dark:text-purple-400 mt-1" /> {/* Added dark modes */}
+          </div>
 
-        {/* Definition text */}
-        <div className="px-4 py-4">
-          <p className="text-sm text-gray-600 whitespace-pre-line mb-4">{term.definition}</p>
-          <span className="text-sm text-purple-500 font-medium inline-flex items-center gap-1">
-            Read more <ChevronRight className="w-4 h-4" />
+          {/* Definition text */}
+          <div className="px-4 py-4">
+            {/* Using term.definition as per your data structure */}
+            <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line mb-4">{term.definition}</p> {/* Added dark modes */}
+            <span className="text-sm text-purple-500 dark:text-purple-400 font-medium inline-flex items-center gap-1"> {/* Added dark modes */}
+              Read more <ChevronRight className="w-4 h-4" />
           </span>
-        </div>
-      </Link>
-    </div>
+          </div>
+        </Link>
+      </div>
   )
 
   // Render nothing if there's an error fetching data
   if (isError) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center text-red-600">
-        <p className="mb-4">Failed to load glossary terms.</p>
-        {/* You might want a retry button here */}
-        <Button onClick={() => window.location.reload()} className="bg-red-500 hover:bg-red-600 text-white">
-          Retry Loading
-        </Button>
-      </div>
+        <div className="min-h-screen bg-white dark:bg-gray-950 flex flex-col items-center justify-center text-red-600 dark:text-red-400"> {/* Added dark modes */}
+          <p className="mb-4">Failed to load glossary terms.</p>
+          {/* You might want a retry button here */}
+          <Button onClick={() => window.location.reload()} className="bg-red-500 hover:bg-red-600 text-white dark:bg-red-700 dark:hover:bg-red-800"> {/* Added dark modes */}
+            Retry Loading
+          </Button>
+        </div>
     )
   }
 
@@ -230,199 +238,193 @@ export default function Glossary() {
   if (isLoading || !groupedGlossaryData) {
     // Also show loading if data is null initially
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
-        <p className="mt-4 text-gray-600">Loading glossary...</p>
-      </div>
+        <div className="min-h-screen bg-white dark:bg-gray-950 flex flex-col items-center justify-center"> {/* Added dark mode */}
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600 dark:border-purple-400"></div> {/* Added dark modes */}
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading glossary...</p> {/* Added dark mode */}
+        </div>
     )
   }
 
   // If loaded and no error, and data is an empty object
   if (lettersWithContent.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center text-gray-600">
-        <p>No glossary terms found.</p>
-      </div>
+        <div className="min-h-screen bg-white dark:bg-gray-950 flex flex-col items-center justify-center text-gray-600 dark:text-gray-400"> {/* Added dark modes */}
+          <p>No glossary terms found.</p>
+        </div>
     )
   }
 
+  // --- Generate JSON-LD Schema Markup for Defined Terms ---
+  const generateSchema = () => {
+    if (!groupedGlossaryData) return null;
+
+    // Collect all terms from the grouped data into a single array
+    const allTerms: GlossaryTerm[] = Object.values(groupedGlossaryData).flat();
+
+    if (allTerms.length === 0) {
+      return null;
+    }
+
+    // Schema can be an array of DefinedTerm objects for multiple terms on one page
+    const schema = allTerms.map(term => {
+      const termSchema: any = {
+        "@context": "https://schema.org",
+        "@type": "DefinedTerm",
+        "name": term.name,
+        // Use term.definition as the description
+        "description": term.definition,
+        // Construct the full URL for the term's page using slugify and term.id
+        "url": `${process.env.NEXT_PUBLIC_BASE_URL}/terms/${slugify(term.id)}`, // Replace with your actual base URL and terms path
+      };
+
+      // Add relatedTerm property if related terms exist in the term data
+      // Assuming relatedTerms is an array of objects with id, name, slug
+      if (term.relatedTerms && Array.isArray(term.relatedTerms) && term.relatedTerms.length > 0) {
+        termSchema.relatedTerm = term.relatedTerms.map(related => ({
+          "@type": "DefinedTerm", // Related terms are also DefinedTerms
+          "name": related.name,
+          // Link to the related term's specific page using slugify and related.id
+          "url": `${process.env.NEXT_PUBLIC_BASE_URL}/terms/${slugify(related.id)}`, // Link to related term's page
+        }));
+      }
+
+      return termSchema;
+    });
+
+    return JSON.stringify(schema);
+  };
+
+  const schemaMarkup = generateSchema();
+
+
   // Render the main content when data is loaded successfully
   return (
-    <>
-      <Header /> {/* Assuming Header component */}
-      <div className="min-h-screen bg-white dark:bg-gray-950">
-        {" "}
-        {/* Adjusted background */}
-        <main className="max-w-6xl mx-auto px-4 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#111827] dark:text-white mb-3">AI Tools Glossary</h1>{" "}
-            {/* Adjusted text color */}
-            <p className="text-sm md:text-base text-[#6b7280] dark:text-gray-400 max-w-2xl mx-auto">
-              {" "}
+      <>
+        <Header /> {/* Assuming Header component */}
+        <div className="min-h-screen bg-white dark:bg-gray-950">
+          {/* Add JSON-LD Schema Markup */}
+          {schemaMarkup && (
+              <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{ __html: schemaMarkup }}
+              />
+          )}
+
+          <main className="max-w-6xl mx-auto px-4 py-8">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-[#111827] dark:text-white mb-3">AI Tools Glossary</h1>{" "}
               {/* Adjusted text color */}
-              Explore our comprehensive glossary of AI and machine learning terms to better understand the tools in our
-              directory.
-            </p>
-            {/* Assuming Sign-in demo button remains static */}
-            <Link href="/sign-in-demo" passHref>
-              <Button className="bg-[#a855f7] hover:bg-[#9333ea] text-white mt-5 text-sm px-4 py-2">
-                Sign in Demo
-              </Button>
-            </Link>
-          </div>
-
-          {/* Mobile Alphabetical Navigation */}
-          <div className="md:hidden mb-8">
-            <AlphabeticalNavigationMobile
-              lettersWithContent={lettersWithContent} // Use dynamic list
-              selectedLetter={selectedLetter}
-              onLetterSelect={handleLetterClick}
-              allLetters={allLetters} // Use static list for display A-Z
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Desktop Sidebar - Alphabetical Navigation */}
-            <div className="hidden md:block md:col-span-1">
-              <div className="sticky top-8">
+              <p className="text-sm md:text-base text-[#6b7280] dark:text-gray-400 max-w-2xl mx-auto">
                 {" "}
-                {/* Adjusted top value if needed */}
-                <h2 className="font-semibold text-[#111827] dark:text-white mb-4">Contents</h2>{" "}
                 {/* Adjusted text color */}
-                <div className="space-y-1">
-                  {allLetters.map((letter) => {
-                    // Determine if the letter has content based on the dynamic list
-                    const hasContent = lettersWithContent.includes(letter)
-                    const isSelected = selectedLetter === letter
-
-                    return (
-                      <button
-                        key={letter}
-                        onClick={() => handleLetterClick(letter)}
-                        disabled={!hasContent} // Disable button if no content for this letter
-                        className={`block w-full text-left px-3 py-2 rounded-md transition-colors ${
-                          hasContent
-                            ? isSelected
-                              ? "bg-[#a855f7] text-white font-semibold"
-                              : "text-[#6b7280] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 font-semibold" // Adjusted colors
-                            : "text-gray-400 dark:text-gray-600 cursor-not-allowed font-normal" // Adjusted colors
-                        }`}
-                      >
-                        {letter}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
+                Explore our comprehensive glossary of AI and machine learning terms to better understand the tools in our
+                directory.
+              </p>
+              {/* Assuming Sign-in demo button remains static */}
+              <Link href="/sign-in-demo" passHref>
+                <Button className="bg-[#a855f7] hover:bg-[#9333ea] text-white mt-5 text-sm px-4 py-2">
+                  Sign in Demo
+                </Button>
+              </Link>
             </div>
 
-            {/* Main Content - Dynamically Rendered Sections */}
-            <div className="md:col-span-3">
-              {/* Iterate over letters that have content */}
-              {lettersWithContent.map((letter) => (
-                // Render a section for each letter with content
-                <div key={letter} id={letter} className="mb-10">
-                  <h2 className="text-2xl font-bold text-[#a855f7] mb-4">{letter}</h2>
-                  {/* Grid for terms within this letter section */}
-                  <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
-                    {/* Iterate over terms for this specific letter */}
-                    {groupedGlossaryData?.[letter]?.map((term) =>
-                      // Render a card for each term
-                      renderTermCard(term),
-                    )}
+            {/* Mobile Alphabetical Navigation Dropdown */}
+            <div className="md:hidden mb-8 relative">
+              <Button
+                  onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+                  variant="outline"
+                  className="w-full flex items-center justify-between"
+              >
+                <span>{selectedLetter ? `Jump to: ${selectedLetter}` : 'Select a letter'}</span>
+                {isMobileNavOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+              </Button>
+              {isMobileNavOpen && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto grid grid-cols-5 gap-1 p-2">
+                    {allLetters.map((letter) => {
+                      const hasContent = lettersWithContent.includes(letter);
+                      const isSelected = selectedLetter === letter;
+                      return (
+                          <button
+                              key={letter}
+                              onClick={() => handleLetterClick(letter)}
+                              disabled={!hasContent}
+                              className={`text-center text-sm px-2 py-1 rounded-md transition-colors ${
+                                  hasContent
+                                      ? isSelected
+                                          ? "bg-[#a855f7] text-white font-semibold"
+                                          : "text-[#6b7280] hover:bg-gray-100 font-semibold"
+                                      : "text-gray-400 cursor-not-allowed font-normal"
+                              }`}
+                          >
+                            {letter}
+                          </button>
+                      );
+                    })}
+                  </div>
+              )}
+            </div>
+
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              {/* Desktop Sidebar - Alphabetical Navigation */}
+              <div className="hidden md:block md:col-span-1">
+                <div className="sticky top-8">
+                  {" "}
+                  {/* Adjusted top value if needed */}
+                  <h2 className="font-semibold text-[#111827] dark:text-white mb-4">Contents</h2>{" "}
+                  {/* Adjusted text color */}
+                  <div className="space-y-1">
+                    {allLetters.map((letter) => {
+                      // Determine if the letter has content based on the dynamic list
+                      const hasContent = lettersWithContent.includes(letter)
+                      const isSelected = selectedLetter === letter
+
+                      return (
+                          <button
+                              key={letter}
+                              onClick={() => handleLetterClick(letter)}
+                              disabled={!hasContent} // Disable button if no content for this letter
+                              className={`block w-full text-left px-3 py-2 rounded-md transition-colors ${
+                                  hasContent
+                                      ? isSelected
+                                          ? "bg-[#a855f7] text-white font-semibold"
+                                          : "text-[#6b7280] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 font-semibold" // Adjusted colors
+                                      : "text-gray-400 dark:text-gray-600 cursor-not-allowed font-normal" // Adjusted colors
+                              }`}
+                          >
+                            {letter}
+                          </button>
+                      )
+                    })}
                   </div>
                 </div>
-              ))}
+              </div>
 
-              {/* Note: Sections for letters without content are not rendered by this loop */}
+              {/* Main Content - Dynamically Rendered Sections */}
+              <div className="md:col-span-3">
+                {/* Iterate over letters that have content */}
+                {lettersWithContent.map((letter) => (
+                    // Render a section for each letter with content
+                    // Use the letter as the ID for scrolling/linking
+                    <section key={letter} id={letter} className="mb-10"> {/* Changed div to section and added id */}
+                      <h2 className="text-2xl font-bold text-[#a855f7] mb-4">{letter}</h2>
+                      {/* Grid for terms within this letter section */}
+                      <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
+                        {/* Iterate over terms for this specific letter */}
+                        {/* Added check for groupedGlossaryData[letter] existence */}
+                        {groupedGlossaryData?.[letter]?.map((term) =>
+                            // Render a card for each term
+                            renderTermCard(term),
+                        )}
+                      </div>
+                    </section> // Close section tag
+                ))}
+
+                {/* Note: Sections for letters without content are not rendered by this loop */}
+              </div>
             </div>
-          </div>
-        </main>
-      </div>
-    </>
-  )
-}
-
-// ---------------------------------------------------
-// Mobile Alphabetical Navigation Component (Keep as is, it uses the props correctly)
-// ---------------------------------------------------
-
-interface AlphabeticalNavigationMobileProps {
-  lettersWithContent: string[]
-  selectedLetter: string | null
-  onLetterSelect: (letter: string) => void
-  allLetters: string[]
-}
-
-function AlphabeticalNavigationMobile({
-  lettersWithContent,
-  selectedLetter,
-  onLetterSelect,
-  allLetters,
-}: AlphabeticalNavigationMobileProps) {
-  const [isOpen, setIsOpen] = useState(false)
-
-  // Create rows of the alphabet for the mobile dropdown grid
-  const alphabetRows = []
-  for (let i = 0; i < allLetters.length; i += 8) {
-    alphabetRows.push(allLetters.slice(i, i + 8))
-  }
-
-  return (
-    <div className="border border-[#e5e7eb] dark:border-gray-700 rounded-lg overflow-hidden">
-      {" "}
-      {/* Adjusted border */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800" // Adjusted background
-      >
-        <span className="font-medium text-[#111827] dark:text-white">Contents</span> {/* Adjusted text color */}
-        {isOpen ? (
-          <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" /> // Adjusted text color
-        ) : (
-          <ChevronDown className="h-5 w-5 text-gray-500 dark:text-gray-400" /> // Adjusted text color
-        )}
-      </button>
-      {isOpen && (
-        <div className="p-3">
-          {alphabetRows.map((row, rowIndex) => (
-            <div key={rowIndex} className="flex mb-2 last:mb-0 gap-1">
-              {" "}
-              {/* Added gap */}
-              {row.map((letter) => {
-                const hasContent = lettersWithContent.includes(letter)
-                const isSelected = selectedLetter === letter
-
-                return (
-                  <button
-                    key={letter}
-                    onClick={() => {
-                      onLetterSelect(letter)
-                      setIsOpen(false) /* Close on select */
-                    }}
-                    disabled={!hasContent} // Disable button if no content for this letter
-                    className={`flex-1 h-8 flex items-center justify-center rounded-md text-sm transition-colors ${
-                      hasContent
-                        ? isSelected
-                          ? "bg-[#a855f7] text-white font-semibold"
-                          : "bg-gray-100 dark:bg-gray-700 text-[#6b7280] dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600" // Adjusted colors
-                        : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed font-normal" // Adjusted colors
-                    }`}
-                  >
-                    {letter}
-                  </button>
-                )
-              })}
-              {/* Add empty divs to fill the grid row if needed */}
-              {row.length < 8 &&
-                Array(8 - row.length)
-                  .fill(0)
-                  .map((_, i) => <div key={i} className="flex-1 h-8"></div>)}{" "}
-              {/* Added height */}
-            </div>
-          ))}
+          </main>
         </div>
-      )}
-    </div>
+      </>
   )
 }
