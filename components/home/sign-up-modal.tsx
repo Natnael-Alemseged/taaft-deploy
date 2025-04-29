@@ -2,11 +2,11 @@
 import { useState } from "react"
 import type React from "react"
 
-import { X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
+import { X } from "lucide-react" // Import X icon
+import { Button } from "@/components/ui/button" // Assuming Button component is available
+import Image from "next/image" // Assuming Image component is available
 import { useAuth } from "@/contexts/auth-context" // Assuming this path is correct
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation" // Correct import for App Router
 
 interface SignUpModalProps {
   isOpen: boolean
@@ -20,7 +20,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
   const [password, setPassword] = useState("")
   const [subscribeToNewsLetter, setSubscribeToNewsLetter] = useState(false) // New state for checkbox
   const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false) // Local loading state for the form submission
   const { register } = useAuth() // Assuming useAuth hook provides the register function
   const router = useRouter()
 
@@ -29,7 +29,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    setIsLoading(true)
+    setIsLoading(true) // Use local loading
 
     try {
       // Include subscribeToNewsLetter in the data sent to the register function
@@ -47,20 +47,21 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
       setError(errorMessage)
       console.error("Sign up error:", err); // Log the full error for debugging
     } finally {
-      setIsLoading(false)
+      setIsLoading(false) // Always set local loading to false
     }
   }
 
   return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl w-full max-w-md relative p-8 animate-in fade-in zoom-in duration-300">
+        {/* Adjusted max-w-md and padding for potential smaller screens */}
+        <div className="bg-white rounded-2xl w-full max-w-sm md:max-w-md relative p-6 md:p-8 animate-in fade-in zoom-in duration-300 overflow-y-auto max-h-[95vh]"> {/* Added max-h and overflow-y-auto */}
           <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
             <X size={24} />
           </button>
 
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-2">Create an Account</h2>
-            <p className="text-gray-500">Join our community of AI enthusiasts</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">Create an Account</h2> {/* Adjusted text size */}
+            <p className="text-gray-500 text-sm md:text-base">Join our community of AI enthusiasts</p> {/* Adjusted text size */}
           </div>
 
           {/* Google Sign Up Button */}
@@ -148,7 +149,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             </Button>
 
             <div className="text-center mt-6">
-              <p className="text-gray-700">
+              <p className="text-gray-700 text-sm md:text-base"> {/* Adjusted text size */}
                 Already have an account?{" "}
                 <button type="button" onClick={onSwitchToSignIn} className="text-[#a855f7] hover:underline">
                   Sign in

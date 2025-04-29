@@ -107,6 +107,19 @@ export const getCurrentUser = async () => {
   }
 }
 
+// Request password reset email
+export const requestPasswordReset = async (email: string) => {
+  try {
+    // Assuming your backend has an endpoint for password reset requests
+    // and expects the email in the request body (JSON)
+    const response = await apiClient.post("/auth/request-password-reset", { email });
+    return response.data; // Return confirmation message or data
+  } catch (error: any) {
+    console.error("Password reset request failed:", error);
+    throw error; // Re-throw the error for the UI to handle
+  }
+}
+
 // Logout: Clear tokens and user data from storage
 export const logout = () => {
   localStorage.removeItem("access_token") // Changed key to access_token
