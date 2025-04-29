@@ -127,7 +127,8 @@ export const sendChatMessage = async (
             message,
             model,
             system_prompt: systemPrompt,
-            isDirectSearch, // Include isDirectSearch directly in the payload
+            //todo uncomment this when done
+            /// isDirectSearch, // Include isDirectSearch directly in the payload
             metadata, // Include metadata object
         }
 
