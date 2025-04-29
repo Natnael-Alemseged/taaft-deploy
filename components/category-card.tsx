@@ -10,7 +10,7 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ category }: CategoryCardProps) {
   const linkHref = {
-    pathname: "/browse",
+    pathname: "/categories",
     query: { category: category.slug },
   }
 
