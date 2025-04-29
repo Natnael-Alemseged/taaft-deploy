@@ -22,7 +22,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (credentials: { username: string; password: string }) => Promise<void> // Modified to handle token storage
-  register: (data: { name: string; email: string; password: string }) => Promise<void>
+  register: (data: { name: string; email: string; password: string; subscribeToNewsLetter:boolean }) => Promise<void>
   logout: () => void // Modified to clear tokens
   loginWithGoogle: () => Promise<void>
 }
