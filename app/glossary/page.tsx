@@ -3,14 +3,17 @@
 
 import React from 'react';
 import Script from 'next/script';
-// Import the server-callable service function
+import { Metadata } from 'next';
 import { getGlossaryGrouped } from "@/services/glossary-service";
-// Import the slugify utility
-import { slugify } from "@/lib/utils"; // Adjust import path as necessary
-// Import the client component
+import { slugify } from "@/lib/utils";
 import GlossaryClientContent from "@/components/GlossaryClientContent";
-// Import types needed for schema generation
 import type { GlossaryTerm } from "@/services/glossary-service";
+
+// Define metadata for better SEO
+export const metadata: Metadata = {
+  title: 'AI Tools Glossary | TAAFT',
+  description: 'Comprehensive glossary of AI and machine learning terms to better understand the tools in our directory.',
+};
 
 // Define the type for the grouped data (should match service return type)
 interface GroupedGlossaryData {
@@ -23,25 +26,24 @@ function generateGlossarySchema(groupedData: GroupedGlossaryData | null) {
     if (!groupedData) return null;
 
     const terms = Object.values(groupedData).flat();
-
-    // Ensure NEXT_PUBLIC_SITE_URL is defined in your .env.local file
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-default-site.com'; // Provide a fallback
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taaft.org';
 
     const schema = {
         "@context": "https://schema.org",
-        "@type": "ItemList",
-        "itemListElement": terms.map((term, index) => ({
-            "@type": "ListItem",
-            "position": index + 1,
-            "item": {
-                "@type": "DefinedTerm",
-                "name": term.name,
-                "description": term.definition, // Ensure term.definition holds the definition text
-                "url": `${siteUrl}/terms/${slugify(term.id)}`, // Use siteUrl
-                "inDefinedTermSet": {
-                    "@type": "DefinedTermSet",
-                    "name": "AI Tools Glossary"
-                }
+        "@type": "DefinedTermSet",
+        "name": "AI Tools Glossary",
+        "description": "Comprehensive glossary of AI and machine learning terms",
+        "url": `${siteUrl}/glossary`,
+        "hasPart": terms.map(term => ({
+            "@type": "DefinedTerm",
+            "name": term.name,
+            "description": term.definition,
+            "url": `${siteUrl}/terms/${slugify(term.id)}`,
+            "termCode": term.id,
+            "inDefinedTermSet": {
+                "@type": "DefinedTermSet",
+                "name": "AI Tools Glossary",
+                "url": `${siteUrl}/glossary`
             }
         }))
     };
@@ -78,8 +80,7 @@ export default async function GlossaryPage() {
             {/* Inject Schema.org JSON-LD in the server-rendered HTML */}
             {/* This uses the built-in Next.js Script component for server rendering capability */}
             {schemaMarkup && (
-                <Script
-                    id="glossary-schema"
+                <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: schemaMarkup }}
                 />
