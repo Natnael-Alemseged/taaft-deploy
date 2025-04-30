@@ -6,8 +6,8 @@ import { useSearchParams, useRouter } from "next/navigation"; // Use from next/n
 import { Button } from "@/components/ui/button"; // Assuming Button component path
 import { Input } from "@/components/ui/input"; // Assuming Input component path
 import clsx from "clsx"; // For conditional classes
-import { useResetPassword } from "@/hooks/use-auth"; // Assuming hook path
 import { Loader2 } from "lucide-react"; // For loading spinner icon
+import { resetPassword } from "@/services/auth-service";
 
 export default function ResetPasswordPage() {
     const searchParams = useSearchParams();
@@ -17,9 +17,7 @@ export default function ResetPasswordPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-    // Use the reset password mutation hook
-    const resetMutation = useResetPassword();
+    const [isLoading, setIsLoading] = useState(false);
 
     // Effect to extract token from URL on mount
     useEffect(() => {
@@ -37,25 +35,28 @@ export default function ResetPasswordPage() {
         e.preventDefault();
         setError(null); // Clear previous errors
         setSuccessMessage(null); // Clear previous success messages
+        setIsLoading(true);
 
         // Client-side validation
         if (!token) {
             setError("Password reset token is missing.");
+            setIsLoading(false);
             return;
         }
         if (!newPassword || !confirmPassword) {
             setError("Please fill in both password fields.");
+            setIsLoading(false);
             return;
         }
         if (newPassword !== confirmPassword) {
             setError("Passwords do not match.");
+            setIsLoading(false);
             return;
         }
 
         // Call the mutation
         try {
-            // Pass the token and new password to the mutation function
-            await resetMutation.mutateAsync({
+            await resetPassword({
                 token: token,
                 new_password: newPassword,
             });
@@ -71,6 +72,8 @@ export default function ResetPasswordPage() {
             // Attempt to get a specific error message from the API response structure if available
             const apiErrorMessage = err?.response?.data?.message || err?.message || "Failed to reset password. Please try again.";
             setError(apiErrorMessage);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -143,9 +146,9 @@ export default function ResetPasswordPage() {
                             <Button
                                 type="submit"
                                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:pointer-events-none"
-                                disabled={resetMutation.isPending || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                                disabled={isLoading || !newPassword || !confirmPassword || newPassword !== confirmPassword}
                             >
-                                {resetMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                                 Reset Password
                             </Button>
                         </div>
