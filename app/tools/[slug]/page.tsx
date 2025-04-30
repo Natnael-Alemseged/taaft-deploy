@@ -400,53 +400,55 @@ export default function ToolDetail() {
                   </div>
               )}
 
-              {/* Pricing */}
-              {safeTool?.pricingPlans && safeTool.pricingPlans.length > 0 && (
-                  <div className="mb-12">
-                    <h2 className="text-xl font-bold text-[#111827] mb-6">Pricing</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {safeTool.pricingPlans.map((plan, index) => (
-                          <div
-                              key={plan.name}
-                              className={`relative border rounded-lg p-6 transition-transform duration-200 cursor-pointer
-                  ${selectedPlan === plan.name ? "border-4 border-[#a855f7] scale-105" : "border-[#e5e7eb] hover:shadow-md hover:scale-102"}
-                  ${plan.isFeatured ? "shadow-md border-[#a855f7]" : ""}
-                `}
-                              onClick={() => handlePlanClick(plan.name)}
-                          >
-                            {plan.isFeatured && (
-                                <div className="absolute top-0 right-0 bg-[#a855f7] text-white text-xs py-1 px-2 rounded-tl-lg rounded-br-sm">
-                                  POPULAR
-                                </div>
-                            )}
-                            <h3 className="text-lg font-semibold text-[#111827] mb-2">{plan.name}</h3>
-                            <p className="text-2xl font-bold text-[#a855f7] mb-4">
-                              {plan.price}
-                              <span className="text-sm text-[#4b5563] ml-1">/mo</span>
-                            </p>
-                            <p className="text-sm text-[#6b7280] mb-4">{plan.description}</p>
-                            <ul className="list-disc list-inside text-[#4b5563] mb-4">
-                              {plan.features.map((feature, index) => (
-                                  <li key={index}>{feature}</li>
-                              ))}
-                            </ul>
-                            <Button
-                                className={`w-full ${
-                                    plan.isFeatured
-                                        ? "bg-[#a855f7] hover:bg-[#9333ea]"
-                                        : "bg-white text-[#a855f7] border border-[#a855f7] hover:bg-[#f5f0ff]"
-                                } text-white px-4 py-2 rounded-md`}
-                                asChild // Use asChild to make the Button render as an anchor tag
-                            >
-                              <a href={plan.ctaUrl} target="_blank" rel="noopener noreferrer" className={plan.isFeatured ? "" : "text-[#a855f7]"}>
-                                {plan.ctaText}
-                              </a>
-                            </Button>
-                          </div>
-                      ))}
-                    </div>
-                  </div>
-              )}
+             {/* Pricing */}
+             {safeTool?.pricingPlans && safeTool.pricingPlans.length > 0 && (
+      <div className="mb-12">
+        {/* ... rest of your pricing section container ... */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {safeTool.pricingPlans.map((plan, index) => (
+            <div
+              key={plan.name}
+              // Add the onClick handler here
+              onClick={() => handlePlanClick(plan.name)} // <--- Add this line
+              className={`relative border rounded-lg p-6 flex flex-col transition-transform duration-200 cursor-pointer h-full
+                ${selectedPlan === plan.name ? "border-4 border-[#a855f7] scale-105 shadow-xl" : "border-[#e5e7eb] hover:shadow-lg hover:scale-102"}
+                ${plan.isFeatured ? "shadow-lg border-[#a855f7]" : ""}
+              `}
+            >
+              {/* ... rest of the card content (POPULAR tag, name, price, description, features, button) ... */}
+               {plan.isFeatured && (
+                 <div className="absolute top-0 right-0 bg-[#a855f7] text-white text-xs font-semibold py-1 px-3 rounded-tl-lg rounded-br-lg z-10">
+                   POPULAR
+                 </div>
+               )}
+               <h3 className="text-xl font-bold text-[#111827] mb-2">{plan.name}</h3>
+               <p className={`text-3xl font-bold mb-4 ${selectedPlan === plan.name || plan.isFeatured ? "text-[#a855f7]" : "text-[#111827]"}`}> {/* Also make price color conditional on selected */}
+                   {plan.price}
+                   <span className="text-base text-[#4b5563] ml-1 font-normal">/mo</span>
+               </p>
+               <p className="text-sm text-[#6b7280] mb-4 flex-grow">{plan.description}</p>
+               <ul className="list-disc list-inside text-[#4b5563] mb-6 space-y-2">
+                   {plan.features.map((feature, index) => (
+                       <li key={index}>{feature}</li>
+                   ))}
+               </ul>
+               <Button
+                   className={`w-full mt-auto ${
+                       plan.isFeatured // Use isFeatured for default button style
+                           ? "bg-[#a855f7] hover:bg-[#9333ea] text-white"
+                           : "bg-white text-[#a855f7] border border-[#a855f7] hover:bg-[#f5f0ff]"
+                   } px-4 py-2 rounded-md font-semibold`}
+                   asChild
+               >
+                   <a href={plan.ctaUrl} target="_blank" rel="noopener noreferrer" className={`block text-center ${plan.isFeatured ? "text-white" : "text-[#a855f7]"}`}> {/* Ensure text color */}
+                       {plan.ctaText}
+                   </a>
+               </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
 
               {/* User Reviews */}
               {safeTool?.reviews && safeTool.reviews.length > 0 && (
