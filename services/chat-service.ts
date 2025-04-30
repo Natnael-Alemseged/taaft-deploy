@@ -5,7 +5,7 @@ import { getUserIdFromLocalStorage } from "@/lib/session" // Assuming this utili
 // Define the structure for a chat message
 export interface Message {
     role: "user" | "assistant"
-    content: string
+    message: string
     id?: string
     timestamp?: Date
     // These might be used for LLM responses that trigger a search popup
@@ -122,7 +122,7 @@ export const getChatSessionMessages = async (sessionId: string): Promise<Message
         // Ensure you map the correct fields from your backend message structure
         const messages: Message[] = response.data.map((msg) => ({
             role: msg.role === "assistant" ? "assistant" : "user", // Map backend role to frontend role
-            content: msg.content, // Map backend content to frontend content
+            message: msg.content, // Map backend content to frontend content
             id: msg._id, // Include message ID if available
             timestamp: new Date(msg.timestamp), // Convert timestamp string to Date object
             // Map hasSearchResults and formattedData from message metadata or similar field
@@ -169,20 +169,21 @@ export const createChatSession = async (title: string): Promise<ChatSession> => 
 
 // Send a message to an existing chat session (LLM completion)
 // This function handles the LLM interaction
+// Send a message to an existing chat session (LLM completion)
+// This function handles the LLM interaction
 export const sendChatMessage = async (
     sessionId: string,
     message: string,
     model = "gpt4",
     systemPrompt = "You are a helpful assistant.",
     metadata: Record<string, any> = {} // Ensure metadata has a default value
-): Promise<{ message: Message; toolRecommendations?: string[]; data?: any }> => {
+): Promise<{ message: Message; toolRecommendations?: string[]; data: ChatCompletionResponse }> => { // Explicitly type data
     try {
         console.log(`Sending message to session ${sessionId} with model ${model}`);
 
-        // Create the request payload
+        // Create the request payload - Updated comment based on API schema
         const payload = {
-            content: message, // Use 'content' as per your API schema
-            role: "user", // The message being sent is from the user
+            message: message, // Use 'message' as per the provided API schema
             model: model,
             system_prompt: systemPrompt,
             metadata: metadata, // Include metadata object
@@ -191,58 +192,79 @@ export const sendChatMessage = async (
         console.log("Payload I send to the backend is:\n", JSON.stringify(payload, null, 2))
 
 
-        // Make the API request to the chat completion endpoint
-        const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload)
-
-        console.log(`Response received for session ${sessionId}`)
-
-        const rawResponseMessage = response.data.message // Raw string content from API
-
-        console.log("Response data only:\n", JSON.stringify(response.data, null, 2))
-
-
-        // Extract options if present in the raw string message content
-        let options: string[] = response.data.tool_recommendations || []; // Prefer structured recommendations if available
-
-        // Fallback to parsing from string if no structured recommendations
-        if (options.length === 0) {
-            const optionsPattern = "options ="
-            const optionsIndex = rawResponseMessage.indexOf(optionsPattern)
-
-            if (optionsIndex !== -1) {
-                let optionsStringRaw = rawResponseMessage.substring(optionsIndex + optionsPattern.length).trim();
-                // Remove surrounding brackets and split
-                optionsStringRaw = optionsStringRaw.replace(/^\[|\]$/g, "").trim();
-                options = optionsStringRaw
-                    .split(",")
-                    .map((option) => option.trim().replace(/'/g, "").replace(/"/g, ""))
-                    .filter((option) => option.length > 0);
-            }
+        // Define the expected API response structure
+        interface ChatCompletionResponse {
+            message: string; // The main message content
+            chat_id: string;
+            message_id: string;
+            timestamp: string; // Assuming ISO string format
+            model: string;
+            metadata: Record<string, any>;
+            formatted_data: any; // Can be null, object, or array - need flexibility here
+            // If the API could *sometimes* send tool_recommendations at the top level, add it here:
+            // tool_recommendations?: string[];
         }
 
+        // Make the API request to the chat completion endpoint
+        const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload);
 
-        // Clean the message content (remove "options = ..." part if parsed from string)
-        const cleanedMessageContent = options.length > 0 && rawResponseMessage.includes("options =")
-            ? rawResponseMessage.substring(0, rawResponseMessage.indexOf("options =")).trim()
+        console.log(`Response received for session ${sessionId}`);
+
+        const rawResponseMessage = response.data.message; // Raw string content from API
+
+        console.log("Response data only:\n", JSON.stringify(response.data, null, 2));
+
+
+        // Extract tool recommendations from formatted_data if available
+        let toolRecommendations: string[] | undefined;
+
+        if (response.data.formatted_data && typeof response.data.formatted_data === 'object') {
+            // Check if formatted_data is an object and has a key like 'recommended_tools' or 'tool_recommendations'
+            const potentialRecommendations = response.data.formatted_data.recommended_tools || response.data.formatted_data.tool_recommendations;
+            if (Array.isArray(potentialRecommendations) && potentialRecommendations.every(item => typeof item === 'string')) {
+                toolRecommendations = potentialRecommendations;
+            }
+        } else if (Array.isArray(response.data.formatted_data) && response.data.formatted_data.every(item => typeof item === 'string')) {
+            // Also check if formatted_data is directly an array of strings
+            toolRecommendations = response.data.formatted_data;
+        }
+        // Removed the old string parsing logic for "options =" as structured data is preferred
+
+
+        // Clean the message content (remove "options = ..." part if present, although not expected with structured data)
+        const optionsPattern = "options =";
+        const optionsIndex = rawResponseMessage.indexOf(optionsPattern);
+
+        const cleanedMessageContent = optionsIndex !== -1
+            ? rawResponseMessage.substring(0, optionsIndex).trim()
             : rawResponseMessage.trim();
 
 
         // Map the API response message structure to the frontend Message structure
+        // Assuming Message interface is defined elsewhere like:
+        // interface Message {
+        //   id: string;
+        //   role: "user" | "assistant";
+        //   message: string;
+        //   timestamp: Date;
+        //   hasSearchResults?: boolean; // If formatted_data represents search results
+        //   formattedData?: any; // The raw formatted_data
+        // }
         const frontendMessage: Message = {
             role: "assistant", // Assuming the response message is always from assistant
-            content: cleanedMessageContent, // Use the cleaned content
+            message: cleanedMessageContent, // Use the cleaned content
             id: response.data.message_id,
             timestamp: new Date(response.data.timestamp),
-            // Map hasSearchResults and formattedData from response.data if available
-            hasSearchResults: response.data.data?.formatted_data ? true : false,
-            formattedData: response.data.data?.formatted_data,
+            // Map hasSearchResults and formattedData directly from response.data
+            hasSearchResults: response.data.formatted_data ? true : false, // Assuming formatted_data indicates search results
+            formattedData: response.data.formatted_data,
         };
 
 
         return {
             message: frontendMessage,
-            toolRecommendations: options.length > 0 ? options : undefined,
-            data: response.data, // Include the entire response data
+            toolRecommendations: toolRecommendations, // Use the extracted recommendations
+            data: response.data, // Include the entire raw response data
         }
     } catch (error: any) {
         console.error(`Error sending message to session ${sessionId}:`, error)

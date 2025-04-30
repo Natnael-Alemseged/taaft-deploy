@@ -1,10 +1,5 @@
 
-###search keywords
-POST taaft-backend.onrender.com/tools/keyword-search
-Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDU5NTc2Nzd9.Z3IwfMT5KgCnxMCoZHF1xYV-oz2uzck0F4insDHtheA
 
-{"korbit"}
 ###get categories
 
 GET taaft-backend.onrender.com/api/categories
@@ -117,7 +112,7 @@ Content-Type: application/json
 ### Send chat messages (and get AI response)
 ### Send a chat message and receive a response (non-streaming)
 POST https://taaft-backend.onrender.com/api/chat/sessions/{{sessionId}}/messages
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODA3NjQ3ZTFhZmQzMzQ4MTc4NTUwNDIiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOnRydWUsImV4cCI6MTc0NTUxMzk2OX0.aKs-7wbxNY87EHp9MAmI9Bxs3Yk59IZZtGmGvfUjOPY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDYwMDk4NjR9.jNFjgyIpeYqkiq4ErsvxFgcdWL53NcSUi4-KmGXa66A
 Content-Type: application/json
 Accept: application/json
 
@@ -139,6 +134,14 @@ Accept: application/json
 <> 2025-04-24T190714.403.json
 <> 2025-04-24T190647.401.json
 
+
+###search keywords
+POST taaft-backend.onrender.com/tools/keyword-search
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDYwMDk4NjR9.jNFjgyIpeYqkiq4ErsvxFgcdWL53NcSUi4-KmGXa66A
+Accept: application/json
+
+["korbit"]
 
 ### @name variables
 @sessionId = 6809d92f8f4a3ca025d202d3
