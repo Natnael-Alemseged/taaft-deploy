@@ -17,7 +17,8 @@ interface Author {
 interface ArticleSection {
   heading?: string; // Optional heading for a section
   content: string; // Main content of the section
-  subsections?: { heading: string; content: string }[]; // Optional nested subsections
+  highLight?: string; // Optional highlighted sentence or text
+  subsections?: { heading: string; content: string }[]; // Optional nested subsections (restored content)
 }
 
 interface RelatedArticle {
@@ -48,27 +49,30 @@ const placeholderBlogPost: BlogPost = {
   author: {
     name: 'Sarah Johnson',
     bio: 'AI researcher and tech enthusiast with 10 years of experience in machine learning and artificial Intelligence.',
-    avatarUrl: '/placeholder-avatar.png', // Placeholder avatar image
+    avatarUrl: '/robot.png', // Placeholder avatar image
   },
   excerpt: 'Artificial Intelligence has become an integral part of our daily lives, from virtual assistants to recommendation systems. This guide aims to demystify AI and help you understand its fundamental concepts.',
   content: [
     {
       heading: 'What is Artificial Intelligence?',
-      content: 'AI refers to computer systems designed to perform tasks that typically require human intelligence. These tasks include visual perception, speech recognition, decision-making, and language translation.\n\nAI systems can be either narrow (designed for specific tasks) or general (capable of performing any intellectual task).',
+      content: 'AI refers to computer systems designed to perform tasks that typically require human intelligence. These tasks include visual perception, speech recognition, decision-making, and language translation.',
+      highLight: 'AI systems can be either narrow (designed for specific tasks) or general (capable of performing any intellectual task).' // Kept highlight based on previous turn
     },
     {
       heading: 'Key Components of AI Systems',
       content: 'Modern AI systems rely on several key components: data collection, machine learning algorithms, processing power, and feedback mechanisms. Each component plays a crucial role in creating intelligent behavior.',
+      highLight: '',
       subsections: [
-        { heading: 'Data Collection and Processing', content: 'Details about data collection...' },
-        { heading: 'Algorithm Development', content: 'Details about algorithm development...' },
-        { heading: 'Training and Testing', content: 'Details about training and testing...' },
-        { heading: 'Deployment and Monitoring', content: 'Details about deployment and monitoring...' },
+        { heading: 'Data Collection and Processing', content: 'Details about data collection...' }, // Restored content
+        { heading: 'Algorithm Development', content: 'Details about algorithm development...' }, // Restored content
+        { heading: 'Training and Testing', content: 'Details about training and testing...' }, // Restored content
+        { heading: 'Deployment and Monitoring', content: 'Details about deployment and monitoring...' } // Restored content
       ],
     },
     {
       heading: 'Conclusion',
       content: 'As AI continues to evolve, understanding its basic principles becomes increasingly important for everyone, from developers to end users.',
+      highLight: ''
     },
   ],
   relatedArticles: [
@@ -127,6 +131,29 @@ export default function BlogPostDetail({ blogPost }: { blogPost?: BlogPost }) {
     }
   };
 
+  // Helper function to find and wrap a specific term with a Link component
+  const linkifyTerm = (text: string, term: string, href: string) => {
+    const parts = text.split(term);
+    if (parts.length <= 1) {
+      return text; // Term not found
+    }
+
+    return (
+        <>
+          {parts[0]}
+          <Link href={href} className="text-purple-600 dark:text-purple-400 underline hover:no-underline">
+            {term}
+          </Link>
+          {/* Recursively process the rest of the string to handle multiple occurrences */}
+          {parts.slice(1).map((part, index) => (
+              <React.Fragment key={index}>
+                {linkifyTerm(part, term, href)}
+              </React.Fragment>
+          ))}
+        </>
+    );
+  };
+
 
   return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -138,7 +165,8 @@ export default function BlogPostDetail({ blogPost }: { blogPost?: BlogPost }) {
           <nav className="text-sm text-gray-600 dark:text-gray-400 mb-8">
             <Link href="/" className="hover:underline">Home</Link>
             <span className="mx-2">/</span>
-            <Link href="/blog" className="hover:underline">Blog</Link> {/* Assuming a blog listing page */}
+            {/* Restored breadcrumb link to Blog */}
+            <Link href="/blog" className="hover:underline">Blog</Link>
             <span className="mx-2">/</span>
             <span>{articleData.title}</span>
           </nav>
@@ -189,9 +217,9 @@ export default function BlogPostDetail({ blogPost }: { blogPost?: BlogPost }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {/* Main Content Column */}
             <div className="md:col-span-2">
-              {/* Excerpt */}
+              {/* Excerpt - Linkify "Artificial Intelligence" */}
               <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
-                {articleData.excerpt}
+                {linkifyTerm(articleData.excerpt, "Artificial Intelligence", "/glossary")}
               </p>
 
               {/* Content Sections */}
@@ -204,24 +232,29 @@ export default function BlogPostDetail({ blogPost }: { blogPost?: BlogPost }) {
                           </h2>
                       )}
                       {/* Use whitespace-pre-line to respect newline characters in content */}
+                      {/* Linkify "Artificial Intelligence" in content */}
                       <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed whitespace-pre-line">
-                        {section.content}
+                        {linkifyTerm(section.content, "Artificial Intelligence", "/glossary/artificial-intelligence")}
                       </p>
 
-                      {/* Subsections */}
+                      {/* Render Highlighted text as blockquote */}
+                      {section.highLight && (
+                          <blockquote className="border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200 px-4 py-3 my-4">
+                            {section.highLight}
+                          </blockquote>
+                      )}
+
+                      {/* Subsections - Restored rendering with content */}
                       {section.subsections && section.subsections.length > 0 && (
-                          <div className="ml-4 border-l-2 border-gray-200 dark:border-gray-700 pl-4 space-y-6">
+                          <ul className="list-disc ml-6 space-y-2 text-gray-700 dark:text-gray-300">
                             {section.subsections.map((subsection, subIndex) => (
-                                <div key={subIndex}>
-                                  <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                                    {subsection.heading}
-                                  </h3>
-                                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-                                    {subsection.content}
-                                  </p>
-                                </div>
+                                <li key={subIndex}>
+                                  <span className="font-medium">{subsection.heading}</span>
+                                  {/* Render subsection content if it exists */}
+                                  {/*{subsection.content && `: ${subsection.content}`}*/}
+                                </li>
                             ))}
-                          </div>
+                          </ul>
                       )}
                     </div>
                 ))}
@@ -274,8 +307,6 @@ export default function BlogPostDetail({ blogPost }: { blogPost?: BlogPost }) {
           </div>
         </main>
 
-        {/* Assuming Footer component is used in the layout */}
-        {/* <Footer /> */}
       </div>
   );
 }

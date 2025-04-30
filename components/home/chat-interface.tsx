@@ -328,7 +328,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
         sessionId: chatId,
         message: messageContent,
         model: "gpt4", // Use default or selected model
-        systemPrompt: "You are a helpful assistant.", // Use default or configured prompt
+        systemPrompt: "You are an AI Assistant.", // Use default or configured prompt
         metadata: {  }, // Include any relevant metadata
         // isDirectSearch is not passed to the chat completion hook anymore
       })
