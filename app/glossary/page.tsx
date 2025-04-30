@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ChevronRight, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button" // Assuming Button component path
 import Header from "@/components/header" // Assuming Header component path
+import Script from "next/script" // Add this import for schema markup
 
 import { useGlossaryGrouped } from "@/hooks/use-glossary" // Import the hook
 import type { GlossaryTerm } from "@/services/glossary-service" // Import types
@@ -276,43 +277,30 @@ export default function Glossary() {
     )
   }
 
-  // --- Generate JSON-LD Schema Markup for Defined Terms ---
+  // Generate schema markup for all glossary terms
   const generateSchema = () => {
     if (!groupedGlossaryData) return null;
 
-    // Collect all terms from the grouped data into a single array
-    const allTerms: GlossaryTerm[] = Object.values(groupedGlossaryData).flat();
-
-    if (allTerms.length === 0) {
-      return null;
-    }
-
-    // Schema can be an array of DefinedTerm objects for multiple terms on one page
-    const schema = allTerms.map(term => {
-      const termSchema: any = {
-        "@context": "https://schema.org",
-        "@type": "DefinedTerm",
-        "name": term.name,
-        // Use term.definition as the description
-        "description": term.definition,
-        // Construct the full URL for the term's page using slugify and term.id
-        // Ensure process.env.NEXT_PUBLIC_BASE_URL is correctly configured
-        "url": `${process.env.NEXT_PUBLIC_BASE_URL}/terms/${slugify(term.id)}`, // Replace with your actual base URL and terms path
-      };
-
-      // Add relatedTerm property if related terms exist in the term data
-      // Assuming relatedTerms is an array of objects with id, name, slug
-      if (term.relatedTerms && Array.isArray(term.relatedTerms) && term.relatedTerms.length > 0) {
-        termSchema.relatedTerm = term.relatedTerms.map(related => ({
-          "@type": "DefinedTerm", // Related terms are also DefinedTerms
-          "name": related.name,
-          // Link to the related term's specific page using slugify and related.id
-          "url": `${process.env.NEXT_PUBLIC_BASE_URL}/terms/${slugify(related.id)}`, // Link to related term's page
-        }));
-      }
-
-      return termSchema;
-    });
+    const terms = Object.values(groupedGlossaryData).flat();
+    
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "itemListElement": terms.map((term, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "DefinedTerm",
+          "name": term.name,
+          "description": term.definition,
+          "url": `${process.env.NEXT_PUBLIC_SITE_URL}/terms/${slugify(term.id)}`,
+          "inDefinedTermSet": {
+            "@type": "DefinedTermSet",
+            "name": "AI Tools Glossary"
+          }
+        }
+      }))
+    };
 
     return JSON.stringify(schema);
   };
@@ -327,7 +315,8 @@ export default function Glossary() {
         <div className="min-h-screen bg-white dark:bg-gray-950">
           {/* Add JSON-LD Schema Markup */}
           {schemaMarkup && (
-              <script
+              <Script
+                  id="glossary-schema"
                   type="application/ld+json"
                   dangerouslySetInnerHTML={{ __html: schemaMarkup }}
               />

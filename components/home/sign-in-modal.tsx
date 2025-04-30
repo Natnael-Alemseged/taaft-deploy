@@ -10,7 +10,7 @@ import { X, ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image"; // Assuming Image component is available
 // Adjust path if needed
-import { useAuth } from "@/hooks/use-auth"; // Assuming useAuth is now exported from hooks/use-auth.ts
+import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation"; // Correct import for App Router
 // Assuming your auth service has the necessary functions
 import { requestPasswordReset, initiateGoogleLogin, initiateGitHubLogin } from "@/services/auth-service"; // Adjust path if needed
@@ -29,8 +29,8 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
   const [isLocalLoading, setIsLocalLoading] = useState(false); // Local loading state for the form submission
   const [showForgotPassword, setShowForgotPassword] = useState(false); // State to toggle forgot password view
   const [resetEmail, setResetEmail] = useState(""); // State for forgot password email input
-  const [resetMessage, setResetMessage] = useState(""); // State for success/error message after reset request
-  const [isResetRequestSuccessful, setIsResetRequestSuccessful] = useState(false); // New state for tracking reset request success
+  const [resetMessage, setResetMessage] = useState(""); // State for success message after reset request (for the success UI)
+  const [isResetRequestSuccessful, setIsResetRequestSuccessful] = useState(false); // State to track reset request success for showing the new UI
 
 
   // Get isLoading from context if needed for global auth state, but local is fine for form submission state
@@ -114,31 +114,30 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
     setError(""); // Clear previous errors
     setResetMessage(""); // Clear previous messages
     setIsLocalLoading(true); // Start local loading
-    setIsResetRequestSuccessful(false); // Hide success message while attempting reset
+    setIsResetRequestSuccessful(false); // Reset success state
 
     try {
       // Call the password reset request service function
-      // Assuming requestPasswordReset returns something on success, like { email: string } or just success status
       const response = await requestPasswordReset(resetEmail);
       console.log("Password reset request successful:", response);
 
-      // Set the success message, potentially using the email from the response if available
-      const confirmationEmail = (response as any)?.email || resetEmail; // Try to get email from response, fallback to input email
-      setResetMessage(`We've sent a password reset link to ${confirmationEmail}. Please check your inbox and follow the instructions to reset your password.`);
-
-      setResetEmail(""); // Clear email input on success
-      setIsResetRequestSuccessful(true); // Show the success UI
+      // Set the success message
+      setResetMessage(`We've sent a password reset link to ${resetEmail}. Please check your inbox and follow the instructions to reset your password.`);
+      
+      // Show success UI
+      setIsResetRequestSuccessful(true);
+      
+      // Clear the email input
+      setResetEmail("");
 
     } catch (err: any) {
       console.error("Password reset request failed:", err);
-      // Attempt to get a specific error message from the API response structure if available
-      const apiErrorMessage = err.message || err.response?.data?.detail || "Failed to request password reset. Please try again.";
-      setError(apiErrorMessage);
-      setIsResetRequestSuccessful(false); // Ensure success state is false on error
-      // Optionally set a generic message even on error for security reasons
-      // setResetMessage("If an account with that email exists, a password reset link has been sent.");
+      const errorMessage = err.message || err.response?.data?.detail || "Failed to request password reset. Please try again.";
+      setError(errorMessage);
+      setResetMessage(""); // Clear any success message
+      setIsResetRequestSuccessful(false); // Ensure success UI is hidden
     } finally {
-      setIsLocalLoading(false); // Stop local loading
+      setIsLocalLoading(false); // Stop loading state
     }
   };
 
@@ -161,30 +160,35 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
               // --- Forgot Password View ---
               <div>
                 {/* Back button to Sign In (Always visible in Forgot Password view) */}
-                <button type="button" onClick={() => setShowForgotPassword(false)} className="flex items-center text-gray-500 hover:text-gray-700 mb-4 text-sm">
-                  <ArrowLeft size={20} className="mr-1"/> Back to Sign In
-                </button>
+                {/* Hide back button in the success UI */}
+                {!isResetRequestSuccessful && (
+                    <button type="button" onClick={() => setShowForgotPassword(false)} className="flex items-center text-gray-500 hover:text-gray-700 mb-4 text-sm">
+                      <ArrowLeft size={20} className="mr-1"/> Back to Sign In
+                    </button>
+                )}
+
 
                 {/* Conditional Rendering: Reset Request Success UI vs. Forgot Password Form */}
                 {isResetRequestSuccessful ? (
-                    // --- Password Reset Success UI (as shown in image) ---
+                   
                     <div className="text-center mt-8">
                       <h2 className="text-2xl md:text-3xl font-bold mb-4">Check Your Email</h2>
 
-                      {/* Optional initial explanatory text */}
+                      {/* Initial explanatory text */}
                       <p className="text-gray-500 text-sm md:text-base mb-6">
                         If an account exists with this email, you'll receive a password reset link.
                       </p>
 
                       {/* Envelope Icon */}
                       <div className="flex justify-center mb-6">
-                        <div className="bg-purple-100 p-4 rounded-full flex items-center justify-center"> {/* Added flex for centering icon */}
+                        <div className="bg-purple-100 p-4 rounded-full flex items-center justify-center">
                           <Mail size={40} className="text-purple-600" />
                         </div>
                       </div>
 
                       {/* Specific confirmation message (using resetMessage state) */}
-                      {resetMessage && <div className="mb-6 text-gray-700 text-sm md:text-base whitespace-pre-wrap">{resetMessage}</div>} {/* Added whitespace-pre-wrap */}
+                      {/* This message is set in the handleForgotPasswordSubmit success block */}
+                      {resetMessage && <div className="mb-6 text-gray-700 text-sm md:text-base whitespace-pre-wrap">{resetMessage}</div>}
 
 
                       {/* Close Button for the success state */}
@@ -200,15 +204,23 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
                     // --- End Password Reset Success UI ---
 
                 ) : (
-                    // --- Forgot Password Form ---
+                    // --- Forgot Password Form (as shown in image_c346ac.png before success) ---
                     <div>
                       <div className="text-center mb-8">
                         <h2 className="text-2xl md:text-3xl font-bold mb-2">Forgot Password?</h2>
                         <p className="text-gray-500 text-sm md:text-base">Enter your email to receive a reset link</p>
                       </div>
 
-                      {/* Display Error Message specific to the reset request */}
-                      {error && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
+                      {/* Display Error Message (from reset request failure) */}
+                      {error && (
+                          <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm">
+                            {error}
+                          </div>
+                      )}
+
+                      {/* Removed the resetMessage display from here */}
+                      {/* {resetMessage && (<div className="mb-4 p-3 bg-green-50 border border-green-100 text-green-600 rounded-lg text-sm whitespace-pre-wrap">{resetMessage}</div>)} */}
+
 
                       {/* Forgot password email form */}
                       <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
@@ -224,12 +236,13 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
                               placeholder="name@example.com"
                               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
                               required
+                              disabled={isSubmitting} // Disable input while submitting
                           />
                         </div>
                         <Button
                             type="submit"
                             className="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white py-3 rounded-lg text-lg"
-                            disabled={isSubmitting} // Disable while submitting
+                            disabled={isSubmitting || !resetEmail.trim()} // Disable while submitting or email is empty
                         >
                           {isSubmitting ? "Sending link..." : "Send Reset Link"}
                         </Button>
@@ -254,7 +267,7 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
                   <button
                       type="button"
                       onClick={handleGoogleLogin}
-                      disabled={isSubmitting || isAuthLoading} // Disable if local form or global auth is loading
+                      disabled={isSubmitting || isAuthLoading}
                       className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-lg p-3 hover:bg-gray-50 transition-colors"
                   >
                     {/* Assuming you have /public/google-logo.svg */}
@@ -283,7 +296,10 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
                 </div>
 
                 {/* Display Error Message specific to the Sign In attempt */}
-                {error && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
+                {error && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm">{error}</div>
+                )}
+
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Email input */}
@@ -299,6 +315,7 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
                         placeholder="name@example.com"
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
                         required
+                        disabled={isSubmitting || isAuthLoading}
                     />
                   </div>
 
@@ -321,13 +338,14 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
                         placeholder="••••••••"
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
                         required
+                        disabled={isSubmitting || isAuthLoading}
                     />
                   </div>
 
                   <Button
                       type="submit"
                       className="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white py-3 rounded-lg text-lg"
-                      disabled={isSubmitting || isAuthLoading} // Disable button while submitting or global auth loading
+                      disabled={isSubmitting || isAuthLoading || !email.trim() || !password.trim()} // Disable button while submitting/loading or fields are empty
                   >
                     {isSubmitting ? "Signing in..." : "Sign In"}
                   </Button>

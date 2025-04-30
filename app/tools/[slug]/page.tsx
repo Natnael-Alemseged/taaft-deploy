@@ -16,6 +16,68 @@ import LoadingToolDetailSkeleton from "@/components/skeletons/loading-tool-detai
 // Add the import for the new tool detail service at the top
 import { getToolByUniqueId, getToolByUniqueName } from "@/services/tool-detail-service" // Assuming these service functions exist
 import { useQueryClient } from "@tanstack/react-query" // Assuming React Query is used
+import Script from "next/script" // Add this import for schema markup
+
+// Add TypeScript interfaces
+interface Tool {
+  id: string;
+  name: string;
+  slug: string;
+  link: string;
+  category: string;
+  description: string;
+  features: string[];
+  keywords: string[];
+  pricing: string;
+  hasFreeVersion: boolean;
+  logoUrl: string;
+  screenshotUrls: string[];
+  rating?: number;
+  reviewCount?: number;
+  company?: string;
+  image?: string;
+  website?: string;
+  pricingPlans?: Array<{
+    name: string;
+    price: string;
+    description: string;
+    ctaUrl?: string;
+  }>;
+  savedByUser?: boolean;
+}
+
+interface Schema {
+  "@context": string;
+  "@type": string;
+  name: string;
+  description: string;
+  url: string;
+  applicationCategory: string;
+  softwareRequirements: string;
+  operatingSystem: string;
+  featureList: string[];
+  image?: string;
+  author: {
+    "@type": string;
+    name: string;
+  };
+  aggregateRating?: {
+    "@type": string;
+    ratingValue: string;
+    reviewCount: number;
+    bestRating: string;
+    worstRating: string;
+  };
+  offers?: Array<{
+    "@type": string;
+    name: string;
+    priceCurrency: string;
+    price: number | string;
+    description?: string;
+    url: string;
+    availability: string;
+  }>;
+}
 
 // Add queryClient in the component
 export default function ToolDetail() {
@@ -140,63 +202,59 @@ export default function ToolDetail() {
   const generateSchema = () => {
     if (!safeTool) return null;
 
-    const schema: any = {
+    const schema: Schema = {
       "@context": "https://schema.org",
-      "@type": "SoftwareApplication", // Or Product if more appropriate
+      "@type": "SoftwareApplication",
       "name": safeTool.name,
       "description": safeTool.description,
-      "url": safeTool.website || `${process.env.NEXT_PUBLIC_BASE_URL}/tools/${slug}`, // Canonical URL for this page
-      "applicationCategory": safeTool.category || "Other", // Use category, default to Other
-      "softwareRequirements": "Web Browser", // Assuming web-based tools
-      "operatingSystem": "All", // Assuming cross-platform web tools
-      "aggregateRating": undefined as any, // Initialize as undefined
-      "offers": undefined as any, // Initialize as undefined
-      "featureList": safeTool.features || undefined, // Include features if available
+      "url": `${process.env.NEXT_PUBLIC_SITE_URL}/tools/${slug}`,
+      "applicationCategory": safeTool.category || "AI Tool",
+      "softwareRequirements": "Web Browser",
+      "operatingSystem": "All",
+      "featureList": safeTool.features || [],
+      "image": safeTool.logoUrl || `${process.env.NEXT_PUBLIC_SITE_URL}/images/tools/${slug}.png`,
+      "author": {
+        "@type": "Organization",
+        "name": "AI Tools Directory"
+      }
     };
 
-    // Add aggregateRating if rating data is available in the safeTool
-    // Assuming safeTool has 'rating' (number) and 'reviewCount' (number) from fallback or API
-    if (typeof safeTool.rating === 'number' && typeof safeTool.reviewCount === 'number' && safeTool.reviewCount > 0) {
+    // Add aggregateRating if available
+    if (safeTool.reviews && safeTool.reviews.length > 0) {
+      const totalRating = safeTool.reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
+      const averageRating = totalRating / safeTool.reviews.length;
+      
       schema.aggregateRating = {
         "@type": "AggregateRating",
-        "ratingValue": safeTool.rating.toFixed(1), // Format to one decimal place
-        "reviewCount": safeTool.reviewCount,
+        "ratingValue": averageRating.toFixed(1),
+        "reviewCount": safeTool.reviews.length,
+        "bestRating": "5",
+        "worstRating": "1"
       };
     }
 
-    // Add offers if pricing plans are available in the safeTool
-    // Assuming safeTool has 'pricingPlans' (array of objects with name, price, etc.)
+    // Add offers based on pricing
     if (safeTool.pricingPlans && safeTool.pricingPlans.length > 0) {
-      // You can represent multiple offers if you have different plans
-      schema.offers = safeTool.pricingPlans.map(plan => ({
+      schema.offers = safeTool.pricingPlans.map((plan: any) => ({
         "@type": "Offer",
         "name": plan.name,
-        "priceCurrency": "USD", // Assuming USD, adjust if needed
-        // Attempt to parse price as a number if possible, otherwise use the string
+        "priceCurrency": "USD",
         "price": parseFloat(plan.price.replace(/[^0-9.]/g, '')) || plan.price,
         "description": plan.description,
-        "url": plan.ctaUrl || safeTool.website || `${process.env.NEXT_PUBLIC_BASE_URL}/tools/${slug}`, // Link to the offer/tool page
-        "availability": "http://schema.org/InStock", // Assuming tools are generally available
+        "url": plan.ctaUrl || safeTool.link || `${process.env.NEXT_PUBLIC_SITE_URL}/tools/${slug}`,
+        "availability": "http://schema.org/InStock"
       }));
-      // If there's only one plan, or you want a single offer representation:
-      // schema.offers = {
-      //      "@type": "Offer",
-      //      "priceCurrency": "USD",
-      //      "price": parseFloat(safeTool.pricingPlans[0].price.replace(/[^0-9.]/g, '')) || safeTool.pricingPlans[0].price,
-      //      "availability": "http://schema.org/InStock",
-      //      "url": safeTool.pricingPlans[0].ctaUrl || safeTool.website || `${process.env.NEXT_PUBLIC_BASE_URL}/tools/${slug}`,
-      // };
-    } else if (safeTool.pricing && (safeTool.pricing.toLowerCase() === 'free' || safeTool.pricing.toLowerCase() === 'freemium')) {
-      // Fallback offer for free/freemium if no detailed plans
-      schema.offers = {
+    } else if (safeTool.pricing) {
+      const isFree = safeTool.pricing.toLowerCase() === 'free' || safeTool.pricing.toLowerCase() === 'freemium';
+      schema.offers = [{
         "@type": "Offer",
-        "priceCurrency": "USD", // Assuming USD
-        "price": "0",
+        "name": safeTool.pricing,
+        "priceCurrency": "USD",
+        "price": isFree ? "0" : "0", // Default to "0" if not free
         "availability": "http://schema.org/InStock",
-        "url": safeTool.website || `${process.env.NEXT_PUBLIC_BASE_URL}/tools/${slug}`,
-      };
+        "url": safeTool.link || `${process.env.NEXT_PUBLIC_SITE_URL}/tools/${slug}`
+      }];
     }
-
 
     return JSON.stringify(schema);
   };
@@ -239,13 +297,11 @@ export default function ToolDetail() {
   }
   return (
       <div className="min-h-screen bg-white">
-        {/* Add JSON-LD Schema Markup */}
-        {schemaMarkup && (
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: schemaMarkup }}
-            />
-        )}
+        <Script
+          id="tool-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: schemaMarkup || "" }}
+        />
 
         <Header /> {/* Assuming Header component */}
         <main className="max-w-6xl mx-auto px-4 py-8">
