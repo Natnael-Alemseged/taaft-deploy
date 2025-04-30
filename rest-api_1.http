@@ -110,9 +110,8 @@ Content-Type: application/json
 <> 2025-04-24T231102.201.json
 
 ### Send chat messages (and get AI response)
-### Send a chat message and receive a response (non-streaming)
 POST https://taaft-backend.onrender.com/api/chat/sessions/{{sessionId}}/messages
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDYwMDk4NjR9.jNFjgyIpeYqkiq4ErsvxFgcdWL53NcSUi4-KmGXa66A
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDYwMTYxOTR9.i8KCCVpFyDXtUwPcJf3KIY8QwX9PKgbqlaW6bJ5qWZw
 Content-Type: application/json
 Accept: application/json
 
@@ -136,9 +135,9 @@ Accept: application/json
 
 
 ###search keywords
-POST taaft-backend.onrender.com/tools/keyword-search
+POST taaft-backend.onrender.com/tools/keyword-search?skip=0&limit=100
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDYwMDk4NjR9.jNFjgyIpeYqkiq4ErsvxFgcdWL53NcSUi4-KmGXa66A
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDYwMTYxOTR9.i8KCCVpFyDXtUwPcJf3KIY8QwX9PKgbqlaW6bJ5qWZw
 Accept: application/json
 
 ["korbit"]

@@ -217,6 +217,9 @@ export const handleGoogleCallback = async (code: string) => {
   }
 };
 
+
+
+
 // GitHub OAuth - Callback handling (assuming this is similar to Google)
 // This function would be called on your GitHub OAuth callback page (e.g., /auth/github/callback)
 // It should receive the code as a URL parameter
@@ -250,3 +253,29 @@ export const handleGitHubCallback = async (code: string) => {
     throw error; // Re-throw
   }
 }
+// --- Password Reset Types ---
+// Moved outside any function or component
+export interface ResetPasswordPayload {
+  token: string;
+  new_password: string;
+}
+
+export interface ResetPasswordResponse {
+  // Define the structure of the success response if your API returns one
+  // e.g., message: string; or success: boolean;
+  message: string; // Assuming a simple success message
+}
+// Moved outside any function or component, ensuring only one definition
+export const resetPassword = async (payload: ResetPasswordPayload): Promise<ResetPasswordResponse> => {
+  console.log("Calling reset password API");
+  try {
+    // Assuming your backend endpoint for password reset is something like /api/auth/reset-password
+    const response = await apiClient.post<ResetPasswordResponse>('/api/auth/reset-password', payload); // Using apiClient here
+    console.log("Reset password API response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("Reset password API failed:", error);
+    // It's good practice to throw the error so the calling component/hook can handle it
+    throw error;
+  }
+};

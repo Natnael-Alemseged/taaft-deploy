@@ -3,6 +3,8 @@
 import type React from "react"
 
 import { createContext, useContext, useState, useEffect } from "react"
+import {useMutation} from "@tanstack/react-query";
+import {resetPassword} from "@/services/auth-service";
 
 interface User {
   id: string
@@ -47,6 +49,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         resolve()
       }, 1000)
     })
+  }
+
+
+// Import the payload and response types
+  interface ResetPasswordPayload {
+    token: string;
+    new_password: string;
+  }
+
+  interface ResetPasswordResponse {
+    message: string;
+  }
+
+  export function useResetPassword() {
+    return useMutation<ResetPasswordResponse, Error, ResetPasswordPayload>({ // Type the mutation
+      mutationFn: (payload: ResetPasswordPayload) => resetPassword(payload),
+      onSuccess: (data) => {
+        console.log("Password reset successful:", data);
+        // Handle success, e.g., show a success message, maybe redirect
+      },
+      onError: (error) => {
+        console.error("Password reset failed:", error);
+        // Handle error, e.g., show an error message
+      },
+    });
   }
 
   const register = async (data: { name: string; email: string; password: string }) => {
