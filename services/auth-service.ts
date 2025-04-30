@@ -1,5 +1,6 @@
 import apiClient from "@/lib/api-client" // Assuming this is for other endpoints like register/google
 import axios from "axios"
+import { CloudCog } from "lucide-react"
 
 // Types
 interface LoginCredentials {
@@ -270,6 +271,7 @@ export const resetPassword = async (payload: ResetPasswordPayload): Promise<Rese
   console.log("Calling reset password API");
   try {
     // Assuming your backend endpoint for password reset is something like /api/auth/reset-password
+    console.log("Reset password payload:", payload);
     const response = await apiClient.post<ResetPasswordResponse>('/api/auth/reset-password', payload); // Using apiClient here
     console.log("Reset password API response:", response.data);
     return response.data;
