@@ -175,3 +175,18 @@ export const withFallbackTool = (tool: Tool): {
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+// lib/utils.ts
+
+// Helper function to convert a string into a URL-friendly slug
+export function slugify(text: string): string {
+  if (!text) return "" // Handle empty or null text
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/[^\w-]+/g, "") // Remove all non-word chars except -
+    .replace(/-+/g, "-") // Replace multiple - with single -
+    .replace(/^-+/, "") // Trim - from start of text
+    .replace(/-+$/, "") // Trim - from end of text
+}
