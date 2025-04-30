@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import clsx from "clsx"
 import { useClickOutside } from "@/hooks/use-click-outside"
 import { useChatCompletion, useChatSessions, useChatSessionMessages, useCreateChatSession } from "@/hooks/use-chat"
-import type { Message } from "@/services/chat-service"
+import {keywordSearch, Message} from "@/services/chat-service"
 
 interface ChatInterfaceProps {
     isOpen: boolean
@@ -220,6 +220,42 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
     }, [isOpen, activeChatId, isLoadingMessages, messages.length])
 
 
+    async function handleDirectSendMessage(content?: string) {
+        const messageContent = content || input.trim()
+        if (!messageContent) return
+
+        setError(null)
+        setToolRecommendations([])
+
+        try {
+            const keywords = messageContent.split(/\s+/)
+            const results = await keywordSearch(keywords)
+
+            console.log("Direct search results:", results)
+
+            // Store results for access in the UI (if needed)
+            if (Array.isArray(results.hits)) {
+                sessionStorage.setItem("chatResponseTools", JSON.stringify(results))
+            }
+
+            // You can render the search as a chat-like message if needed
+            const searchMessage: Message = {
+                role: "assistant",
+                content: `Found ${results.hits.length} result(s) for "${messageContent}".`,
+                hasSearchResults: true,
+                formattedData: results,
+            }
+
+            setMessages((prev) => [
+                ...prev,
+                { role: "user", content: messageContent },
+                searchMessage,
+            ])
+        } catch (error) {
+            console.error("Error in direct search:", error)
+            setError("Sorry, we couldn’t perform the search. Please try again later.")
+        }
+    }
 
 
 
@@ -611,9 +647,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                             </Button>
                             <Button
                                 onClick={() => {
-
-                                    //todo implement getting from tool
-                                    router.push("/search?q=" + encodeURIComponent(input.trim()))
+                                    handleDirectSendMessage()
                                 }}
                                 className="rounded-full bg-gray-200 px-3 py-2 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none"
                                 disabled={!input.trim()}

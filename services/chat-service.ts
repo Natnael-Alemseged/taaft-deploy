@@ -5,7 +5,7 @@ import { getUserIdFromLocalStorage } from "@/lib/session" // Assuming this utili
 // Define the structure for a chat message
 export interface Message {
     role: "user" | "assistant"
-    message: string
+    content: string
     id?: string
     timestamp?: Date
     // These might be used for LLM responses that trigger a search popup
@@ -115,27 +115,21 @@ export const getChatSessions = async (skip = 0, limit = 20): Promise<ChatSession
 export const getChatSessionMessages = async (sessionId: string): Promise<Message[]> => {
     try {
         console.log(`Fetching messages for session ${sessionId}`)
-        // Assuming your API endpoint is /api/chat/sessions/{sessionId}/messages
         const response = await apiClient.get<any[]>(`/api/chat/sessions/${sessionId}/messages`)
 
         // Transform the API response to our Message format
-        // Ensure you map the correct fields from your backend message structure
         const messages: Message[] = response.data.map((msg) => ({
-            role: msg.role === "assistant" ? "assistant" : "user", // Map backend role to frontend role
-            message: msg.content, // Map backend content to frontend content
-            id: msg._id, // Include message ID if available
-            timestamp: new Date(msg.timestamp), // Convert timestamp string to Date object
-            // Map hasSearchResults and formattedData from message metadata or similar field
-            hasSearchResults: msg.metadata?.hasSearchResults || false,
-            formattedData: msg.metadata?.formattedData || undefined,
+            role: msg.role === "assistant" ? "assistant" : "user",
+            content: msg.content,
+            id: msg._id,
+            timestamp: new Date(msg.timestamp),
         }))
 
         console.log(`Retrieved ${messages.length} messages for session ${sessionId}`)
-        return messages || []
+        return messages
     } catch (error) {
         console.error(`Error fetching messages for session ${sessionId}:`, error)
-        // Depending on error type (e.g., 401 Unauthorized), you might need to handle token refresh or logout
-        throw error; // Re-throw the error for the calling component to handle
+        return []
     }
 }
 
@@ -171,116 +165,88 @@ export const createChatSession = async (title: string): Promise<ChatSession> => 
 // This function handles the LLM interaction
 // Send a message to an existing chat session (LLM completion)
 // This function handles the LLM interaction
+
+
+
 export const sendChatMessage = async (
     sessionId: string,
     message: string,
     model = "gpt4",
     systemPrompt = "You are a helpful assistant.",
-    metadata: Record<string, any> = {} // Ensure metadata has a default value
-): Promise<{ message: Message; toolRecommendations?: string[]; data: ChatCompletionResponse }> => { // Explicitly type data
+    metadata?: Record<string, any>,
+): Promise<{ message: Message; toolRecommendations?: string[]; data?: any }> => {
     try {
-        console.log(`Sending message to session ${sessionId} with model ${model}`);
+        console.log(`Sending message to session ${sessionId} with model ${model}`)
 
-        // Create the request payload - Updated comment based on API schema
+        // Create the request payload
         const payload = {
-            message: message, // Use 'message' as per the provided API schema
-            model: model,
+            message,
+            model,
             system_prompt: systemPrompt,
-            metadata: metadata, // Include metadata object
+            ...(metadata && { metadata }),
         }
 
-        console.log("Payload I send to the backend is:\n", JSON.stringify(payload, null, 2))
+        // Make the API request
+        const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload)
 
+        console.log(`Response received for session ${sessionId}`)
 
-        // Define the expected API response structure
-        interface ChatCompletionResponse {
-            message: string; // The main message content
-            chat_id: string;
-            message_id: string;
-            timestamp: string; // Assuming ISO string format
-            model: string;
-            metadata: Record<string, any>;
-            formatted_data: any; // Can be null, object, or array - need flexibility here
-            // If the API could *sometimes* send tool_recommendations at the top level, add it here:
-            // tool_recommendations?: string[];
-        }
+        const rawResponseMessage = response.data.message
 
-        // Make the API request to the chat completion endpoint
-        const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload);
+        console.log("response api is:" + rawResponseMessage)
 
-        console.log(`Response received for session ${sessionId}`);
+        // Extract options if present
+        let options: string[] = []
+        const optionsPattern = "options ="
+        const optionsIndex = rawResponseMessage.indexOf(optionsPattern)
 
-        const rawResponseMessage = response.data.message; // Raw string content from API
+        if (optionsIndex !== -1) {
+            // Extract the part after "options ="
+            const optionsStringRaw = rawResponseMessage.substring(optionsIndex + optionsPattern.length)
 
-        console.log("Response data only:\n", JSON.stringify(response.data, null, 2));
+// Trim whitespace from both ends first
+let cleanedOptionsString = optionsStringRaw.trim()
 
+// Now remove the leading '[' and trailing ']' if they exist
+cleanedOptionsString = cleanedOptionsString.replace(/^\[|\]$/g, "").trim()
 
-        // Extract tool recommendations from formatted_data if available
-        let toolRecommendations: string[] | undefined;
-
-        if (response.data.formatted_data && typeof response.data.formatted_data === 'object') {
-            // Check if formatted_data is an object and has a key like 'recommended_tools' or 'tool_recommendations'
-            const potentialRecommendations = response.data.formatted_data.recommended_tools || response.data.formatted_data.tool_recommendations;
-            if (Array.isArray(potentialRecommendations) && potentialRecommendations.every(item => typeof item === 'string')) {
-                toolRecommendations = potentialRecommendations;
-            }
-        } else if (Array.isArray(response.data.formatted_data) && response.data.formatted_data.every(item => typeof item === 'string')) {
-            // Also check if formatted_data is directly an array of strings
-            toolRecommendations = response.data.formatted_data;
-        }
-        // Removed the old string parsing logic for "options =" as structured data is preferred
-
-
-        // Clean the message content (remove "options = ..." part if present, although not expected with structured data)
-        const optionsPattern = "options =";
-        const optionsIndex = rawResponseMessage.indexOf(optionsPattern);
-
-        const cleanedMessageContent = optionsIndex !== -1
-            ? rawResponseMessage.substring(0, optionsIndex).trim()
-            : rawResponseMessage.trim();
-
-
-        // Map the API response message structure to the frontend Message structure
-        // Assuming Message interface is defined elsewhere like:
-        // interface Message {
-        //   id: string;
-        //   role: "user" | "assistant";
-        //   message: string;
-        //   timestamp: Date;
-        //   hasSearchResults?: boolean; // If formatted_data represents search results
-        //   formattedData?: any; // The raw formatted_data
-        // }
-        const frontendMessage: Message = {
-            role: "assistant", // Assuming the response message is always from assistant
-            message: cleanedMessageContent, // Use the cleaned content
-            id: response.data.message_id,
-            timestamp: new Date(response.data.timestamp),
-            // Map hasSearchResults and formattedData directly from response.data
-            hasSearchResults: response.data.formatted_data ? true : false, // Assuming formatted_data indicates search results
-            formattedData: response.data.formatted_data,
-        };
-
-
-        return {
-            message: frontendMessage,
-            toolRecommendations: toolRecommendations, // Use the extracted recommendations
-            data: response.data, // Include the entire raw response data
-        }
-    } catch (error: any) {
-        console.error(`Error sending message to session ${sessionId}:`, error)
-
-        if (error.response) {
-            console.error("Error response data:", error.response.data)
-            console.error("Error response status:", error.response.status)
-        } else if (error.request) {
-            console.error("No response received:", error.request)
-        } else {
-            console.error("Error message:", error.message)
-        }
-
-        throw error // Re-throw the error for the calling component to handle
-    }
+// Split by comma, trim, and remove quotes from each option
+options = cleanedOptionsString
+    .split(",")
+    .map((option) => option.trim().replace(/'/g, "").replace(/"/g, ""))
+    .filter((option) => option.length > 0) // Filter out any empty strings
 }
+
+// Clean the message content (remove "options = ..." part)
+const cleanedMessage =
+    optionsIndex !== -1 ? rawResponseMessage.substring(0, optionsIndex).trim() : rawResponseMessage.trim()
+
+return {
+    message: {
+        role: "assistant",
+        content: cleanedMessage,
+        id: response.data.message_id,
+        timestamp: new Date(response.data.timestamp),
+    },
+    toolRecommendations: options.length > 0 ? options : undefined,
+    data: response.data, // Include the entire response data
+}
+} catch (error: any) {
+    console.error(`Error sending message to session ${sessionId}:`, error)
+
+    if (error.response) {
+        console.error("Error response data:", error.response.data)
+        console.error("Error response status:", error.response.status)
+    } else if (error.request) {
+        console.error("No response received:", error.request)
+    } else {
+        console.error("Error message:", error.message)
+    }
+
+    throw error
+}
+}
+
 
 
 // --- Keyword Search Service Function ---
