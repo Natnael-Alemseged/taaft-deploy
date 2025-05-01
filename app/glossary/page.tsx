@@ -30,7 +30,8 @@ function generateGlossarySchema(groupedData: GroupedGlossaryData | null) {
 
     const schema = {
         "@context": "https://schema.org",
-        "@type": "DefinedTermSet",
+        // "@type": "DefinedTermSet",
+        "@type": "Dataset",
         "name": "AI Tools Glossary",
         "description": "Comprehensive glossary of AI and machine learning terms",
         "url": `${siteUrl}/glossary`,
@@ -41,7 +42,8 @@ function generateGlossarySchema(groupedData: GroupedGlossaryData | null) {
             "url": `${siteUrl}/terms/${slugify(term.id)}`,
             "termCode": term.id,
             "inDefinedTermSet": {
-                "@type": "DefinedTermSet",
+                // "@type": "DefinedTermSet",
+                "@type": "Dataset",
                 "name": "AI Tools Glossary",
                 "url": `${siteUrl}/glossary`
             }
