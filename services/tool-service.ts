@@ -19,7 +19,8 @@ export const getTools = async (params?: {
     }
 
     const apiParams: Record<string, any> = {}
-    let endpoint = "/tools"
+    // let endpoint = "/tools"
+    let endpoint = "/public/tools/"
 
     if (params?.search) {
       apiParams.q = params.search

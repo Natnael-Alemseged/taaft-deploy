@@ -153,3 +153,9 @@ Accept: application/json
 
 <> 2025-04-25T061919.200.json
 
+
+### get tools
+GET taaft-backend.onrender.com/tools
+Content-Type: application/json
+Accept: application/json
+
