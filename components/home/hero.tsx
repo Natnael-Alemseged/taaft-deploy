@@ -3,20 +3,47 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Search } from "lucide-react"
+import { Search, MessageSquare, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ChatInterface from "./chat-interface"
 import { useAuth } from "@/contexts/auth-context"
 import { showLoginModal } from "@/lib/auth-events"
+import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { useClickOutside } from "@/hooks/use-click-outside"
+
+// Types for API integration
+interface Tool {
+  id: number | string
+  name: string
+  description: string
+  category: string
+  icon?: string
+}
+
+interface SearchResponse {
+  tools: Tool[]
+  total: number
+}
 
 export default function Hero() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [tools, setTools] = useState<Tool[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
   const chatInputRef = useRef<HTMLInputElement>(null)
   const searchContainerRef = useRef<HTMLDivElement>(null)
+  const searchCommandRef = useRef<HTMLDivElement>(null)
   const { isAuthenticated } = useAuth()
+
+  // Close search when clicking outside
+  useClickOutside(searchCommandRef as React.RefObject<HTMLElement>, () => {
+    if (isSearchOpen && !isChatOpen) {
+      setIsSearchOpen(false)
+    }
+  })
 
   const exampleTags = [
     "Image generation tools",
@@ -26,23 +53,84 @@ export default function Hero() {
     "AI voice assistants",
   ]
 
-  // Update the handleSearchFocus function to accept an optional message parameter
-  const handleSearchFocus = (exampleMessage?: string | React.FocusEvent | React.MouseEvent) => {
+  // Sample AI tools data - replace with actual data from your API
+  const sampleTools = [
+    {
+      id: 1,
+      name: "Midjourney",
+      description: "AI image generation tool for creative visuals",
+      category: "Image Generation",
+      icon: "🎨"
+    },
+    {
+      id: 2,
+      name: "ChatGPT",
+      description: "Conversational AI assistant by OpenAI",
+      category: "Chatbots",
+      icon: "💬"
+    },
+    {
+      id: 3,
+      name: "Jasper",
+      description: "AI writing assistant for marketing content",
+      category: "Writing",
+      icon: "✍️"
+    },
+    {
+      id: 4,
+      name: "Runway",
+      description: "AI-powered video editing and generation",
+      category: "Video Creation",
+      icon: "🎥"
+    }
+  ]
+
+  // Function to fetch tools from API
+  const fetchTools = async (query: string) => {
+    setIsLoading(true)
+    try {
+      // TODO: Replace with actual API endpoint
+      // const response = await fetch(`/api/tools/search?q=${encodeURIComponent(query)}`)
+      // const data: SearchResponse = await response.json()
+      // setTools(data.tools)
+      
+      // Using sample data for now
+      setTools(sampleTools)
+    } catch (error) {
+      console.error('Error fetching tools:', error)
+      setTools([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Debounced search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        fetchTools(searchQuery)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  const handleSearchFocus = () => {
     if (!isAuthenticated) {
       showLoginModal()
       return
     }
+    setIsSearchOpen(true)
+  }
 
+  const handleChatOpen = () => {
+    setIsSearchOpen(false)
     setIsChatOpen(true)
+  }
 
-    // Only process example message if it's a string
-    if (typeof exampleMessage === 'string') {
-      console.log(`example message is ${exampleMessage}`)
-
-      sessionStorage.removeItem("pendingChatMessage")
-      sessionStorage.setItem("shouldCreateNewSession", "true")
-      sessionStorage.setItem("pendingChatMessage", exampleMessage)
-    }
+  const handleClose = () => {
+    setIsSearchOpen(false)
+    setSearchQuery("")
   }
 
   // Close chat if user logs out while it's open
@@ -86,7 +174,7 @@ export default function Hero() {
 
           {/* Search bar / Chat Interface container */}
           <div ref={searchContainerRef} className="relative mx-auto mb-8 max-w-2xl">
-            {!isChatOpen ? (
+            {!isChatOpen && !isSearchOpen ? (
               <div className="relative">
                 <Input
                   ref={inputRef}
@@ -97,21 +185,108 @@ export default function Hero() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={handleSearchFocus}
                 />
-                <Search className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
-                <Button
-                  className="absolute right-2 top-2 h-10 rounded-full bg-purple-600 px-6 text-sm hover:bg-purple-700"
-                  onClick={handleSearchFocus}
-                >
-                  Search
-                </Button>
+                <div className="absolute left-4 top-4 flex items-center gap-2">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <div className="absolute right-2 top-2 flex items-center gap-2">
+                  <MessageSquare 
+                    className="h-5 w-5 text-gray-400 cursor-pointer hover:text-purple-500 transition-colors"
+                    onClick={handleChatOpen}
+                  />
+                  <Button
+                    className="h-10 rounded-full bg-purple-600 px-6 text-sm hover:bg-purple-700"
+                    onClick={handleSearchFocus}
+                  >
+                    Search
+                  </Button>
+                </div>
               </div>
             ) : null}
+
+            {/* Intermediate Search UI */}
+            {isSearchOpen && !isChatOpen && (
+              <div ref={searchCommandRef} className="w-full">
+                <Command className="rounded-lg border shadow-md">
+                  <div className="flex items-center border-b px-3 w-ull">
+                 
+                    <CommandInput 
+                      placeholder="Search AI tools..." 
+                      value={searchQuery}
+                      onValueChange={setSearchQuery}
+                      className="flex-1"
+                    />
+               <Button
+  size="icon"
+  variant="ghost"
+  className="rounded-full bg-purple-100 hover:bg-purple-200 text-purple-600"
+  onClick={handleChatOpen}
+>
+  <MessageSquare className="h-5 w-5" />
+</Button>
+
+                    <X
+                      className="h-4 w-4 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
+                      onClick={handleClose}
+                    />
+                  </div>
+                  <CommandList>
+                    <CommandEmpty>
+                      {isLoading ? (
+                        <div className="flex items-center justify-center py-6">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                        </div>
+                      ) : (
+                        "No results found."
+                      )}
+                    </CommandEmpty>
+                    <CommandGroup heading="AI Tools">
+                      {tools.map((tool) => (
+                        <CommandItem 
+                          key={tool.id}
+                          className="flex items-center justify-between p-2 cursor-pointer hover:bg-purple-50"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">{tool.icon}</span>
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">{tool.name}</span>
+                              <span className="text-sm text-gray-500">{tool.description}</span>
+                            </div>
+                          </div>
+                          <span className="text-xs text-gray-400">{tool.category}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                  {/* Full-width action buttons */}
+                  <div className="border-t p-2 grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center justify-center gap-2 hover:bg-purple-50"
+                      onClick={handleClose}
+                    >
+                      <X className="h-4 w-4" />
+                      Close
+                    </Button>
+                    <Button
+                      className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white"
+                      onClick={handleChatOpen}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      Ask AI Assistant
+                    </Button>
+                  </div>
+                </Command>
+              </div>
+            )}
 
             {/* Chat Interface - only show if authenticated */}
             {isAuthenticated && (
               <ChatInterface
                 isOpen={isChatOpen}
-                onClose={() => setIsChatOpen(false)}
+                onClose={() => {
+                  setIsChatOpen(false)
+                  setIsSearchOpen(false)
+                }}
                 inputRef={chatInputRef as React.RefObject<HTMLInputElement>}
                 isRelativeToParent={false}
               />
@@ -119,36 +294,42 @@ export default function Hero() {
           </div>
 
           {/* Example buttons */}
-            <div className="mb-2 text-sm text-gray-500">💡 Try these examples:</div>
-            <div className="flex flex-wrap justify-center gap-2">
-              {exampleTags.slice(0, 3).map((example) => (
-                <Button
-                  key={example}
-                  variant="outline"
-                  className="rounded-full border-gray-200 bg-white bg-gradient-to-br from-white via-purple-50 to-purple-100 text-xs text-gray-600 shadow-lg hover:bg-gray-50"
-                  onClick={() => handleSearchFocus(example)}
-                >
-                  <span className="pr-2 text-purple-300">" </span>
-                  {example}
-                  <span className="pl-2 text-purple-300">" </span>
-                </Button>
-              ))}
-            </div>
-            <div className="flex flex-wrap justify-center gap-2 mt-2">
-              {exampleTags.slice(3).map((example) => (
-                <Button
-                  key={example}
-                  variant="outline"
-                  className="rounded-full border-gray-200 bg-white bg-gradient-to-br from-white via-purple-50 to-purple-100 text-xs text-gray-600 shadow-lg hover:bg-gray-50"
-                  onClick={() => handleSearchFocus(example)}
-                >
-                  <span className="pr-2 text-purple-300">" </span>
-                  {example}
-                  <span className="pl-2 text-purple-300">" </span>
-                </Button>
-              ))}
-            </div>
+          <div className="mb-2 text-sm text-gray-500">💡 Try these examples:</div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {exampleTags.slice(0, 3).map((example) => (
+              <Button
+                key={example}
+                variant="outline"
+                className="rounded-full border-gray-200 bg-white bg-gradient-to-br from-white via-purple-50 to-purple-100 text-xs text-gray-600 shadow-lg hover:bg-gray-50"
+                onClick={() => {
+                  setSearchQuery(example)
+                  handleSearchFocus()
+                }}
+              >
+                <span className="pr-2 text-purple-300">" </span>
+                {example}
+                <span className="pl-2 text-purple-300">" </span>
+              </Button>
+            ))}
           </div>
+          <div className="flex flex-wrap justify-center gap-2 mt-2">
+            {exampleTags.slice(3).map((example) => (
+              <Button
+                key={example}
+                variant="outline"
+                className="rounded-full border-gray-200 bg-white bg-gradient-to-br from-white via-purple-50 to-purple-100 text-xs text-gray-600 shadow-lg hover:bg-gray-50"
+                onClick={() => {
+                  setSearchQuery(example)
+                  handleSearchFocus()
+                }}
+              >
+                <span className="pr-2 text-purple-300">" </span>
+                {example}
+                <span className="pl-2 text-purple-300">" </span>
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   )

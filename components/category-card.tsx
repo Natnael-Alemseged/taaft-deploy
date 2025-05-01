@@ -20,14 +20,12 @@ export default function CategoryCard({ category }: CategoryCardProps) {
         <div className="flex flex-col items-center text-center space-y-2">
           {/* Circular icon background */}
           <div className="w-16 h-16 bg-[#f5f0ff] dark:bg-gray-700 rounded-full flex items-center justify-center mb-4 overflow-hidden">
-            {category.imageUrl ? (
-              <Image
-                src={category.imageUrl}
-                alt={`${category.name} Category Icon`}
-                width={64}
-                height={64}
-                objectFit="cover"
-              />
+            {category.svg ? (
+              <div
+              dangerouslySetInnerHTML={{ __html: category.svg }}
+              role="img"
+              aria-label={`${category.name} Category Icon`}
+            />
             ) : (
               <Banknote className="text-purple-600 w-6 h-6" />
             )}
