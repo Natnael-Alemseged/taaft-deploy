@@ -30,10 +30,9 @@ function generateGlossarySchema(groupedData: GroupedGlossaryData | null) {
 
     const schema = {
         "@context": "https://schema.org",
-        // "@type": "DefinedTermSet",
-        "@type": "Dataset",
+        "@type": "Dataset", // Keeping Dataset as per your current code
         "name": "AI Tools Glossary",
-        "description": "Comprehensive glossary of AI and machine learning terms",
+        "description": glossaryDescription, // Already here at top level
         "url": `${siteUrl}/glossary`,
         "hasPart": terms.map(term => ({
             "@type": "DefinedTerm",
@@ -42,10 +41,11 @@ function generateGlossarySchema(groupedData: GroupedGlossaryData | null) {
             "url": `${siteUrl}/terms/${slugify(term.id)}`,
             "termCode": term.id,
             "inDefinedTermSet": {
-                // "@type": "DefinedTermSet",
-                "@type": "Dataset",
+                "@type": "Dataset", // The nested Dataset
                 "name": "AI Tools Glossary",
-                "url": `${siteUrl}/glossary`
+                "url": `${siteUrl}/glossary`,
+                "description": glossaryDescription // <-- **Add description here**
+                // Optional: add "creator", "license" here if you have that info
             }
         }))
     };
