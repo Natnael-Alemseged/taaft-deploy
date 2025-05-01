@@ -26,6 +26,7 @@ export type GroupedGlossaryResponse = {
 export const getGlossaryGrouped = async (): Promise<GroupedGlossaryResponse> => {
   try {
     const response = await apiClient.get<GroupedGlossaryResponse>("/api/glossary/grouped")
+    console.log(' glossary response is:', JSON.stringify( response.data,null, 2));
     return response.data
   } catch (error) {
     console.error("Failed to fetch grouped glossary data:", error)

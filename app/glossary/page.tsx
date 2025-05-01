@@ -32,7 +32,7 @@ function generateGlossarySchema(groupedData: GroupedGlossaryData | null) {
         "@context": "https://schema.org",
         "@type": "Dataset", // Keeping Dataset as per your current code
         "name": "AI Tools Glossary",
-        "description": glossaryDescription, // Already here at top level
+        "description": metadata.description, // Already here at top level
         "url": `${siteUrl}/glossary`,
         "hasPart": terms.map(term => ({
             "@type": "DefinedTerm",
@@ -44,7 +44,7 @@ function generateGlossarySchema(groupedData: GroupedGlossaryData | null) {
                 "@type": "Dataset", // The nested Dataset
                 "name": "AI Tools Glossary",
                 "url": `${siteUrl}/glossary`,
-                "description": glossaryDescription // <-- **Add description here**
+                "description": term.definition // <-- **Add description here**
                 // Optional: add "creator", "license" here if you have that info
             }
         }))
