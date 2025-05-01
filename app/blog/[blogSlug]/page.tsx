@@ -162,14 +162,15 @@ export default function BlogPostDetail({ blogPost }: { blogPost?: BlogPost }) {
 
         <main className="container mx-auto px-4 py-12 max-w-5xl">
           {/* Breadcrumbs */}
-          <nav className="text-sm text-gray-600 dark:text-gray-400 mb-8">
+          {/* <nav className="text-sm text-gray-600 dark:text-gray-400 mb-8">
             <Link href="/" className="hover:underline">Home</Link>
-            <span className="mx-2">/</span>
+            <span className="mx-2">/</span> */}
             {/* Restored breadcrumb link to Blog */}
-            <Link href="/blog" className="hover:underline">Blog</Link>
+            {/* <Link href="/blog" className="hover:underline">Blog</Link>
             <span className="mx-2">/</span>
             <span>{articleData.title}</span>
-          </nav>
+          </nav> */}
+          
 
           {/* Article Header */}
           <header className="mb-12">
@@ -219,7 +220,7 @@ export default function BlogPostDetail({ blogPost }: { blogPost?: BlogPost }) {
             <div className="md:col-span-2">
               {/* Excerpt - Linkify "Artificial Intelligence" */}
               <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
-                {linkifyTerm(articleData.excerpt, "Artificial Intelligence", "/glossary")}
+                {linkifyTerm(articleData.excerpt, "Artificial Intelligence", "/terms/68087017dd1bb674cd3dd31b")}
               </p>
 
               {/* Content Sections */}
