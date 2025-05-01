@@ -6,7 +6,7 @@ export default function About() {
   return (
     <div className="min-h-screen bg-[#f9fafb]">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 bg-white md:px-20">
+      {/* <header className="flex items-center justify-between px-4 py-3 bg-white md:px-20">
         <Link href="/" className="flex items-center text-lg font-semibold text-[#a855f7]">
           AI Tool Gateway
         </Link>
@@ -31,7 +31,7 @@ export default function About() {
             Get Started
           </Button>
         </div>
-      </header>
+      </header> */}
 
       {/* Hero Section */}
       <section className="bg-white py-16 border-b border-[#e5e7eb]">
