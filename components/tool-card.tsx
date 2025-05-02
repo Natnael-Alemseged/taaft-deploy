@@ -5,6 +5,9 @@ import { ExternalLink, Bookmark, Share2 } from "lucide-react" // Import Lucide i
 import { Button } from "@/components/ui/button" // Assuming you use this Button component
 import { Card, CardContent } from "@/components/ui/card" // Assuming you use these Card components
 import type { Tool } from "@/types/tool" // Import the updated Tool type
+import { showLoginModal } from "@/lib/auth-events"
+import { useAuth } from "@/contexts/auth-context"
+import { useRouter, usePathname } from "next/navigation"
 
 interface ToolCardProps {
   tool: Tool
@@ -38,8 +41,20 @@ const getBadgeClass = (label: string) => {
 }
 
 export default function ToolCard({ tool }: ToolCardProps) {
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
+  const pathname = usePathname()
+
   // Link to the individual tool detail page
   const toolLinkHref = `/tools/${tool.id}` // Assuming /tools/[id] route
+
+  // Handle click on the tool link
+  const handleToolClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault()
+      showLoginModal(pathname)
+    }
+  }
 
   // Determine pricing badge text
   const pricingText = tool.pricing ? tool.pricing.charAt(0).toUpperCase() + tool.pricing.slice(1) : "Unknown"
@@ -141,9 +156,9 @@ export default function ToolCard({ tool }: ToolCardProps) {
           {/* Try Tool Button - Link to tool detail page */}
           <Button
             className="bg-[#a855f7] hover:bg-[#9333ea] dark:bg-purple-700 dark:hover:bg-purple-800 text-white text-xs h-8 rounded-md flex items-center"
-            asChild // Render Button as a Link
+            asChild
           >
-            <Link href={toolLinkHref}>
+            <Link href={toolLinkHref} onClick={handleToolClick}>
               Try Tool <ExternalLink className="w-3 h-3 ml-1.5" />
             </Link>
           </Button>

@@ -88,7 +88,7 @@ export default function Hero() {
   ]
 
   // Function to fetch tools from API
-  const fetchTools = async (query: string, authToken: string | null) => { // Added authToken parameter
+  const fetchTools = async (query: string) => { // Added authToken parameter
     setIsLoading(true);
     try {
       // Optional: Add a check to ensure the token exists before making the request

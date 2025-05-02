@@ -275,7 +275,7 @@ export const resetPassword = async (payload: ResetPasswordPayload): Promise<Rese
   try {
     // Assuming your backend endpoint for password reset is something like /api/auth/reset-password
     console.log("Reset password payload:", payload);
-    const response = await apiClient.post<ResetPasswordResponse>('/api/auth/reset-password', payload); // Using apiClient here
+    const response = await apiClient.post<ResetPasswordResponse>('/auth/reset-password', payload); // Using apiClient here
     console.log("Reset password API response:", response.data);
     return response.data;
   } catch (error: any) {

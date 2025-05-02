@@ -15,6 +15,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false) // State for mobile menu
+  const [previousRoute, setPreviousRoute] = useState<string | undefined>()
   const { user, logout, isAuthenticated } = useAuth()
   const pathname = usePathname() // Get current pathname
 
@@ -35,6 +36,7 @@ export default function Header() {
   const closeAllModals = () => {
     setIsSignInModalOpen(false)
     setIsSignUpModalOpen(false)
+    setPreviousRoute(undefined)
   }
 
   const handleLogout = () => {
@@ -55,17 +57,18 @@ export default function Header() {
 
     window.addEventListener("scroll", handleScroll)
 
-    // Add listener for login modal event (assuming this event is dispatched elsewhere)
-    const handleShowLoginModal = () => {
+    // Add listener for login modal event
+    const handleShowLoginModal = (event: CustomEvent<{ previousRoute?: string }>) => {
+      setPreviousRoute(event.detail.previousRoute)
       setIsSignInModalOpen(true)
     }
 
-    window.addEventListener("show-login-modal", handleShowLoginModal as EventListener) // Cast to EventListener
+    window.addEventListener("show-login-modal", handleShowLoginModal as EventListener)
 
     // Clean up the event listeners when the component unmounts
     return () => {
       window.removeEventListener("scroll", handleScroll)
-      window.removeEventListener("show-login-modal", handleShowLoginModal as EventListener) // Cast for cleanup
+      window.removeEventListener("show-login-modal", handleShowLoginModal as EventListener)
     }
   }, [])
 
@@ -106,7 +109,12 @@ export default function Header() {
   return (
       <>
         {/* Sign In Modal */}
-        <SignInModal isOpen={isSignInModalOpen} onClose={closeAllModals} onSwitchToSignUp={openSignUpModal} />
+        <SignInModal 
+          isOpen={isSignInModalOpen} 
+          onClose={closeAllModals} 
+          onSwitchToSignUp={openSignUpModal}
+          previousRoute={previousRoute}
+        />
         {/* Sign Up Modal */}
         <SignUpModal isOpen={isSignUpModalOpen} onClose={closeAllModals} onSwitchToSignIn={openSignInModal} />
 

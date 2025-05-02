@@ -25,46 +25,6 @@ function generateToolsSchema(toolsData: ToolsData | null) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://taaft.org';
 
-    // const schema = {
-    //     "@context": "https://schema.org",
-    //     "@type": "Dataset",
-    //     "name": "Browse AI Tools | TAAFT",
-    //     "description": metadata.description,
-    //     "url": `${siteUrl}/browse`,
-    //     "mainEntity": {
-    //         "@type": "ItemList",
-    //         "itemListElement": toolsData.tools.map((tool, index) => ({
-    //             "@type": "ListItem",
-    //             "position": index + 1,
-    //             "item": {
-    //                 "@type": "SoftwareApplication",
-    //                 "name": tool.name,
-    //                 "description": tool.description,
-    //                 "url": `${siteUrl}/tools/${tool.slug || tool.id}`,
-    //                 ...(tool.link && {
-    //                     "applicationSuite": {
-    //                         "@type": "WebSite",
-    //                         "url": tool.link,
-    //                         "name": `${tool.name} Homepage`
-    //                     }
-    //                 }),
-    //                 ...(tool.keywords && tool.keywords.length > 0 && {
-    //                     "keywords": Array.isArray(tool.keywords) ? tool.keywords.join(',') : String(tool.keywords)
-    //                 }),
-    //                 ...(tool.pricing && {
-    //                     "offers": {
-    //                         "@type": "Offer",
-    //                         "priceCurrency": "USD",
-    //                         "availability": "https://schema.org/InStock",
-    //                         "price": typeof tool.pricing === 'number' ? tool.pricing.toString() : '0',
-    //                         "name": `${tool.pricing} Plan`,
-    //                         "url": tool.link
-    //                     }
-    //                 })
-    //             }
-    //         }))
-    //     }
-    // };
 
     const schema={
         "@context": "https://schema.org",

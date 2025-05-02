@@ -20,9 +20,10 @@ interface SignInModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSwitchToSignUp: () => void;
+  previousRoute?: string; // Add optional previousRoute prop
 }
 
-export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalProps) {
+export function SignInModal({ isOpen, onClose, onSwitchToSignUp, previousRoute }: SignInModalProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -46,8 +47,13 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignInModalPr
       setResetMessage(""); // Clear any reset messages
       setResetEmail(""); // Clear email input
       setIsResetRequestSuccessful(false); // Reset success state
+      
+      // Navigate back to previous route if it exists and user hasn't signed in
+      if (previousRoute && !isAuthLoading) {
+        router.push(previousRoute);
+      }
     }
-  }, [isOpen]); // Dependency on isOpen prop
+  }, [isOpen, previousRoute, router, isAuthLoading]); // Dependency on isOpen, previousRoute, and router
 
 
   if (!isOpen) return null;

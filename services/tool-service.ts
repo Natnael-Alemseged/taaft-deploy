@@ -23,7 +23,7 @@ export const getTools = async (params?: {
     let endpoint = "/public/tools/"
 
     if (params?.search) {
-      apiParams.q = params.search
+      apiParams.q = `%${params.search}%`;
       endpoint = "/tools/search" // Use /tools/search if a search term is provided
     }
 
@@ -42,7 +42,7 @@ export const getTools = async (params?: {
       headers,
     })
 
-    console.log(`Fetched from ${endpoint}:`, response.data)
+    console.log(`Fetched from ${endpoint}:`,  JSON.stringify(response.data, null, 2))
     return response.data
 
   } catch (error) {
