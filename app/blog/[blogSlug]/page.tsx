@@ -131,28 +131,35 @@ export default function BlogPostDetail({ blogPost }: { blogPost?: BlogPost }) {
     }
   };
 
+  
+
   // Helper function to find and wrap a specific term with a Link component
   const linkifyTerm = (text: string, term: string, href: string) => {
     const parts = text.split(term);
     if (parts.length <= 1) {
       return text; // Term not found
     }
-
+  
     return (
-        <>
-          {parts[0]}
-          <Link href={href} className="text-purple-600 dark:text-purple-400 underline hover:no-underline">
-            {term}
-          </Link>
-          {/* Recursively process the rest of the string to handle multiple occurrences */}
-          {parts.slice(1).map((part, index) => (
-              <React.Fragment key={index}>
-                {linkifyTerm(part, term, href)}
-              </React.Fragment>
-          ))}
-        </>
+      <>
+        {parts[0]}
+        <Link
+          href={href}
+          title={`Learn more about "${term}"`} // Tooltip text
+          className="text-purple-600 dark:text-purple-400 underline hover:no-underline"
+        >
+          {term}
+        </Link>
+        {/* Recursively process the rest of the string to handle multiple occurrences */}
+        {parts.slice(1).map((part, index) => (
+          <React.Fragment key={index}>
+            {linkifyTerm(part, term, href)}
+          </React.Fragment>
+        ))}
+      </>
     );
   };
+  
 
 
   return (
