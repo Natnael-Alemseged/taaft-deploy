@@ -7,6 +7,7 @@ import Link from "next/link" // Assuming Next.js Link is used
 import { SignInModal } from "@/components/home/sign-in-modal" // Assuming modal components are available
 import { useAuth } from "@/contexts/auth-context" // Assuming useAuth hook is available
 import { LogOut, User, Menu, X } from "lucide-react" // Import Menu and X icons
+import { usePathname } from "next/navigation" // Import usePathname for active link detection
 
 export default function Header() {
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false)
@@ -15,6 +16,7 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false) // State for mobile menu
   const { user, logout, isAuthenticated } = useAuth()
+  const pathname = usePathname() // Get current pathname
 
   const mobileMenuRef = useRef<HTMLDivElement>(null); // Ref for mobile menu for click outside
 
@@ -121,13 +123,34 @@ export default function Header() {
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8"> {/* Hidden on mobile, flex on medium+ */}
-            <Link href="/browse" className="text-sm text-[#374151]">
+            <Link 
+              href="/browse" 
+              className={`text-sm ${
+                pathname === "/browse" 
+                  ? "text-[#a855f7] font-medium" 
+                  : "text-[#374151] hover:text-[#a855f7]"
+              }`}
+            >
               Browse Tools
             </Link>
-            <Link href="/categories" className="text-sm text-[#374151]">
+            <Link 
+              href="/categories" 
+              className={`text-sm ${
+                pathname === "/categories" 
+                  ? "text-[#a855f7] font-medium" 
+                  : "text-[#374151] hover:text-[#a855f7]"
+              }`}
+            >
               Categories
             </Link>
-            <Link href="/about" className="text-sm text-[#374151]">
+            <Link 
+              href="/about" 
+              className={`text-sm ${
+                pathname === "/about" 
+                  ? "text-[#a855f7] font-medium" 
+                  : "text-[#374151] hover:text-[#a855f7]"
+              }`}
+            >
               About
             </Link>
           </div>
@@ -203,13 +226,37 @@ export default function Header() {
               >
                 <div className="flex flex-col space-y-4 px-4">
                   {/* Navigation Links */}
-                  <Link href="/browse" className="text-base text-[#374151] hover:text-[#a855f7]" onClick={() => setIsMobileMenuOpen(false)}> {/* Close menu on click */}
+                  <Link 
+                    href="/browse" 
+                    className={`text-base ${
+                      pathname === "/browse" 
+                        ? "text-[#a855f7] font-medium" 
+                        : "text-[#374151] hover:text-[#a855f7]"
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
                     Browse Tools
                   </Link>
-                  <Link href="/categories" className="text-base text-[#374151] hover:text-[#a855f5]" onClick={() => setIsMobileMenuOpen(false)}> {/* Close menu on click */}
+                  <Link 
+                    href="/categories" 
+                    className={`text-base ${
+                      pathname === "/categories" 
+                        ? "text-[#a855f7] font-medium" 
+                        : "text-[#374151] hover:text-[#a855f7]"
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
                     Categories
                   </Link>
-                  <Link href="/about" className="text-base text-[#374151] hover:text-[#a855f7]" onClick={() => setIsMobileMenuOpen(false)}> {/* Close menu on click */}
+                  <Link 
+                    href="/about" 
+                    className={`text-base ${
+                      pathname === "/about" 
+                        ? "text-[#a855f7] font-medium" 
+                        : "text-[#374151] hover:text-[#a855f7]"
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
                     About
                   </Link>
 
