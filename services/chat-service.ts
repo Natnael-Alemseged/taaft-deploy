@@ -266,6 +266,10 @@ export const keywordSearch = async (keywords: string[], skip: number = 0, limit:
                 params: { // Pass skip and limit as query parameters
                     skip: skip,
                     limit: limit
+                },
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Ensure Authorization header is being added if not handled by apiClient
                 }
                 // apiClient should handle headers like Authorization and Content-Type (application/json)
             }
