@@ -8,7 +8,7 @@ import Image from "next/image" // Assuming Image component is available
 import { useAuth } from "@/contexts/auth-context" // Assuming this path is correct
 import { useRouter } from "next/navigation" // Correct import for App Router
 // Import the Google SSO initiation function from your auth service
-import {  initiateGoogleLogin } from "@/services/auth-service";
+import {  initiateGitHubLogin, initiateGoogleLogin } from "@/services/auth-service";
 
 
 interface SignUpModalProps {
@@ -21,6 +21,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [subscribeToNewsLetter, setSubscribeToNewsLetter] = useState(false) // New state for checkbox
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false) // Local loading state for the form submission
@@ -45,6 +46,12 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
     e.preventDefault()
     setError("")
     setIsLoading(true) // Use local loading
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      setIsLoading(false)
+      return
+    }
 
     try {
       // Include subscribeToNewsLetter in the data sent to the register function
@@ -85,9 +92,27 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
     // No finally block needed here as successful initiation leads to redirect
   };
 
+  const handleGithubSignup = async () => {
+    setError(""); // Clear previous errors
+    setIsLoading(true); // Indicate loading state
+
+    try {
+      // Call the service function to initiate Google SSO redirect
+      // The page will redirect, so the rest of the process happens on the callback page
+      await initiateGitHubLogin();
+      // No need to set isLoading(false) here if the redirect is successful
+    } catch (err: any) {
+      console.error("Github signup initiation failed:", err);
+      const errorMessage = err.message || err.response?.data?.detail || "Failed to initiate Google sign up. Please try again.";
+      setError(errorMessage);
+      setIsLoading(false); // Set loading false if initiation fails before redirect
+    }
+    // No finally block needed here as successful initiation leads to redirect
+  };
+
 
   return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
         {/* Adjusted max-w-md and padding for potential smaller screens */}
         {/* Added overflow-y-auto and max-h-[95vh] to ensure scrollability if content exceeds viewport height */}
         {/* The absolute positioned close button should remain visible at the top right within this container */}
@@ -96,7 +121,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             <X size={24} />
           </button>
 
-          <div className="text-center mb-8">
+          <div className="text-center mb-3">
             <h2 className="text-2xl md:text-2xl font-bold mb-2">Create an Account</h2> {/* Adjusted text size */}
             <p className="text-gray-500 text-xs md:text-base">Join our community of AI enthusiasts</p> {/* Adjusted text size */}
           </div>
@@ -112,9 +137,18 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             <Image src="/google-logo.svg" alt="Google" width={16} height={16} />
             <span>Continue with Google</span>
           </button>
+          <button
+              type="button" // Explicitly set type to button
+              onClick={handleGithubSignup} // Call the new handler
+              disabled={isLoading} // Disable while loading (form submission or SSO initiation)
+              className="w-full flex items-center justify-center gap-1 border border-gray-300 rounded-md p-2 text-sm mb-4 hover:bg-gray-50 transition-colors"
+          >
+            <Image src="/github-logo.svg" alt="Github" width={16} height={16} />
+            <span>Continue with Github</span>
+          </button>
 
 
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-1">
             <div className="h-px bg-gray-300 flex-1"></div>
             <span className="text-gray-500 text-sm">OR CONTINUE WITH EMAIL</span>
             <div className="h-px bg-gray-300 flex-1"></div>
@@ -124,7 +158,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label htmlFor="name" className="block text-md font-medium mb-2">
+              <label htmlFor="name" className="block text-md font-medium ">
                 Name
               </label>
               <input
@@ -139,7 +173,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-md font-medium mb-2">
+              <label htmlFor="email" className="block text-md font-medium ">
                 Email
               </label>
               <input
@@ -154,20 +188,36 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-md font-medium mb-2">
+              <label htmlFor="password" className="block text-md font-medium ">
                 Password
               </label>
-              <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
-                  required
-                  minLength={8}
-              />
-            </div>
+                <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
+                    required
+                    minLength={8}
+                />
+              </div>
+
+              <div>
+              <label htmlFor="password" className="block text-md font-medium ">
+                Confirm Password
+              </label>
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
+                    required
+                    minLength={8}
+                />
+              </div>
 
             {/* Subscribe to Newsletter Checkbox */}
             <div className="flex items-center mt-4">
