@@ -12,6 +12,7 @@ import { showLoginModal } from "@/lib/auth-events"
 import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { useClickOutside } from "@/hooks/use-click-outside"
 import { FiSearch, FiMessageSquare, FiArrowRight, FiExternalLink } from 'react-icons/fi'; // Example icons, you might need to install react-icons
+import { keywordSearch } from "@/services/chat-service"
 
 // Types for API integration
 interface Tool {
@@ -87,31 +88,29 @@ export default function Hero() {
   ]
 
   // Function to fetch tools from API
-  const fetchTools = async (query: string) => {
-    setIsLoading(true)
+  const fetchTools = async (query: string, authToken: string | null) => { // Added authToken parameter
+    setIsLoading(true);
     try {
-      // TODO: Replace with actual API endpoint
-      // const response = await fetch(`/api/tools/search?q=${encodeURIComponent(query)}`)
-      // const data: SearchResponse = await response.json()
-      // setTools(data.tools)
-      
-      // Using sample data for now
-      setTools(sampleTools)
+      // Optional: Add a check to ensure the token exists before making the request
+      const data = await keywordSearch([query], 0, 10);
+      setTools(data.tools);
     } catch (error) {
-      console.error('Error fetching tools:', error)
-      setTools([])
+      console.error('Error fetching tools:', error);
+      setTools([]); // Clear tools on error
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Debounced search effect
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchQuery) {
         fetchTools(searchQuery)
+      } else {
+        setTools([]) // Clear tools when search query is empty
       }
-    }, 300)
+    }, 300) // 300ms debounce
 
     return () => clearTimeout(timer)
   }, [searchQuery])
@@ -122,6 +121,10 @@ export default function Hero() {
       return
     }
     setIsSearchOpen(true)
+    // If there's a search query, fetch tools immediately
+    if (searchQuery) {
+      fetchTools(searchQuery)
+    }
   }
 
   const handleChatOpen = () => {
@@ -132,9 +135,14 @@ export default function Hero() {
   const handleClose = () => {
     setIsSearchOpen(false)
     setSearchQuery("")
+    setTools([]) // Clear tools when closing
   }
 
-  const handleSearch=()=>{}
+  const handleSearch = () => {
+    if (searchQuery) {
+      fetchTools(searchQuery)
+    }
+  }
 
   // Close chat if user logs out while it's open
   useEffect(() => {
@@ -209,181 +217,91 @@ export default function Hero() {
 
             {/* Intermediate Search UI */}
             {isSearchOpen && !isChatOpen && (
-        //    <div ref={searchCommandRef} className="w-full max-w-2xl mx-auto">
-        //    <div className="rounded-lg border border-gray-200 shadow-sm bg-white overflow-hidden">
-        //      {/* Search header */}
-        //      <div className="flex items-center border-b px-4 py-3">
-        //        <Search className="h-5 w-5 text-gray-400 mr-2" />
-        //        <input
-        //          type="text"
-        //          placeholder="Search AI tools..."
-        //          value={searchQuery}
-        //          onChange={(e) => setSearchQuery(e.target.value)}
-        //          className="flex-1 outline-none text-sm placeholder-gray-400"
-        //        />
-
-
-        //        <button
-        //          onClick={handleClose}
-        //          className="ml-2 p-1 rounded-full hover:bg-gray-100"
-        //        >
-        //          <X className="h-5 w-5 text-gray-400" />
-        //        </button>
-        //      </div>
-             
-         
-        //      {/* Content */}
-        //      <div className="divide-y">
-        //        {isLoading ? (
-        //          <div className="flex items-center justify-center py-8">
-        //            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-        //          </div>
-        //        ) : tools.length === 0 ? (
-        //          <div className="py-6 text-center text-sm text-gray-500">
-        //            No results found.
-        //          </div>
-        //        ) : (
-        //          <>
-        //            <div className="px-4 py-2 bg-gray-50">
-        //              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-        //                AI Tools
-        //              </h3>
-        //            </div>
-        //            {tools.map((tool) => (
-        //              <div
-        //                key={tool.id}
-        //                className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-        //              >
-        //                <div className="flex items-center justify-between">
-        //                  <div className="flex items-center space-x-3">
-        //                    <div className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
-        //                      {tool.icon}
-        //                    </div>
-        //                    <div>
-        //                      <h4 className="text-sm font-medium">{tool.name}</h4>
-        //                      <p className="text-xs text-gray-500">{tool.description}</p>
-        //                    </div>
-        //                  </div>
-        //                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-        //                    {tool.category}
-        //                  </span>
-        //                </div>
-        //              </div>
-        //            ))}
-        //          </>
-        //        )}
-        //      </div>
-         
-        //      {/* Footer buttons */}
-        //      <div className="border-t p-3 bg-gray-50 flex justify-between">
-        //        <button
-        //          onClick={handleClose}
-        //          className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
-        //        >
-        //          Close
-        //        </button>
-        //        <button
-        //          onClick={handleChatOpen}
-        //          className="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors flex items-center space-x-2"
-        //        >
-        //          <MessageSquare className="h-4 w-4" />
-        //          <span>Ask AI Assistant</span>
-        //        </button>
-        //      </div>
-        //    </div>
-        //  </div>
-        <div ref={searchCommandRef} className="w-full max-w-2xl mx-auto">
-  <div className="rounded-lg border border-gray-200 shadow-sm bg-white overflow-hidden">
-    {/* Search header with two buttons */}
-    <div className="flex items-center border-b px-4 py-3 gap-2">
-      <Search className="h-5 w-5 text-gray-400" />
-      <input
-        type="text"
-        placeholder="Search AI tools..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="flex-1 outline-none text-sm placeholder-gray-400"
-      />
-    <div className="flex gap-2">
-
-
-  {/* Chat button (gray, smaller) */}
-  <button
-    onClick={handleChatOpen}
-    className="px-2.5 py-1 text-xs bg-gray-300 hover:bg-gray-200 text-gray-700 rounded-md transition-colors flex items-center gap-1.5"
-  >
-    <MessageSquare className="h-3.5 w-3.5" />
-    {/* <span>Chat with AI</span> */}
-  </button>
-    {/* Search button (purple) */}
-    <button
-    onClick={handleSearch}
-    className="px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors flex items-center gap-1.5"
-  >
-    <Search className="h-4 w-4" />
-    <span>Search</span>
-  </button>
-</div>
-
-    </div>
-
-    {/* Content */}
-    <div className="divide-y">
-      {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-        </div>
-      ) : tools.length === 0 ? (
-        <div className="py-6 text-center text-sm text-gray-500">
-          No results found.
-        </div>
-      ) : (
-        <>
-          <div className="px-4 py-2 bg-gray-50">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-              AI Tools
-            </h3>
-          </div>
-          {tools.map((tool) => (
-            <div
-              key={tool.id}
-              className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
-                    {tool.icon}
+              <div ref={searchCommandRef} className="w-full max-w-2xl mx-auto">
+                <div className="rounded-lg border border-gray-200 shadow-sm bg-white overflow-hidden">
+                  {/* Search header with two buttons */}
+                  <div className="flex items-center border-b px-4 py-3 gap-2">
+                    <Search className="h-5 w-5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search AI tools..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="flex-1 outline-none text-sm placeholder-gray-400"
+                    />
+                    <div className="flex gap-2">
+                      {/* Chat button (gray, smaller) */}
+                      <button
+                        onClick={handleChatOpen}
+                        className="px-2.5 py-1 text-xs bg-gray-300 hover:bg-gray-200 text-gray-700 rounded-md transition-colors flex items-center gap-1.5"
+                      >
+                        <MessageSquare className="h-3.5 w-3.5" />
+                      </button>
+                      {/* Search button (purple) */}
+                      <button
+                        onClick={handleSearch}
+                        className="px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors flex items-center gap-1.5"
+                      >
+                        <Search className="h-4 w-4" />
+                        <span>Search</span>
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-medium">{tool.name}</h4>
-                    <p className="text-xs text-gray-500">{tool.description}</p>
+
+                  {/* Content */}
+                  <div className="divide-y">
+                    {isLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                      </div>
+                    ) : tools.length === 0 ? (
+                      <div className="py-6 text-center text-sm text-gray-500">
+                        No results found.
+                      </div>
+                    ) : (
+                      <>
+                        <div className="px-4 py-2 bg-gray-50">
+                          <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            AI Tools
+                          </h3>
+                        </div>
+                        {tools.map((tool) => (
+                          <div
+                            key={tool.id}
+                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
+                                  {tool.icon}
+                                </div>
+                                <div>
+                                  <h4 className="text-sm font-medium">{tool.name}</h4>
+                                  <p className="text-xs text-gray-500">{tool.description}</p>
+                                </div>
+                              </div>
+                              <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                                {tool.category}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Footer buttons */}
+                  <div className="border-t p-3 bg-gray-50 flex justify-end">
+                    <button
+                      onClick={handleClose}
+                      className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                    >
+                      Close
+                    </button>
                   </div>
                 </div>
-                <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                  {tool.category}
-                </span>
               </div>
-            </div>
-          ))}
-        </>
-      )}
-    </div>
-
-    {/* Footer buttons */}
-    <div className="border-t p-3 bg-gray-50 flex justify-end">
-      <button
-        onClick={handleClose}
-        className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-</div>
-
             )}
-
-
 
             {/* Chat Interface - only show if authenticated */}
             {isAuthenticated && (

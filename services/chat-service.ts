@@ -254,6 +254,10 @@ return {
 export const keywordSearch = async (keywords: string[], skip: number = 0, limit: number = 100): Promise<KeywordSearchResponse> => {
     console.log(`Calling keywordSearch API with keywords: ${keywords.join(', ')}, skip: ${skip}, limit: ${limit}`);
     try {
+        console.log("keywords are:" + keywords)
+        console.log("skip are:" + skip)
+        console.log("limit are:" + limit)
+        console.log("apiClient is:" + apiClient)
         // Make the POST request to the keyword-search endpoint
         // Assuming your API endpoint is /api/tools/keyword-search
         const response = await apiClient.post<KeywordSearchResponse>('/api/tools/keyword-search',

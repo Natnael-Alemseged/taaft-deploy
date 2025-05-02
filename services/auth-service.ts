@@ -9,10 +9,10 @@ interface LoginCredentials {
 }
 
 interface RegisterData {
-  name: string
+  full_name: string
   email: string
   password: string
-  subscribeToNewsLetter?: boolean // Made optional as per previous discussion
+  subscribeToNewsletter?: boolean // Made optional as per previous discussion
 }
 
 interface AuthResponse {
@@ -78,8 +78,11 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
 // Register new user (assuming it sends JSON and doesn't return tokens directly)
 export const register = async (data: RegisterData) => {
   try {
+    console.log("register data is:", JSON.stringify(data));
     // Assuming your backend expects JSON for /auth/register
     const response = await apiClient.post("/auth/register", data);
+    console.log("register response is:" ,JSON.stringify(response));
+
     return response.data; // Return whatever the backend sends back
   } catch (error: any) {
     console.error("Registration failed:", error);

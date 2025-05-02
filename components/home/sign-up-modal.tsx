@@ -18,11 +18,11 @@ interface SignUpModalProps {
 }
 
 export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalProps) {
-  const [name, setName] = useState("")
+  const [full_name, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [subscribeToNewsLetter, setSubscribeToNewsLetter] = useState(false) // New state for checkbox
+  const [subscribeToNewsletter, setSubscribeToNewsletter] = useState(false) // New state for checkbox
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false) // Local loading state for the form submission
   const { register } = useAuth() // Assuming useAuth hook provides the register function
@@ -31,10 +31,10 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
   // Effect to clear form and errors when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setName("");
+      setFullName("");
       setEmail("");
       setPassword("");
-      setSubscribeToNewsLetter(false);
+      setSubscribeToNewsletter(false);
       setError("");
     }
   }, [isOpen]); // Dependency on isOpen prop
@@ -56,10 +56,10 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
     try {
       // Include subscribeToNewsLetter in the data sent to the register function
       await register({
-        name,
+        full_name,
         email,
         password,
-        subscribeToNewsLetter, // Add the checkbox state here
+        subscribeToNewsletter, // Add the checkbox state here
       })
       onClose()
       router.refresh() // Refresh the page to update auth state
@@ -158,14 +158,14 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label htmlFor="name" className="block text-md font-medium ">
+              <label htmlFor="full_name" className="block text-md font-medium ">
                 Name
               </label>
               <input
                   type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  id="full_name"
+                  value={full_name}
+                  onChange={(e) => setFullName(e.target.value)}
                   placeholder="Your name"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
                   required
@@ -223,12 +223,12 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             <div className="flex items-center mt-4">
               <input
                   type="checkbox"
-                  id="subscribeToNewsLetter"
-                  checked={subscribeToNewsLetter}
-                  onChange={(e) => setSubscribeToNewsLetter(e.target.checked)}
+                  id="subscribeToNewsletter"
+                  checked={subscribeToNewsletter}
+                  onChange={(e) => setSubscribeToNewsletter(e.target.checked)}
                   className="h-4 w-4 text-[#a855f7] border-gray-300 rounded focus:ring-[#a855f7]"
               />
-              <label htmlFor="subscribeToNewsLetter" className="ml-2 block text-sm text-gray-900">
+              <label htmlFor="subscribeToNewsletter" className="ml-2 block text-sm text-gray-900">
                 Subscribe to our newsletter
               </label>
             </div>
