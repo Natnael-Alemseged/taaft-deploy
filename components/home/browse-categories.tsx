@@ -73,7 +73,18 @@ export default function BrowseCategories() {
               <div className="md:col-span-4 text-center text-gray-600 dark:text-gray-400">No categories found.</div>
             )}
           </div>
+       
         )}
+ <div className="flex justify-center pt-8">
+  <Link
+    href="/categories"
+    className="inline-flex items-center px-6 py-3 text-white text-sm font-medium rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 transition"
+  >
+    View All Categories
+    <span className="ml-2 text-lg">→</span>
+  </Link>
+</div>
+
       </div>
     </section>
   )
