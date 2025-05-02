@@ -30,7 +30,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZ
 ###
 GET https://taaft-backend.onrender.com/auth/me
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODA3NjQ3ZTFhZmQzMzQ4MTc4NTUwNDIiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOnRydWUsImV4cCI6MTc0NTUxMzk2OX0.aKs-7wbxNY87EHp9MAmI9Bxs3Yk59IZZtGmGvfUjOPY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOnRydWUsImV4cCI6MTc0NjExODcyN30.k1vKD0FjCp1RY9K_LwAkCXkEVUgx7luQBfEOHCi-DQw
 
 <> 2025-04-25T061157.401.json
 <> 2025-04-24T185956.200.json
@@ -137,10 +137,10 @@ Accept: application/json
 ###search keywords
 POST taaft-backend.onrender.com/tools/keyword-search?skip=0&limit=100
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDYwMTYxOTR9.i8KCCVpFyDXtUwPcJf3KIY8QwX9PKgbqlaW6bJ5qWZw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOnRydWUsImV4cCI6MTc0NjExODcyN30.k1vKD0FjCp1RY9K_LwAkCXkEVUgx7luQBfEOHCi-DQw
 Accept: application/json
 
-["korbit"]
+
 
 ### @name variables
 @sessionId = 6809d92f8f4a3ca025d202d3
