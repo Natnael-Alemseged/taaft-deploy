@@ -60,8 +60,9 @@ export function ResetPasswordModal({ isOpen, onClose, token }: ResetPasswordModa
       // Redirect to login page after a delay
       setTimeout(() => {
         onClose();
-        // showLoginModal()
-        router.push("/login");
+        router.push("/");
+        showLoginModal();
+        
       }, 3000);
     } catch (err: any) {
       const apiErrorMessage = err?.response?.data?.message || err?.message || "Failed to reset password. Please try again.";
