@@ -568,7 +568,11 @@ export const saveTool = async (toolId: string) => {
   // Assuming saving requires authentication, add token handling here
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
   const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
-  const response = await apiClient.post<{ message: string }>(`/tools/${toolId}/save`, {}, { headers })
+  const body = {
+    "tool_unique_id": toolId,
+  }
+  const response = await apiClient.post<{ message: string }>(`/favorites`, body, { headers })
+  console.log("saveTool response", JSON.stringify(response.data, null, 2));
   return response.data
 }
 
@@ -577,7 +581,8 @@ export const unsaveTool = async (toolId: string) => {
   // Assuming unsaving requires authentication, add token handling here
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
   const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
-  const response = await apiClient.delete<{ message: string }>(`/tools/${toolId}/save`, { headers })
+  const response = await apiClient.delete<{ message: string }>(`/favorites/${toolId}`, { headers })
+  console.log("unsaveTool response", JSON.stringify(response.data, null, 2));
   return response.data
 }
 
