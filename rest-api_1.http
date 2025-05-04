@@ -22,9 +22,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZ
 
 
 ###get tools
-GET https://taaft-backend.onrender.com/tools/?skip=0&limit=500&sort_order=desc
+#GET https://taaft-backend.onrender.com/tools/?skip=0&limit=500&sort_order=desc
+GET https://taaft-backend.onrender.com/public/tools/featured?limit=4&featured=true
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOmZhbHNlLCJleHAiOjE3NDU5MjI4Njh9.eYB0r4QkbkxZ4n5ExLoIHG-jam1zZp3AxC9tkmsknsc
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODBhZmYxZWIyNzRlMzUwYjk4ZDUyNGUiLCJzZXJ2aWNlX3RpZXIiOiJmcmVlIiwiaXNfdmVyaWZpZWQiOnRydWUsImV4cCI6MTc0NjMyNzkyN30.yY7LREgoZyO7vkDEA6jGV8JdOH29sdE68-wO3PNW9nI
 
 
 ###

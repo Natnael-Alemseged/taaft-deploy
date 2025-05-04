@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Search, MessageSquare, X } from "lucide-react"
+import { Search, MessageSquare, X, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ChatInterface from "./chat-interface"
@@ -190,7 +190,7 @@ export default function Hero() {
                 <Input
                   ref={inputRef}
                   type="text"
-                  placeholder="What AI tool are you looking for? E.g., 'Image generator for marketing'"
+                  placeholder="What AI tool are you looking for? E.g., 'Image generator for mark..'"
                   className="h-14 rounded-full border-gray-200 pl-12 pr-32 shadow-md"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -199,17 +199,28 @@ export default function Hero() {
                 <div className="absolute left-4 top-4 flex items-center gap-2">
                   <Search className="h-5 w-5 text-gray-400" />
                 </div>
-                <div className="absolute right-2 top-2 flex items-center gap-2">
+                <div className="absolute right-2 top-2 flex items-center gap-1">
+                  
+                <div className="relative group rounded-full bg-purple-100 p-2.5 h-10 w-10 flex items-center justify-center cursor-pointer"
+                  onClick={handleChatOpen}
+                  aria-label="Try chat mode"
+>
+                      <MessageSquare
+                        className="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors"
+                          // onClick is moved to the parent div
+    />
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                        Try chat mode for interactive conversation
+                  </div>
+                    </div>
                  
                   <Button
                     className="h-10 rounded-full bg-purple-600 px-6 text-sm hover:bg-purple-700"
                     onClick={handleSearchFocus}
                   >
-                     <MessageSquare 
-                    className="h-5 w-5 text-gray-400 cursor-pointer hover:text-purple-500 transition-colors"
-                    onClick={handleChatOpen}
-                  />
-                    Search
+                  
+                    Search <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

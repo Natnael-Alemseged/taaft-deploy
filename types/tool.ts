@@ -1,9 +1,14 @@
+export interface Category {
+  id: string; // e.g., "ai-tools"
+  name: string; // e.g., "AI Tools"
+}
+
 export interface Tool {
   id: string
   name: string
   slug: string
   link: string
-  category: string
+  categories: Category[]
   description: string
   features: string[]
   keywords: string[]
@@ -23,7 +28,7 @@ export interface Tool {
 export interface ToolSubmission {
   name: string
   website: string
-  category: string
+  category: Category[]
   description: string
   features: string[]
   pricing: "free" | "freemium" | "subscription" | "one-time" | "usage-based"
