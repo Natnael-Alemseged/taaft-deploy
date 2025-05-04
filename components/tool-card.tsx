@@ -106,8 +106,10 @@ export default function ToolCard({ tool }: ToolCardProps) {
     }
 
     if (savedByUser) {
+      tool.savedByUser = false
       unsaveTool.mutate(toolId)
     } else {
+      tool.savedByUser = true
       saveTool.mutate(toolId)
     }
   }
@@ -282,12 +284,16 @@ export default function ToolCard({ tool }: ToolCardProps) {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
+            {/* Save/Bookmark Button (reusing Lucide icon) */}
+            {/* Implement onClick and savedByUser state if needed */} 
+            {isAuthenticated && (
             <button
               className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
               onClick={() => handleSaveToggle(tool.id, !!tool.savedByUser)}
             >
               <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
             </button>
+            )}
             <ShareButtonWithPopover itemLink={`/tools/${tool.id}`} />
           </div>
           <Button
