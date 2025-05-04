@@ -1,6 +1,15 @@
+"use client"
+
+import { useCategories } from "@/hooks/use-categories";
 import Link from "next/link"
 
 export default function Footer() {
+   // Fetch categories using your hook
+  // This hook will manage fetching state (isLoading, isError) and data (data)
+  const { data: categoriesData, isLoading, isError } = useCategories();
+
+  // We want to display a limited number of categories, like 4
+  const categoriesToDisplay = categoriesData ? categoriesData.slice(0, 4) : [];
   return (
     <footer className="border-t border-gray-200 bg-white py-12">
       <div className="container mx-auto px-4">
@@ -38,31 +47,46 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase text-gray-500">Categories</h3>
+         {/* Column 3: Categories (Dynamic) */}
+         <div>
+            <h3 className="mb-4 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">Categories</h3>
             <ul className="space-y-2">
-              <li>
-                <Link href="#" className="text-sm text-gray-600 hover:text-purple-600">
-                  Writing
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-sm text-gray-600 hover:text-purple-600">
-                  Image Generation
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-sm text-gray-600 hover:text-purple-600">
-                  Development
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-sm text-gray-600 hover:text-purple-600">
-                  Chatbots
-                </Link>
-              </li>
+              {isLoading && (
+                // Display loading state
+                <li>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Loading...</span>
+                </li>
+              )}
+              {isError && (
+                // Display error state
+                <li>
+                  <span className="text-sm text-red-600 dark:text-red-400">Error loading categories.</span>
+                </li>
+              )}
+              {!isLoading && !isError && categoriesToDisplay.length > 0 && (
+                // Map over fetched categories if available and not loading/error
+                categoriesToDisplay.map((category) => (
+                  // Use a unique key for each list item
+                  <li key={category.id || category.slug}>
+                    <Link
+                      // href={`/categories/${category.slug || category.id}`} // Link to category page (adjust path/slug as needed)
+                      href={`categories`}
+                      className="text-sm text-gray-600 hover:text-purple-600 dark:text-gray-300 dark:hover:text-purple-400"
+                    >
+                      {category.name}
+                    </Link>
+                  </li>
+                ))
+              )}
+               {!isLoading && !isError && categoriesToDisplay.length === 0 && (
+                 // Handle case where no categories are returned
+                 <li>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">No categories found.</span>
+                </li>
+              )}
             </ul>
           </div>
+
 
           <div>
             <h3 className="mb-4 text-sm font-semibold uppercase text-gray-500">Resources</h3>
