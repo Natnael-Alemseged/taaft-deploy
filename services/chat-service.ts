@@ -260,18 +260,14 @@ export const keywordSearch = async (keywords: string[], skip: number = 0, limit:
         console.log("apiClient is:" + apiClient)
         // Make the POST request to the keyword-search endpoint
         // Assuming your API endpoint is /api/tools/keyword-search
-        const response = await apiClient.post<KeywordSearchResponse>('/api/tools/keyword-search',
-            keywords, // Send the array of keywords in the request body
+        const response = await apiClient.post<KeywordSearchResponse>(
+            '/api/tools/keyword-search',
+            keywords,
             {
-                params: { // Pass skip and limit as query parameters
-                    skip: skip,
-                    limit: limit
+                params: {
+                    skip,
+                    limit,
                 },
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Ensure Authorization header is being added if not handled by apiClient
-                }
-                // apiClient should handle headers like Authorization and Content-Type (application/json)
             }
         );
         console.log("Keyword search response received:", response.data);

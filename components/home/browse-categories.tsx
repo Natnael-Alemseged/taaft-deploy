@@ -36,8 +36,10 @@ export default function BrowseCategories() {
       {" "}
       {/* Added dark mode */}
       <div className="container mx-auto px-4">
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Browse by Category</h2>{" "}
+        <div className="mb-8 flex items-center justify-center flex-col">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center justify-center">Browse by Category</h2>{" "}
+          
+          <h3 className="text-md  pt-4 text-gray-600 dark:text-white text-center justify-center">Find the perfect AI tool for your needs from our carefully organized categories</h3>{" "}
           {/* Added dark mode */}
           {/* Link to the full Categories page */}
           {/*<Link*/}

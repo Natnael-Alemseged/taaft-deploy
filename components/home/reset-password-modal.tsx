@@ -5,6 +5,7 @@ import { X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { resetPassword } from "@/services/auth-service";
 import { useRouter } from "next/navigation";
+import {showLoginModal} from "@/lib/auth-events";
 
 interface ResetPasswordModalProps {
   isOpen: boolean;
@@ -59,6 +60,7 @@ export function ResetPasswordModal({ isOpen, onClose, token }: ResetPasswordModa
       // Redirect to login page after a delay
       setTimeout(() => {
         onClose();
+        // showLoginModal()
         router.push("/login");
       }, 3000);
     } catch (err: any) {

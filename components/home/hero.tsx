@@ -92,7 +92,7 @@ export default function Hero() {
     setIsLoading(true);
     try {
       // Optional: Add a check to ensure the token exists before making the request
-      const data = await keywordSearch([query], 0, 10);
+      const data = await keywordSearch([query]);
       setTools(data.tools);
     } catch (error) {
       console.error('Error fetching tools:', error);
