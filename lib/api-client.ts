@@ -1,3 +1,4 @@
+import { showLoginModal } from "@/lib/auth-events"
 import axios from "axios"
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://taaft-backend.onrender.com"
@@ -65,6 +66,7 @@ apiClient.interceptors.response.use(
             }
           })
         }
+        else{showLoginModal()}
       }
     } else if (error.response) {
       console.log(error.response)

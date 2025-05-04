@@ -22,17 +22,14 @@ import type React from "react"
  }>) {
    return (
      <html lang="en">
-
-+      <body className={`${inter.className} flex flex-col min-h-screen`}>
+        <body className={`${inter.className} flex flex-col min-h-screen`}> {/* <- Make sure this line immediately follows the <html> tag with no space/newline */}
          <QueryProvider>
            <AuthProvider>
              <Header />
-
 +            <main className="flex-grow">{children}</main> {/* Add flex-grow here */}
              <Footer />
            </AuthProvider>
          </QueryProvider>
-       </body>
-     </html>
+       </body></html>
    )
  }
