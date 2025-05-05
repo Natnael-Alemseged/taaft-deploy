@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRouter, usePathname } from "next/navigation"
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover"
 import { useSaveTool, useUnsaveTool } from "@/hooks/use-tools"
+import { robotSvg } from "@/lib/reusable_assets"
 
 
 interface ToolCardProps {
@@ -62,6 +63,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
       showLoginModal(pathname)
     }
   }
+
 
   
   const getBadgeClass = (label: string) => {
@@ -232,7 +234,10 @@ export default function ToolCard({ tool }: ToolCardProps) {
       <div className="p-4">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
+           
           <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
+
+             
             {(() => { const categoryText = tool.categories.map((category) => category.name).join(", ");
               return categoryText.length > 20 ? `${categoryText.slice(0, 20)}...` : categoryText;
                 })()}
@@ -248,8 +253,10 @@ export default function ToolCard({ tool }: ToolCardProps) {
             </span>
           )}
         </div>
-
-        <h3 className="mb-1 text-lg font-semibold text-gray-900">{tool.name}</h3>
+        <span className="flex items-center">
+    {tool.image?? robotSvg}
+    <h3 className="mb-1 text-lg font-semibold text-gray-900 pl-2"> {tool.name}</h3>
+</span>
         {/* Modified line */}
         <p className="mb-4 text-sm text-gray-600">
           {tool.description && tool.description.length > 120 // Adjust 120 to your desired length

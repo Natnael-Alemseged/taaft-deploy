@@ -5,6 +5,7 @@ export interface Category {
 
 export interface Tool {
   id: string
+  image:string
   unique_id: string
   name: string
   slug: string
