@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Search, MessageSquare, X, ChevronRight } from "lucide-react"
+import { Search, MessageSquare, X, ChevronRight, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ChatInterface from "./chat-interface"
@@ -14,14 +14,21 @@ import { useClickOutside } from "@/hooks/use-click-outside"
 import { FiSearch, FiMessageSquare, FiArrowRight, FiExternalLink } from 'react-icons/fi'; // Example icons, you might need to install react-icons
 import { keywordSearch } from "@/services/chat-service"
 import { useRouter } from "next/navigation"
+import { robotSvg } from "@/lib/reusable_assets"
 
 // Types for API integration
 interface Tool {
   id: number | string
   name: string
   description: string
-  category: string
+  categories: Category[] | null;
   icon?: string
+  image?: string
+}
+
+interface Category {
+  id: string;
+  name: string;
 }
 
 interface SearchResponse {
@@ -42,6 +49,8 @@ export default function Hero() {
   const searchContainerRef = useRef<HTMLDivElement>(null)
   const searchCommandRef = useRef<HTMLDivElement>(null)
   const { isAuthenticated } = useAuth()
+  const [showChatTooltip, setShowChatTooltip] = useState(false);
+
 
 
   function goToToolDetails(id: string | number): void {
@@ -114,6 +123,9 @@ export default function Hero() {
 
   // Debounced search effect
   useEffect(() => {
+
+
+    
     const timer = setTimeout(() => {
       if (searchQuery) {
         fetchTools(searchQuery)
@@ -124,6 +136,24 @@ export default function Hero() {
 
     return () => clearTimeout(timer)
   }, [searchQuery])
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+  
+    if (isSearchOpen && !isChatOpen) {
+      setShowChatTooltip(true); // Show immediately
+  
+      timer = setTimeout(() => {
+        setShowChatTooltip(false); // Hide after 3 seconds
+      }, 2000);
+    } else {
+      setShowChatTooltip(false); // Hide if conditions don't match
+    }
+  
+    return () => clearTimeout(timer); // Clean up
+  }, [isSearchOpen, isChatOpen]);
+  
+  
 
   const handleSearchFocus = () => {
     if (!isAuthenticated) {
@@ -254,12 +284,28 @@ export default function Hero() {
                     />
                     <div className="flex gap-2">
                       {/* Chat button (gray, smaller) */}
-                      <button
-                        onClick={handleChatOpen}
-                        className="px-2.5 py-1 text-xs bg-gray-300 hover:bg-gray-200 text-gray-700 rounded-md transition-colors flex items-center gap-1.5"
-                      >
-                        <MessageSquare className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="relative">
+  <button
+    onClick={handleChatOpen}
+    className="px-2.5 py-1 text-xs bg-gray-300 hover:bg-gray-200 text-gray-700 rounded-md transition-colors flex items-center gap-1.5"
+  >
+    <MessageSquare className="h-3.5 w-3.5" />
+  </button>
+
+  {showChatTooltip && (
+    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-10">
+      {/* Arrow */}
+      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-black"></div>
+      {/* Tooltip */}
+      <div className="px-2 py-1 text-xs text-white bg-black rounded shadow">
+      Try chat mode for interactive conversation
+      </div>
+    </div>
+  )}
+</div>
+
+
+
                       {/* Search button (purple) */}
                       <button
                         onClick={handleSearch}
@@ -293,24 +339,50 @@ export default function Hero() {
                             key={tool.id}
                             className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
                           >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <div className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
-                                  {tool.icon}
-                                </div>
-                                <div className="flex items-center gap-2">
-  <h4 className="text-sm font-medium whitespace-nowrap">{tool.name}:</h4>
-  <span className="text-xs text-gray-500 truncate">
-    {tool.description?.slice(0, 50)}{tool.description?.length > 70 && '...'}
-  </span>
-</div>
+                          <div className="flex items-center justify-between"> {/* Main row flex */}
+  {/* Left content area: Icon + Name/Desc Block */}
+  {/* Change items-center to items-start to align the icon and the text block to the top */}
+  <div className="flex items-start space-x-3">
+    {/* Icon */}
+    <div className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
+      {tool.image ?? robotSvg}
+    </div>
 
-                              </div>
-                              <Button className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full" onClick={() => goToToolDetails(tool.id)}>
-                                Open
-                                {/* {tool.category} */}
-                              </Button>
-                            </div>
+    {/* Container for Name/Desc stacked vertically */}
+    {/* Add items-start to align children (h4 and div) to the left */}
+    <div className="flex flex-col items-start">
+      {/* Name */}
+      <h4 className="text-sm font-medium">{tool.name}</h4>
+      {/* Description */}
+      <div className="text-xs text-gray-500">
+        {tool.description?.slice(0, 50)}
+        {tool.description?.length > 70 && '...'}
+      </div>
+    </div>
+  </div>
+
+  {/* Right content area: Category + Link */}
+  {/* This block stays the same as your last snippet */}
+  <div className="flex items-center space-x-2">
+  {tool.categories?.[0]!=null&& 
+    <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+
+      {tool.categories?.[0]?.name
+        ? tool.categories[0].name.length > 15
+          ? tool.categories[0].name.slice(0, 15) + '...'
+          : tool.categories[0].name
+        : null}
+    </span>}
+    <ExternalLink
+      // Corrected color and size from previous step
+      className="text-gray-400 hover:text-gray-600 w-4 h-4 cursor-pointer"
+      onClick={(e) => { // Add stopPropagation if the parent div is clickable
+        e.stopPropagation(); // Prevent click from bubbling up
+        goToToolDetails(tool.id);
+      }}
+    />
+  </div>
+</div>
                           </div>
                         ))}
                       </>
