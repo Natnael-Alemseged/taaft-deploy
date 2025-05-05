@@ -149,7 +149,7 @@ export const createChatSession = async (title: string): Promise<ChatSession> => 
             user_id: userId,
             // Include other default session parameters if required by your API
             model: "gpt4", // Example default model
-            system_prompt: "You are a helpful assistant.", // Example default prompt
+            // system_prompt: "You are a helpful assistant.", // Example default prompt
         })
 
         console.log("New chat session created:", response.data._id)

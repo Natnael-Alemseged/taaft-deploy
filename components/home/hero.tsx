@@ -50,7 +50,7 @@ export default function Hero() {
   const searchCommandRef = useRef<HTMLDivElement>(null)
   const { isAuthenticated } = useAuth()
   const [showChatTooltip, setShowChatTooltip] = useState(false);
-
+  const [isHovered, setIsHovered] = useState(false);
 
 
   function goToToolDetails(id: string | number): void {
@@ -287,6 +287,8 @@ export default function Hero() {
                       <div className="relative">
   <button
     onClick={handleChatOpen}
+    onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
     className="px-2.5 py-1 text-xs bg-gray-300 hover:bg-gray-200 text-gray-700 rounded-md transition-colors flex items-center gap-1.5"
   >
     <MessageSquare className="h-3.5 w-3.5" />
@@ -404,6 +406,7 @@ export default function Hero() {
 
             {/* Chat Interface - only show if authenticated */}
             {isAuthenticated && (
+                    <div className="relative mx-auto mb-8 max-w-2xl">
               <ChatInterface
                 isOpen={isChatOpen}
                 onClose={() => {
@@ -413,6 +416,7 @@ export default function Hero() {
                 inputRef={chatInputRef as React.RefObject<HTMLInputElement>}
                 isRelativeToParent={false}
               />
+                  </div>
             )}
           </div>
 

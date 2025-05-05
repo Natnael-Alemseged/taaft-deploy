@@ -386,12 +386,12 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
         try {
             const newSession = await createChatSession.mutateAsync("New Chat")
             setActiveChatId(newSession._id)
-            setMessages([
-                {
-                    role: "assistant",
-                    content: "Hi! I'm your AI assistant. How can I help you today?",
-                },
-            ])
+            // setMessages([
+            //     {
+            //         role: "assistant",
+            //         content: "Hi! I'm your AI assistant. How can I help you today?",
+            //     },
+            // ])
             setShowSessions(false)
             setToolRecommendations([])
             await refetchSessions()
@@ -645,7 +645,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                                 Send <Send className="ml-1 h-4 w-4" />
                                 <span className="sr-only">Send message</span>
                             </Button>
-                            <Button
+                            {/* <Button
                                 onClick={() => {
                                     handleDirectSendMessage()
                                 }}
@@ -655,7 +655,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                             >
                                 <Search className="h-4 w-4" />search directly
                                 <span className="sr-only">Search directly</span>
-                            </Button>
+                            </Button> */}
                         </div>
                     </div>
                 </div>
