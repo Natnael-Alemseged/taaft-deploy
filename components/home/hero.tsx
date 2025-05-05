@@ -13,6 +13,7 @@ import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, Comma
 import { useClickOutside } from "@/hooks/use-click-outside"
 import { FiSearch, FiMessageSquare, FiArrowRight, FiExternalLink } from 'react-icons/fi'; // Example icons, you might need to install react-icons
 import { keywordSearch } from "@/services/chat-service"
+import { useRouter } from "next/navigation"
 
 // Types for API integration
 interface Tool {
@@ -28,7 +29,9 @@ interface SearchResponse {
   total: number
 }
 
+
 export default function Hero() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("")
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -39,6 +42,13 @@ export default function Hero() {
   const searchContainerRef = useRef<HTMLDivElement>(null)
   const searchCommandRef = useRef<HTMLDivElement>(null)
   const { isAuthenticated } = useAuth()
+
+
+  function goToToolDetails(id: string | number): void {
+    console.log("Calling goToToolDetails for ID:", id);
+    console.log("Router object:", router); // <-- Add this line
+    router.push(`/tools/${id}`);
+  }
 
   // Close search when clicking outside
   useClickOutside(searchCommandRef as React.RefObject<HTMLElement>, () => {
@@ -92,7 +102,7 @@ export default function Hero() {
     setIsLoading(true);
     try {
       // Optional: Add a check to ensure the token exists before making the request
-      const data = await keywordSearch([query]);
+      const data = await keywordSearch([query,],0,5);
       setTools(data.tools);
     } catch (error) {
       console.error('Error fetching tools:', error);
@@ -150,6 +160,8 @@ export default function Hero() {
       setIsChatOpen(false)
     }
   }, [isAuthenticated, isChatOpen])
+
+  
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-white via-purple-50 to-purple-100 py-24 text-center">
@@ -286,14 +298,18 @@ export default function Hero() {
                                 <div className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
                                   {tool.icon}
                                 </div>
-                                <div>
-                                  <h4 className="text-sm font-medium">{tool.name}</h4>
-                                  <p className="text-xs text-gray-500">{tool.description}</p>
-                                </div>
+                                <div className="flex items-center gap-2">
+  <h4 className="text-sm font-medium whitespace-nowrap">{tool.name}:</h4>
+  <span className="text-xs text-gray-500 truncate">
+    {tool.description?.slice(0, 50)}{tool.description?.length > 70 && '...'}
+  </span>
+</div>
+
                               </div>
-                              <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                                {tool.category}
-                              </span>
+                              <Button className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full" onClick={() => goToToolDetails(tool.id)}>
+                                Open
+                                {/* {tool.category} */}
+                              </Button>
                             </div>
                           </div>
                         ))}

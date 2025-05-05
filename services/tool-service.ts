@@ -13,14 +13,15 @@ export const getTools = async (params?: {
     const headers: Record<string, string> = {
       Accept: "application/json",
     }
-
+    let endpoint = "/public/tools"
     if (token) {
       headers["Authorization"] = `Bearer ${token}`
+      //  endpoint = "/tools/"
     }
 
     const apiParams: Record<string, any> = {}
     // let endpoint = "/tools"
-    let endpoint = "/public/tools/"
+    
 
     if (params?.search) {
       apiParams.q = `%${params.search}%`;
@@ -489,6 +490,7 @@ export const getFeaturedTools = async (limit?: number) => {
   try {
     // This works client-side but needs alternative for server-side rendering
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    let endpoint = "/public/tools/featured"
 
     const headers: Record<string, string> = {
       Accept: "application/json",
@@ -496,13 +498,17 @@ export const getFeaturedTools = async (limit?: number) => {
 
     if (token) {
       headers["Authorization"] = `Bearer ${token}` // Add Authorization header if token exists
+      console.log("token", token);
+      endpoint = "/tools/"
     }
 
     // Make API call to get featured tools
-    const response = await apiClient.get<{ tools: Tool[] }>("/public/tools/featured", {
+    const response = await apiClient.get<{ tools: Tool[] }>(endpoint, {
       params: { limit: limit, featured: true },
       headers: headers,
     })
+
+    console.log("getFeaturedTools response", JSON.stringify(response.data, null, 2));
 
     // Return exactly what the API returns, no static fallback
     return response.data

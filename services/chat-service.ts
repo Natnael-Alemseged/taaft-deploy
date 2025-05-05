@@ -261,7 +261,7 @@ export const keywordSearch = async (keywords: string[], skip: number = 0, limit:
         // Make the POST request to the keyword-search endpoint
         // Assuming your API endpoint is /api/tools/keyword-search
         const response = await apiClient.post<KeywordSearchResponse>(
-            '/api/tools/keyword-search',
+            '/tools/keyword-search',
             keywords,
             {
                 params: {

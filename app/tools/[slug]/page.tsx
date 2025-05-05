@@ -129,51 +129,22 @@ export default function ToolDetail() {
   const [selectedPlan, setSelectedPlan] = useState(null) // State to manage the selected plan
 
 
-  // --- Add the authentication check here, BEFORE any rendering logic ---
+  // --- Effect for showing login modal (Conditional LOGIC INSIDE, but hook is unconditional) ---
   useEffect(() => {
-      // If not authenticated, show the modal and do nothing else related to fetching
-      // This check is done here in useEffect to avoid potential hydration issues
-      // if showLoginModal has DOM manipulation side effects.
-      // It also ensures the modal is shown after the initial render cycle.
-      if (!isAuthenticated) {
-          console.log("User not authenticated, showing login modal");
-          showLoginModal(pathname); // Pass current path as previous route
-          // We don't return null or redirect here in the effect,
-          // the return null in the component body handles rendering nothing
-          // until authenticated.
-      }
-  }, [isAuthenticated, pathname]);
+    if (!isAuthenticated) {
+        console.log("User not authenticated, showing login modal effect.");
+        // Only show modal if on the client side
+        if (typeof window !== 'undefined') {
+           showLoginModal(pathname);
+        }
+    }
+}, [isAuthenticated, pathname]);
 
-  // Handle the case where the user is NOT authenticated
-  if (!isAuthenticated) {
-    // You can return null, a simple message, or a placeholder
-    // Returning null prevents the rest of the component from rendering
-    // the tool details or loading/error states when not logged in.
-    console.log("Rendering null because user is not authenticated");
-    return null;
-  }
-  // --- End of authentication check ---
-
-
-  // Handle Plan Click (toggle selection)
-  const handlePlanClick = (planName: SetStateAction<null>) => {
-    setSelectedPlan(selectedPlan === planName ? null : planName) // Deselect if it's already selected
-  }
 
   // Add useEffect to try the unique name endpoint first, then fall back to unique ID if that fails
   // This effect should likely run after the initial useTool fetch attempt completes and fails
   useEffect(() => {
     const fetchToolData = async () => {
-
-      // REMOVED: This check is now handled at the top level component body and the useEffect dependency
-      // if(!isAuthenticated) {
-      // showLoginModal()
-      // return
-      // }
-
-      // Only attempt fallback fetches if the primary useTool hook failed AND user is authenticated
-      // The `enabled: isAuthenticated` on useTool ensures it only runs if authenticated initially.
-      // This useEffect then handles the fallback if that initial authenticated fetch failed.
       if (isError && !isLoading && isAuthenticated) { // Add isAuthenticated check here as well
         console.log("Primary fetch failed (user authenticated), attempting fallback lookups for slug:", slug);
         try {
@@ -218,6 +189,13 @@ export default function ToolDetail() {
   }, [isError, isLoading, tool, slug, router, queryClient, isAuthenticated]) // Add isAuthenticated to dependencies
 
 
+  // Handle Plan Click (toggle selection)
+  const handlePlanClick = (planName: SetStateAction<null>) => {
+    setSelectedPlan(selectedPlan === planName ? null : planName) // Deselect if it's already selected
+  }
+
+
+
   // Handle save toggle - should only work if authenticated (already handled by useSaveTool/useUnsaveTool logic often)
   const handleSaveToggle = () => {
     if (!isAuthenticated || !tool) {
@@ -240,6 +218,11 @@ export default function ToolDetail() {
       saveTool.mutate(tool.id)
     }
   }
+
+if (!isAuthenticated) {
+  console.log("Rendering null because user is not authenticated");
+  return null; // Safe now because all hooks were called above
+}
 
   // Show loading state ONLY IF authenticated (handled by the useTool enabled option)
   if (isLoading) {
@@ -371,31 +354,30 @@ export default function ToolDetail() {
 
 
   // --- Start Rendering the Authenticated View ---
-  return (
-      <div className="min-h-screen bg-white">
-        {schemaMarkup && (
-            <Script
-                id="tool-schema"
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: schemaMarkup }}
-            />
-        )}
+ return (
+  <div className="min-h-screen bg-white">
+    {schemaMarkup && (
+      <Script
+        id="tool-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: schemaMarkup }}
+      />
+    )}
 
-
-        <Header /> {/* Assuming Header component */}
-        <main className="max-w-6xl mx-auto px-4 py-8">
-          {/* Breadcrumbs */}
-          <div className="flex items-center text-sm mb-6">
-            <Link href="/" className="text-[#6b7280]">
-              Home
-            </Link>
-            <span className="mx-2 text-[#6b7280]">{">"}</span>
-            <Link href="/browse" className="text-[#6b7280]">
-              Tools
-            </Link>
-            <span className="mx-2 text-[#6b7280]">{">"}</span>
-            <span className="text-[#6b7280]">{safeTool.name}</span>
-          </div>
+    <Header />
+    <main className="max-w-6xl mx-auto px-4 py-8">
+      {/* Breadcrumbs */}
+      <div className="flex items-center text-sm mb-6">
+        <Link href="/" className="text-[#6b7280]">
+          Home
+        </Link>
+        <span className="mx-2 text-[#6b7280]">{">"}</span>
+        <Link href="/browse" className="text-[#6b7280]">
+          Tools
+        </Link>
+        <span className="mx-2 text-[#6b7280]">{">"}</span>
+        <span className="text-[#6b7280]">{safeTool.name}</span>
+      </div>
 
           {/* Tool Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -479,55 +461,8 @@ export default function ToolDetail() {
                   </div>
               )}
 
-             {/* Pricing */}
-             {safeTool?.pricingPlans && safeTool.pricingPlans.length > 0 && (
-      <div className="mb-12">
-        <h2 className="text-xl font-bold text-[#111827] mb-6">Pricing</h2> {/* Added Pricing Title */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {safeTool.pricingPlans.map((plan, index) => (
-            <div
-              key={plan.name}
-              // Add the onClick handler here
-              onClick={() => handlePlanClick(plan.name)} // <--- Add this line
-              className={`relative border rounded-lg p-6 flex flex-col transition-transform duration-200 cursor-pointer h-full
-                ${selectedPlan === plan.name ? "border-4 border-[#a855f7] scale-105 shadow-xl" : "border-[#e5e7eb] hover:shadow-lg hover:scale-102"}
-                ${plan.isFeatured ? "shadow-lg border-[#a855f7]" : ""}
-              `}
-            >
-              {/* ... rest of the card content (POPULAR tag, name, price, description, features, button) ... */}
-               {plan.isFeatured && (
-                 <div className="absolute top-0 right-0 bg-[#a855f7] text-white text-xs font-semibold py-1 px-3 rounded-tl-lg rounded-br-lg z-10">
-                   POPULAR
-                 </div>
-               )}
-               <h3 className="text-xl font-bold text-[#111827] mb-2">{plan.name}</h3>
-               <p className={`text-3xl font-bold mb-4 ${selectedPlan === plan.name || plan.isFeatured ? "text-[#a855f7]" : "text-[#111827]"}`}> {/* Also make price color conditional on selected */}
-                   {plan.price}
-                   <span className="text-base text-[#4b5563] ml-1 font-normal">/mo</span>
-               </p>
-               <p className="text-sm text-[#6b7280] mb-4 flex-grow">{plan.description}</p>
-               <ul className="list-disc list-inside text-[#4b5563] mb-6 space-y-2">
-                   {plan.features.map((feature, index) => (
-                       <li key={index}>{feature}</li>
-                   ))}
-               </ul>
-               <Button
-                   className={`w-full mt-auto ${
-                       plan.isFeatured // Use isFeatured for default button style
-                           ? "bg-[#a855f7] hover:bg-[#9333ea] text-white"
-                           : "bg-white text-[#a855f7] border border-[#a855f7] hover:bg-[#f5f0ff]"
-                   } px-4 py-2 rounded-md font-semibold`}
-                   asChild
-               >
-                   <a href={plan.ctaUrl || safeTool.link} target="_blank" rel="noopener noreferrer" className={`block text-center ${plan.isFeatured ? "text-white" : "text-[#a855f7]"}`}> {/* Ensure text color */}
-                       {plan.ctaText || "Choose Plan"} {/* Use ctaText or default */}
-                   </a>
-               </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
+
+      
 
 
               {/* User Reviews */}
@@ -554,45 +489,7 @@ export default function ToolDetail() {
                     ))}
                   </div>
               )}
-              {/* Related Tools */}
-              {safeTool?.relatedTools && safeTool.relatedTools.length > 0 && (
-                  <div>
-                    <h2 className="text-xl font-bold text-[#111827] mb-6">Similar Tools</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {safeTool.relatedTools.map((similarTool) => (
-                          <div key={similarTool.id} className="border border-[#e5e7eb] rounded-lg p-4">
-                            <h3 className="font-semibold text-[#111827] mb-2">{similarTool.name}</h3>
-                            <div className="flex gap-2 mb-2">
-                        <span className="text-xs px-2 py-0.5 bg-[#f5f0ff] text-[#a855f7] rounded-full">
-                          {similarTool.category}
-                        </span>
-                            </div>
-                            <p className="text-xs text-[#6b7280] mb-4">{similarTool.description}</p>
-                            <div className="flex justify-between items-center">
-                              <div className="flex space-x-2">
-                                {/* This save button should also trigger login modal if not authenticated */}
-                                <button className="p-1 border border-[#e5e7eb] rounded" onClick={handleSaveToggle}>
-                                  <Bookmark className="w-3 h-3 text-[#6b7280]" />
-                                </button>
-                                <button className="p-1 border border-[#e5e7eb] rounded">
-                                  <Share2 className="w-3 h-3 text-[#6b7280]" />
-                                </button>
-                              </div>
-                              <Button
-                                  className="bg-[#a855f7] hover:bg-[#9333ea] text-white text-xs h-7 rounded-md flex items-center"
-                                  asChild
-                              >
-                                <Link href={`/tools/${similarTool.id}`}>
-                                  View Tool <ExternalLink className="w-3 h-3 ml-1" /> {/* Changed text */}
-                                </Link>
-                              </Button>
-                          </div>
-                          </div>
-                      ))}
-                  </div>
-                  </div>
-              )}
-            </div>
+      
 
             {/* Right Column - Sidebar */}
             <div className="md:col-span-1">
@@ -673,5 +570,5 @@ export default function ToolDetail() {
           </div>
         </main>
       </div>
-  )
+  );
 }
