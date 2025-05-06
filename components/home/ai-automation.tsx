@@ -21,7 +21,9 @@ export default function AIAutomation() {
                 paid strategy call with our experts.
               </p>
               <div>
-                <Button className="bg-purple-600 hover:bg-purple-700">Get AI Help Now</Button>
+                <Button className="bg-purple-600 hover:bg-purple-700" >
+                  <a href="https://calendly.com/ai-automation-consultation/30min" target="_blank" rel="noopener noreferrer"> Get AI Help Now</a>
+                  </Button>
               </div>
             </div>
             <div className="flex justify-center">
