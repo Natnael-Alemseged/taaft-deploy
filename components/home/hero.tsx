@@ -15,6 +15,7 @@ import { FiSearch, FiMessageSquare, FiArrowRight, FiExternalLink } from 'react-i
 import { keywordSearch } from "@/services/chat-service"
 import { useRouter } from "next/navigation"
 import { robotSvg } from "@/lib/reusable_assets"
+import { SignInModal } from "./sign-in-modal"
 
 // Types for API integration
 interface Tool {
@@ -51,8 +52,19 @@ export default function Hero() {
   const { isAuthenticated } = useAuth()
   const [showChatTooltip, setShowChatTooltip] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false)
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const onCloseCallbackRef = useRef<(() => void) | null>(null)
+  const currentModalIdRef = useRef<string | null>(null)
+  const openSignUpModal = () => {
+    setIsSignInModalOpen(false)
+    setIsSignUpModalOpen(true)
+    setIsMobileMenuOpen(false)
+  }
 
 
+  const [previousRoute, setPreviousRoute] = useState<string | undefined>()
   function goToToolDetails(id: string | number): void {
     console.log("Calling goToToolDetails for ID:", id);
     console.log("Router object:", router); // <-- Add this line
@@ -65,6 +77,18 @@ export default function Hero() {
       setIsSearchOpen(false)
     }
   })
+
+
+  const closeAllModals = () => {
+    setIsSignInModalOpen(false)
+    setIsSignUpModalOpen(false)
+    setPreviousRoute(undefined)
+    if (onCloseCallbackRef.current) {
+      onCloseCallbackRef.current()
+      onCloseCallbackRef.current = null
+    }
+    currentModalIdRef.current = null
+  }
 
   const exampleTags = [
     "Image generation tools",
@@ -157,8 +181,8 @@ export default function Hero() {
 
   const handleSearchFocus = () => {
     if (!isAuthenticated) {
-      showLoginModal()
-      return
+      openSignInModal()
+      return // Stop if not authenticated
     }
     setIsSearchOpen(true)
     // If there's a search query, fetch tools immediately
@@ -167,9 +191,23 @@ export default function Hero() {
     }
   }
 
+  const openSignInModal = () => {
+    setIsSignUpModalOpen(false)
+    setIsSignInModalOpen(true)
+    setIsMobileMenuOpen(false)
+  }
+
   const handleChatOpen = () => {
-    setIsSearchOpen(false)
-    setIsChatOpen(true)
+    // Add this authentication check
+    if (!isAuthenticated) {
+      openSignInModal(); // Show the login modal
+      return;           // Stop execution if not authenticated
+    }
+
+    // Only proceed with opening chat if authenticated
+    setIsSearchOpen(false);
+    setIsChatOpen(true);
+    // You might want to add other chat initialization logic here
   }
 
   const handleClose = () => {
@@ -193,7 +231,14 @@ export default function Hero() {
 
   
 
-  return (
+  return (<>
+
+    <SignInModal 
+    isOpen={isSignInModalOpen} 
+    onClose={closeAllModals} 
+    onSwitchToSignUp={openSignUpModal}
+    previousRoute={previousRoute}
+  />
     <section className="relative overflow-hidden bg-gradient-to-br from-white via-purple-50 to-purple-100 py-24 text-center">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-3xl">
@@ -459,5 +504,6 @@ export default function Hero() {
         </div>
       </div>
     </section>
+    </>
   )
 }

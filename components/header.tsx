@@ -18,25 +18,32 @@ export default function Header() {
   const [previousRoute, setPreviousRoute] = useState<string | undefined>()
   const { user, logout, isAuthenticated } = useAuth()
   const pathname = usePathname() // Get current pathname
+  const onCloseCallbackRef = useRef<(() => void) | null>(null)
+  const currentModalIdRef = useRef<string | null>(null)
 
   const mobileMenuRef = useRef<HTMLDivElement>(null); // Ref for mobile menu for click outside
 
   const openSignInModal = () => {
     setIsSignUpModalOpen(false)
     setIsSignInModalOpen(true)
-    setIsMobileMenuOpen(false); // Close mobile menu when opening modal
+    setIsMobileMenuOpen(false)
   }
 
   const openSignUpModal = () => {
     setIsSignInModalOpen(false)
     setIsSignUpModalOpen(true)
-    setIsMobileMenuOpen(false); // Close mobile menu when opening modal
+    setIsMobileMenuOpen(false)
   }
 
   const closeAllModals = () => {
     setIsSignInModalOpen(false)
     setIsSignUpModalOpen(false)
     setPreviousRoute(undefined)
+    if (onCloseCallbackRef.current) {
+      onCloseCallbackRef.current()
+      onCloseCallbackRef.current = null
+    }
+    currentModalIdRef.current = null
   }
 
   const handleLogout = () => {
@@ -57,10 +64,30 @@ export default function Header() {
 
     window.addEventListener("scroll", handleScroll)
 
-    // Add listener for login modal event
-    const handleShowLoginModal = (event: CustomEvent<{ previousRoute?: string }>) => {
+    // Effect to handle login modal events
+    const handleShowLoginModal = (event: CustomEvent<{ 
+      previousRoute?: string; 
+      modalId: string;
+      onClose?: () => void 
+    }>) => {
+      // If we already have a modal open with this ID, ignore
+      if (currentModalIdRef.current === event.detail.modalId) {
+        return
+      }
+
+      // If we have a different modal open, close it first
+      if (currentModalIdRef.current) {
+        closeAllModals()
+      }
+
+      // Set the new modal ID and open the modal
+      currentModalIdRef.current = event.detail.modalId
       setPreviousRoute(event.detail.previousRoute)
       setIsSignInModalOpen(true)
+      
+      if (event.detail.onClose) {
+        onCloseCallbackRef.current = event.detail.onClose
+      }
     }
 
     window.addEventListener("show-login-modal", handleShowLoginModal as EventListener)

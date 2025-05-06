@@ -58,15 +58,18 @@ apiClient.interceptors.response.use(
               localStorage.removeItem("refresh_token")
               localStorage.removeItem("user")
 
-              import("@/lib/auth-events").then(({ showLoginModal }) => {
-                showLoginModal()
-              })
+              // import("@/lib/auth-events").then(({ showLoginModal }) => {
+              //   showLoginModal()
+              // })
 
               return Promise.reject(error)
             }
           })
         }
-        else{showLoginModal()}
+        else{
+          // showLoginModal()
+
+        }
       }
     } else if (error.response) {
       console.log(error.response)
