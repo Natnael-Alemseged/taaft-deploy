@@ -152,7 +152,7 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp, previousRoute }
   const isSubmitting = isLocalLoading; // isSubmitting = true if handleForgotPasswordSubmit or handleSubmit is running
 
   return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
         {/* Adjusted max-w-md and padding for potential smaller screens */}
         {/* Added max-h and overflow-y-auto to ensure modal is scrollable if content exceeds height */}
         <div className="bg-white rounded-2xl w-full max-w-sm md:max-w-md relative p-6 md:p-8 animate-in fade-in zoom-in duration-300 overflow-y-auto max-h-[95vh]">
