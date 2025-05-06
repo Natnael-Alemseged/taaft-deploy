@@ -329,3 +329,16 @@ export const verifyEmail = async (token: string) => {
   return response;
 };
 
+export const changeUserData = async (data: any) => {
+  const token = localStorage.getItem("access_token");
+  const response = await apiClient.post('/auth/change-user-data', data, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+  });
+  console.log("change user data response is:", JSON.stringify(response.data));
+  return response;
+};
+
+
