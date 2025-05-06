@@ -36,13 +36,14 @@ export default function ProfilePage() {
       <Header />
 
       <main className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-[#111827] mb-8">My Profile</h1>
+        <div>
+        {/* <h1 className="text-3xl font-bold text-[#111827] mb-8">My Profile</h1> */}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Sidebar */}
-          <div className="md:col-span-1">
-            <Card>
-              <CardHeader className="pb-4">
+          {/* <div className="md:col-span-1"> */} 
+            {/* <Card> */}
+              {/* <CardHeader className="pb-4">
                 <CardTitle>Account</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -59,8 +60,8 @@ export default function ProfilePage() {
                   <span>Settings</span>
                 </div>
               </CardContent>
-            </Card>
-          </div>
+            </Card> */}
+          {/* </div> */}
 
           {/* Main Content */}
           <div className="md:col-span-2">
@@ -75,7 +76,7 @@ export default function ProfilePage() {
                     <User className="mr-2 h-5 w-5 text-[#6b7280]" />
                     <input
                       type="text"
-                      value={user?.name || ""}
+                      value={user?.full_name || ""}
                       className="w-full p-2 border border-[#e5e7eb] rounded-md"
                       readOnly
                     />
