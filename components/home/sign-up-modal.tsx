@@ -8,7 +8,7 @@ import Image from "next/image" // Assuming Image component is available
 import { useAuth } from "@/contexts/auth-context" // Assuming this path is correct
 import { useRouter } from "next/navigation" // Correct import for App Router
 // Import the Google SSO initiation function from your auth service
-import {  initiateGitHubLogin, initiateGoogleLogin } from "@/services/auth-service";
+import { initiateGitHubLogin, initiateGoogleLogin } from "@/services/auth-service";
 
 
 interface SignUpModalProps {
@@ -35,7 +35,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
       setEmail("");
       setPassword("");
       setSubscribeToNewsletter(false);
-      setError("");
+      setError(""); // Clear error on close
     }
   }, [isOpen]); // Dependency on isOpen prop
 
@@ -44,14 +44,40 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
-    setIsLoading(true) // Use local loading
+    setError("") // Clear previous errors
+    // setIsLoading(true) // Set loading *after* client validation
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
-      return
+    // --- Client-Side Validation Checks ---
+
+    // 1. Full Name Validation (only letters and spaces)
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    if (!nameRegex.test(full_name)) {
+      setError("Full name can only contain letters and spaces.");
+      // setIsLoading(false); // Already false at this point
+      return;
     }
+
+    // 2. Password Match Check
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      // setIsLoading(false); // Already false at this point
+      return;
+    }
+
+    // 3. Password Complexity Check
+    // Criteria: at least 8 characters (handled by minLength in input and regex),
+    // at least one uppercase letter, one lowercase letter, one number, one special character
+    const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+    if (!passwordComplexityRegex.test(password)) {
+      setError("Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.");
+      // setIsLoading(false); // Already false at this point
+      return;
+    }
+
+    // --- End Client-Side Validation ---
+
+    // If all client validation passes, set loading and proceed with API call
+    setIsLoading(true);
 
     try {
       // Include subscribeToNewsLetter in the data sent to the register function
@@ -65,6 +91,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
       router.refresh() // Refresh the page to update auth state
     } catch (err: any) {
       // Improved error handling to check for nested detail message
+      // If the API sends back validation errors, they will appear here
       const errorMessage = err.response?.data?.detail || err.message || "Failed to sign up. Please try again."
       setError(errorMessage)
       console.error("Sign up error:", err); // Log the full error for debugging
@@ -97,13 +124,13 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
     setIsLoading(true); // Indicate loading state
 
     try {
-      // Call the service function to initiate Google SSO redirect
+      // Call the service function to initiate Github SSO redirect
       // The page will redirect, so the rest of the process happens on the callback page
       await initiateGitHubLogin();
       // No need to set isLoading(false) here if the redirect is successful
     } catch (err: any) {
       console.error("Github signup initiation failed:", err);
-      const errorMessage = err.message || err.response?.data?.detail || "Failed to initiate Google sign up. Please try again.";
+      const errorMessage = err.message || err.response?.data?.detail || "Failed to initiate Github sign up. Please try again.";
       setError(errorMessage);
       setIsLoading(false); // Set loading false if initiation fails before redirect
     }
@@ -154,9 +181,14 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
             <div className="h-px bg-gray-300 flex-1"></div>
           </div>
 
-          {error && <div className="mb-4 p-2 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
+          {/* Error message display */}
+          {error && (
+            <div className="mt-4 p-2 bg-red-50 text-red-600 rounded-lg text-sm text-center" role="alert">
+              {error}
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3 mt-4"> {/* Added mt-4 to space from potential error */}
             <div>
               <label htmlFor="full_name" className="block text-md font-medium ">
                 Name
@@ -199,12 +231,12 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
                     placeholder="••••••••"
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
                     required
-                    minLength={8}
+                    minLength={8} // Keep minLength for basic browser validation/hint
                 />
               </div>
 
               <div>
-              <label htmlFor="password" className="block text-md font-medium ">
+              <label htmlFor="confirmPassword" className="block text-md font-medium ">
                 Confirm Password
               </label>
                 <input
@@ -215,7 +247,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
                     placeholder="••••••••"
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
                     required
-                    minLength={8}
+                    minLength={8} // Keep minLength for basic browser validation/hint
                 />
               </div>
 
@@ -228,7 +260,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
                   onChange={(e) => setSubscribeToNewsletter(e.target.checked)}
                   className="h-4 w-4 text-[#a855f7] border-gray-300 rounded focus:ring-[#a855f7]"
               />
-              <label htmlFor="subscribeToNewsletter" className="ml-2 block text-sm text-gray-900">
+              <label htmlFor="subscribeToNewsletter" className="ml-2 block text-sm text-gray-900 cursor-pointer"> {/* Added cursor-pointer */}
                 Subscribe to our newsletter
               </label>
             </div>
