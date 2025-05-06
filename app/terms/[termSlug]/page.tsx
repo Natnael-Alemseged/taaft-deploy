@@ -7,7 +7,7 @@ import { ChevronRight, Calendar, Clock } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { getGlossaryTerm } from "@/services/glossary-service"
+import { getBlogPostsByTerm, getGlossaryTerm } from "@/services/glossary-service"
 
 // Helper function to convert a term title into a URL-friendly slug
 function slugify(text: string): string {
@@ -42,13 +42,18 @@ export default function TermPage() {
   const [termData, setTermData] = useState<GlossaryTerm | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [termBlogPosts, setTermBlogPosts] = useState<any[]>([])
 
   useEffect(() => {
     const fetchTerm = async () => {
       try {
         setIsLoading(true)
         const data = await getGlossaryTerm(termSlug)
+        
         setTermData(data)
+
+        const blogPosts = await getBlogPostsByTerm(termSlug)
+        setTermBlogPosts(blogPosts)
         setError(null)
       } catch (err) {
         console.error("Error fetching term:", err)
@@ -217,11 +222,14 @@ export default function TermPage() {
 
           {/* Related Blog Posts Section - Using static placeholders */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">
+           
+            <div className="space-y-4">
+           {termBlogPosts.length > 0 && (
+              <h2 className="text-xl font-semibold text-[#111827] mb-3 border-b pb-2 border-gray-200">
               Related Blog Posts
             </h2>
-            <div className="space-y-4">
-              {relatedBlogPosts.map((post, index) => (
+           )}
+              {termBlogPosts.map((post, index) => (
                 <div
                   key={index}
                   className="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors"

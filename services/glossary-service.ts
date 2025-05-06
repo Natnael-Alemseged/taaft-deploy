@@ -146,3 +146,15 @@ function getMockTermBySlug(slug: string): GlossaryTerm {
     first_letter: slug.charAt(0).toUpperCase(),
   }
 }
+
+
+export const getBlogPostsByTerm = async (termSlug: string): Promise<any[]> => {
+  try {
+    const response = await apiClient.get<any[]>(`/api/blog/by-term/${termSlug}`)
+    console.log(' blog posts by term response is:', JSON.stringify( response.data,null, 2));
+    return response.data
+  } catch (error) {
+    console.error(`Failed to fetch blog posts by term ${termSlug}:`, error)
+    return []
+  }
+}

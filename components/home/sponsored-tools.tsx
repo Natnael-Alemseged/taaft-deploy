@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ChevronLeft, ChevronRight, Share2 } from "lucide-react"
+import { Bookmark, ChevronLeft, ChevronRight, ExternalLink, Share2 } from "lucide-react"
 import clsx from "clsx"
 // Import the usePopularTools hook
 import { usePopularTools } from "@/hooks/use-tools"
@@ -11,6 +11,7 @@ import type { Tool } from "@/types/tool" // Assuming Tool type is defined in typ
 import { useAuth } from "@/contexts/auth-context"
 // Add the import at the top of the file
 import { showLoginModal } from "@/lib/auth-events"
+import { robotSvg } from "@/lib/reusable_assets"
 
 export default function SponsoredTools() {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -166,21 +167,26 @@ export default function SponsoredTools() {
               className="min-w-full md:min-w-[calc(50%-12px)] flex-shrink-0 border border-gray-200 shadow-lg scroll-snap-align-start"
               // Add aria-roledescription and aria-label for each card for better accessibility with carousel pattern
               aria-roledescription="slide"
-              aria-label={`${tool.name}, ${tool.category}`}
+              aria-label={`${tool.name}`}
             >
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center gap-4">
                   {/* Use fetched category and pricing */}
-                  <span className="text-xs font-medium text-gray-500">{tool.category}</span>
-                  {/* Assuming you have a way to determine if a sponsored tool is "Premium" vs "Free"
-                      This might need adjustment based on your Tool type and API response */}
-                  <span className={`rounded ${getBadgeClass(tool.pricing)} px-2 py-0.5 text-xs font-medium`}>
-                    {formatPricingLabel(tool.pricing)}
-                  </span>
+                  
+               
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3> {/* Use fetched name */}
+                <span className="flex items-center gap-2 pb-3">
+                  {robotSvg}
+                <h3 className="text-lg font-semibold text-gray-900 ">{tool.name}</h3> {/* Use fetched name */}
+                </span>
+                {tool.categories.length > 0 && (
+                <span className="text-xs font-bold text-purple-500 border border-purple-300 rounded-full px-2 py-1">
+  {tool.categories[0].name}
+</span>
+)}
+
                 {/* Modified line to truncate description */}
-                <p className="mb-4 text-sm text-gray-600">
+                <p className="mb-4 text-sm text-gray-600 pt-3">
                   {tool.description && tool.description.length > 80 // Check if description exists and is longer than 200 chars
                     ? `${tool.description.substring(0, 80)}...` // Truncate and add ellipsis
                     : tool.description}{" "}
@@ -191,7 +197,7 @@ export default function SponsoredTools() {
                 {/* For now, keeping the structure but it might not display anything if tool.tags is undefined */}
                 <div className="mb-4 flex flex-wrap gap-1">
                   {/* Replace tool.tags with appropriate property from your fetched Tool type if different */}
-                  {(tool as any).tags?.map((tag: string) => (
+                  {(tool as any).keywords?.slice(0, 5).map((tag: string) => (
                     <span key={tag} className="rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-600">
                       {tag}
                     </span>
@@ -200,6 +206,21 @@ export default function SponsoredTools() {
                 <div className="flex items-center justify-between">
                   {/* Update Link/Button destination if needed based on tool ID */}
                   {/* Assuming a link to a tool detail page */}
+               <span className="flex items-center gap-2">
+
+                <button
+                  className="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+                  aria-label={`Share ${tool.name}`}
+                >
+                  <Bookmark className="h-4 w-4" />
+                </button>
+                  <button
+                    className="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+                    aria-label={`Share ${tool.name}`}
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </button>
+                  </span>
                   <Button
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                     onClick={() => {
@@ -212,14 +233,8 @@ export default function SponsoredTools() {
                       }
                     }}
                   >
-                    Try Tool
+                    Try Tool  <ExternalLink className="h-4 w-4" />
                   </Button>
-                  <button
-                    className="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
-                    aria-label={`Share ${tool.name}`}
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </button>
                 </div>
               </CardContent>
             </Card>
