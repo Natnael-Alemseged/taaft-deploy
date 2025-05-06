@@ -38,7 +38,7 @@ export default function FeaturedTools() {
       <div className="container mx-auto px-4">
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900">Featured AI Tools</h2>
-          <Link href="/browse" className="flex items-center text-sm text-purple-600 hover:underline">
+          <Link href="/featured-all" className="flex items-center text-sm text-purple-600 hover:underline">
             View all <ChevronRight className="ml-1 h-4 w-4" />
           </Link>
         </div>

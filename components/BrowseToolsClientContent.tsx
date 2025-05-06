@@ -29,9 +29,10 @@ interface ToolsData {
 interface BrowseToolsClientContentProps {
   initialToolsData: ToolsData | null;
   isErrorInitial: boolean;
+  isFeaturedPage?: boolean;
 }
 
-export default function BrowseToolsClientContent({ initialToolsData, isErrorInitial }: BrowseToolsClientContentProps) {
+export default function BrowseToolsClientContent({ initialToolsData, isErrorInitial, isFeaturedPage = false }: BrowseToolsClientContentProps) {
   // --- Hooks ---
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -104,6 +105,7 @@ export default function BrowseToolsClientContent({ initialToolsData, isErrorInit
     search: debouncedQuery || undefined,
     page,
     limit,
+    featured: isFeaturedPage ? true : undefined,
   }) as { data: ToolsData | undefined; isLoading: boolean; isError: boolean }
 
   // Fetch categories data for the dropdown
@@ -218,8 +220,15 @@ export default function BrowseToolsClientContent({ initialToolsData, isErrorInit
 
         {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#111827] dark:text-white mb-1">Browse AI Tools</h1>
-          <p className="text-[#6b7280] dark:text-gray-400">Discover and compare the best AI tools for your needs</p>
+          <h1 className="text-3xl font-bold text-[#111827] dark:text-white mb-1">
+            {isFeaturedPage ? "Featured AI Tools" : "Browse AI Tools"}
+          </h1>
+          <p className="text-[#6b7280] dark:text-gray-400">
+            {isFeaturedPage 
+              ? "Discover and explore our featured AI tools"
+              : "Discover and compare the best AI tools for your needs"
+            }
+          </p>
         </div>
 
         {/* Search and Filter Controls */}

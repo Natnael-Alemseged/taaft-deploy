@@ -21,15 +21,15 @@ export function useTools(params?: {
   search?: string
   page?: number
   limit?: number
+  featured?: boolean
 }) {
   return useQuery({
-    queryKey: ["tools", params?.category, params?.search, params?.page, params?.limit],
+    queryKey: ["tools", params?.category, params?.search, params?.page, params?.limit, params?.featured],
     queryFn: () => getTools(params),
     keepPreviousData: true,         // Prevent flickering on pagination
     staleTime: 1000 * 10,           // Consider data fresh for 10 seconds
     refetchOnWindowFocus: false,    // Avoid refetching on focus (optional)
   })
-
 }
 
 // Hook for fetching a single tool by ID
