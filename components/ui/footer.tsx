@@ -13,7 +13,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-gray-200 bg-white py-12">
       <div className="container mx-auto px-4">
-        <div className="grid gap-8 md:grid-cols-4">
+      <div className="grid gap-8 grid-cols-2 md:grid-cols-4">
           <div>
             <h3 className="mb-4 text-sm font-semibold uppercase text-black">AI Tool Gateway</h3>
             <p className="text-sm text-gray-600">

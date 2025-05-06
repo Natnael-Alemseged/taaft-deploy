@@ -114,7 +114,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
       />
       <Card
         key={tool.id}
-        className="max-w-sm overflow-hidden rounded-2xl border border-gray-200 shadow-lg w-full mx-auto"
+        className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 shadow-lg w-full mx-auto"
       >
         <CardContent className="p-0">
           <div className="p-4">

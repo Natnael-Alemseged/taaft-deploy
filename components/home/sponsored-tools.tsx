@@ -141,18 +141,17 @@ export default function SponsoredTools() {
                 aria-label={tool.name}
               >
                 <CardContent className="p-4">
-                
-                  <span className="flex items-center gap-2 pb-3">
-                    { tool.image ? tool.image : robotSvg}
-                    <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>
-                  </span>
-                  <div className="mb-2 flex items-center gap-4 ">
+                  <div className="mb-2 flex items-center gap-4">
                     {tool.categories.length > 0 && (
                       <span className="text-xs font-bold text-purple-500 border border-purple-300 rounded-full px-2 py-1">
                         {tool.categories[0].name}
                       </span>
                     )}
                   </div>
+                  <span className="flex items-center gap-2 pb-3">
+                    {robotSvg}
+                    <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>
+                  </span>
                   <p className="mb-4 text-sm text-gray-600 pt-3">
                     {tool.description && tool.description.length > 80
                       ? `${tool.description.substring(0, 80)}...`
@@ -193,6 +192,32 @@ export default function SponsoredTools() {
               </Card>
             ))}
           </div>
+
+          {/* Pagination Indicators */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex justify-center space-x-2" role="tablist" aria-label="Sponsored Tools Pagination">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <div
+                  key={i}
+                  className={clsx(
+                    "h-1.5 transition-all duration-300 cursor-pointer",
+                    currentPage === i ? "w-6 h-1 bg-purple-600" : "w-1.5 rounded-full bg-gray-300 opacity-50"
+                  )}
+                  role="tab"
+                  aria-controls={`sponsored-tool-page-${i}`}
+                  aria-selected={currentPage === i}
+                  tabIndex={currentPage === i ? 0 : -1}
+                  onClick={() => {
+                    if (scrollRef.current) {
+                      const pageWidth = scrollRef.current.clientWidth
+                      scrollRef.current.scrollTo({ left: i * pageWidth, behavior: "smooth" })
+                    }
+                  }}
+                  aria-label={`Go to page ${i + 1} of sponsored tools`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>
