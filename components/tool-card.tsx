@@ -126,13 +126,15 @@ export default function ToolCard({ tool }: ToolCardProps) {
           <div className="p-4">
             <div className="mb-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
-                  {(() => {
-                    const categoryText = tool.categories[0].name;
-                    // const categoryText = tool.categories.map((category) => category.name).join(", ");
-                    return categoryText.length > 20 ? `${categoryText.slice(0, 20)}...` : categoryText;
-                  })()}
-                </span>
+              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
+  {tool.categories && tool.categories.length !== 0
+    ? (() => {
+        const categoryText = tool.categories[0].name;
+        return categoryText.length > 20 ? `${categoryText.slice(0, 20)}...` : categoryText;
+      })()
+    : null}
+</span>
+
               </div>
               {tool.isFeatured && (
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}>
@@ -143,7 +145,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
             <span className="flex items-center pt-3">
               {tool.image?? robotSvg}
               <h3 className="mb-1 text-lg font-semibold text-gray-900 pl-2"> 
-                {tool.name.length > 20 ? `${tool.name.slice(0, 17)}...` : tool.name}
+                {tool.name.length > 20 ? `${tool.name.slice(0, 1)}...` : tool.name}
                 </h3>
             </span>
             <p className="mb-4 text-sm text-gray-600">

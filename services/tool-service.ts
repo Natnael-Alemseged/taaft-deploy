@@ -24,7 +24,7 @@ export const getTools = async (params?: {
     
 
     if (params?.search) {
-      apiParams.q = `%${params.search}%`;
+      apiParams.q = params.search;
       endpoint = "/tools/search" // Use /tools/search if a search term is provided
     }
 
