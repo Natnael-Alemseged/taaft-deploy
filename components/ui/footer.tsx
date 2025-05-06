@@ -15,14 +15,14 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid gap-8 md:grid-cols-4">
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase text-gray-500">AI Tool Gateway</h3>
+            <h3 className="mb-4 text-sm font-semibold uppercase text-black">AI Tool Gateway</h3>
             <p className="text-sm text-gray-600">
               The ultimate directory for finding the best AI tools for your specific needs.
             </p>
           </div>
 
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase text-gray-500">Quick Links</h3>
+            <h3 className="mb-4 text-sm font-semibold uppercase text-black">Quick Links</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="#" className="text-sm text-gray-600 hover:text-purple-600">
@@ -49,7 +49,7 @@ export default function Footer() {
 
          {/* Column 3: Categories (Dynamic) */}
          <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">Categories</h3>
+            <h3 className="mb-4 text-sm font-semibold uppercase text-black">Categories</h3>
             <ul className="space-y-2">
               {isLoading && (
                 // Display loading state
@@ -89,7 +89,7 @@ export default function Footer() {
 
 
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase text-gray-500">Resources</h3>
+            <h3 className="mb-4 text-sm font-semibold uppercase text-black">Resources</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/glossary" className="text-sm text-gray-600 hover:text-purple-600">
@@ -106,11 +106,7 @@ export default function Footer() {
                   Discord
                 </Link>
               </li>
-              <li>
-                <Link href="#" className="text-sm text-gray-600 hover:text-purple-600">
-                  Newsletter
-                </Link>
-              </li>
+           
             </ul>
           </div>
         </div>
