@@ -316,3 +316,16 @@ export const resetPassword = async (payload: ResetPasswordPayload): Promise<Rese
     throw error;
   }
 };
+
+
+
+export const verifyEmail = async (token: string) => {
+  const response = await apiClient.post('/auth/verify-email', token, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  console.log("verify email response is:", JSON.stringify(response.data));
+  return response.data;
+};
+

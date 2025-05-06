@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button" // Assuming Button component is 
 import Image from "next/image" // Assuming Image component is available
 import { useAuth } from "@/contexts/auth-context" // Assuming this path is correct
 import { useRouter } from "next/navigation" // Correct import for App Router
+import SuccessfulSignUpModal from "@/components/successful-signup-modal";
+
 // Import the Google SSO initiation function from your auth service
 import { initiateGitHubLogin, initiateGoogleLogin } from "@/services/auth-service";
 
@@ -27,6 +29,8 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
   const [isLoading, setIsLoading] = useState(false) // Local loading state for the form submission
   const { register } = useAuth() // Assuming useAuth hook provides the register function
   const router = useRouter()
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
 
   // Effect to clear form and errors when modal closes
   useEffect(() => {
@@ -49,8 +53,15 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
 
     // --- Client-Side Validation Checks ---
 
+    if(full_name.length > 20) {
+      setError("Full name must be less than 20 characters.");
+      // setIsLoading(false); // Already false at this point
+      return;
+    }
+
     // 1. Full Name Validation (only letters and spaces)
     const nameRegex = /^[a-zA-Z\s]+$/;
+
     if (!nameRegex.test(full_name)) {
       setError("Full name can only contain letters and spaces.");
       // setIsLoading(false); // Already false at this point
@@ -87,8 +98,10 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
         password,
         subscribeToNewsletter, // Add the checkbox state here
       })
-      onClose()
-      router.refresh() // Refresh the page to update auth state
+      setShowSuccessModal(true);
+
+      // onClose()
+      // router.refresh() // Refresh the page to update auth state
     } catch (err: any) {
       // Improved error handling to check for nested detail message
       // If the API sends back validation errors, they will appear here
@@ -137,6 +150,13 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
     // No finally block needed here as successful initiation leads to redirect
   };
 
+  if (showSuccessModal) {
+    return <SuccessfulSignUpModal onClose={() => {
+      setShowSuccessModal(false);
+      onClose();  // Close the signup modal afterward
+    }} />;
+  }
+  
 
   return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
