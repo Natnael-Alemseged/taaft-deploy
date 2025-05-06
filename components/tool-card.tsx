@@ -100,15 +100,9 @@ export default function ToolCard({ tool }: ToolCardProps) {
   }
 
   // Determine pricing badge text
-  const pricingText = tool.pricing ? tool.pricing.charAt(0).toUpperCase() + tool.pricing.slice(1) : "Unknown"
+  // const pricingText = tool.pricing ? tool.pricing.charAt(0).toUpperCase() + tool.pricing.slice(1) : "Unknown"
 
-  // Use features as tags if tags are not available
-  const displayTags =
-    tool.tags && Array.isArray(tool.tags) && tool.tags.length > 0
-      ? tool.tags
-      : tool.features && Array.isArray(tool.features)
-        ? tool.features
-        : []
+
 
   return (
     <>
@@ -126,14 +120,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
           <div className="p-4">
             <div className="mb-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
-              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
-  {tool.categories && tool.categories.length !== 0
-    ? (() => {
-        const categoryText = tool.categories[0].name;
-        return categoryText.length > 20 ? `${categoryText.slice(0, 20)}...` : categoryText;
-      })()
-    : null}
-</span>
+  
 
               </div>
               {tool.isFeatured && (
@@ -142,15 +129,23 @@ export default function ToolCard({ tool }: ToolCardProps) {
                 </span>
               )}
             </div>
-            <span className="flex items-center pt-3">
+            <span className="flex items-center py-3">
               {tool.image?? robotSvg}
               <h3 className="mb-1 text-lg font-semibold text-gray-900 pl-2"> 
-                {tool.name.length > 20 ? `${tool.name.slice(0, 1)}...` : tool.name}
+                {tool.name.length > 30 ? `${tool.name.slice(0, 1)}...` : tool.name}
                 </h3>
             </span>
-            <p className="mb-4 text-sm text-gray-600">
-              {tool.description && tool.description.length > 120 // Adjust 120 to your desired length
-                ? `${tool.description.substring(0, 120)}...`
+            <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
+  {tool.categories && tool.categories.length !== 0
+    ? (() => {
+        const categoryText = tool.categories[0].name;
+        return categoryText.length > 20 ? `${categoryText.slice(0, 20)}...` : categoryText;
+      })()
+    : null}
+</span>
+            <p className="mb-4 text-sm text-gray-600 pt-3">
+              {tool.description && tool.description.length > 50 // Adjust 120 to your desired length
+                ? `${tool.description.substring(0, 50)}...`
                 : tool.description}
             </p>
 
@@ -159,7 +154,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
              
 
                 return (
-                  <span key={index} className="rounded-full px-3 py-1 text-xs bg-gray-200 text-gray-800">
+                  <span key={index} className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-600">
                     {feature}
                   </span>
                 )
@@ -179,7 +174,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
                 <ShareButtonWithPopover itemLink={`/tools/${tool.id}`} />
               </div>
               <Button
-                className="bg-purple-600 text-white hover:bg-purple-700"
+                className="  bg-purple-600 text-white hover:bg-purple-700"
                 onClick={() => {
                   if (!isAuthenticated) {
                     // Use the shared showLoginModal function
@@ -190,7 +185,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
                   }
                 }}
               >
-                Try Tool
+                Try Tool <ExternalLink className="h-4 w-4 ml-1" />
               </Button>
             </div>
           </div>
