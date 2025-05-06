@@ -34,61 +34,93 @@ interface AuthResponse {
 // Login with username and password
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   try {
-    // Assuming your backend expects application/x-www-form-urlencoded for /auth/token
-    const formData = new URLSearchParams()
-    formData.append("username", credentials.username)
-    formData.append("password", credentials.password)
+    const formData = new URLSearchParams();
+    formData.append("username", credentials.username);
+    formData.append("password", credentials.password);
 
     const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/token`, formData, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         Accept: "application/json",
       },
-    })
+    });
 
-    const { access_token, token_type, refresh_token } = response.data
+    const { access_token, token_type, refresh_token } = response.data;
 
-    // Store tokens
-    localStorage.setItem("access_token", access_token)
+    localStorage.setItem("access_token", access_token);
     if (refresh_token) {
-      localStorage.setItem("refresh_token", refresh_token)
+      localStorage.setItem("refresh_token", refresh_token);
     }
 
-    // Fetch user details using the new access token
     const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
       headers: {
         Authorization: `${token_type} ${access_token}`,
         Accept: "application/json",
       },
-    })
+    });
 
-    const user = userResponse.data
-    localStorage.setItem("user", JSON.stringify(user)) // Store user data
+    const user = userResponse.data;
+    localStorage.setItem("user", JSON.stringify(user));
 
-    return { access_token, refresh_token, token_type, user }
+    return { access_token, refresh_token, token_type, user };
   } catch (error: any) {
     console.error("Login failed:", error);
-    if (error.response?.status === 401) {
-      throw new Error("Invalid Email or password ")
+
+    const status = error.response?.status;
+    const detail = error.response?.data?.detail || error.message;
+
+    if (status === 401) {
+      if (typeof detail === "string") {
+        if (detail.toLowerCase().includes("not verified")) {
+          throw new Error("Your email is not verified. Please check your inbox.");
+        }
+        if (detail.toLowerCase().includes("incorrect") || detail.toLowerCase().includes("invalid")) {
+          throw new Error("Invalid email or password.");
+        }
+      }
+      throw new Error("Login failed. Please check your credentials.");
     }
-    throw error // Re-throw other errors
+
+    // Other known status codes
+    if (status === 403) {
+      throw new Error("Access denied. Please contact support.");
+    }
+
+    // Fallback
+    throw new Error("An unexpected error occurred during login. Please try again later.");
   }
 }
+
 
 // Register new user (assuming it sends JSON and doesn't return tokens directly)
 export const register = async (data: RegisterData) => {
   try {
     console.log("register data is:", JSON.stringify(data));
-    // Assuming your backend expects JSON for /auth/register
     const response = await apiClient.post("/auth/register", data);
-    console.log("register response is:" ,JSON.stringify(response));
-
-    return response.data; // Return whatever the backend sends back
+    console.log("register response is:", JSON.stringify(response));
+    return response.data;
   } catch (error: any) {
     console.error("Registration failed:", error);
-    throw error; // Re-throw the error for the UI to handle
+
+    const message = error.response?.data?.detail || error.message;
+
+    // Handle common cases
+    if (error.response?.status === 400) {
+      if (typeof message === "string") {
+        if (message.includes("already exists")) {
+          throw new Error("An account with this email already exists.");
+        }
+        if (message.includes("invalid")) {
+          throw new Error("Invalid registration data. Please check your inputs.");
+        }
+      }
+    }
+
+    // Default fallback
+    throw new Error("Failed to register. Please try again later.");
   }
 }
+
 
 // Request password reset email
 export const requestPasswordReset = async (email: string) => {
