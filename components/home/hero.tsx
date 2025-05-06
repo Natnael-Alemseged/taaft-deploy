@@ -370,7 +370,16 @@ export default function Hero() {
                       <div className="flex items-center justify-center py-8">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
                       </div>
-                    ) : tools.length === 0 ? (
+
+
+                    ) :  searchQuery.length === 0 ? (
+                      <div className="py-6 text-center text-sm text-gray-500">
+                      Start Typing to search
+                      </div>
+                      ) : 
+                    
+                    
+                    tools.length === 0 ? (
                       <div className="py-6 text-center text-sm text-gray-500">
                         No results found.
                       </div>
