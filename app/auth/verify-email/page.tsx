@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react"
 import { CheckCircle, XCircle } from "lucide-react"
 import { verifyEmail } from "@/services/auth-service"
+import { useRouter } from "next/navigation"
 
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState<"success" | "failed" | "loading">("loading")
+  const router = useRouter()
 
   useEffect(() => {
     const verify = async () => {
@@ -19,7 +21,8 @@ export default function VerifyEmailPage() {
   
       try {
         const res = await verifyEmail(token)
-        if (!res.ok) throw new Error()
+        console.log("verify email response is:", JSON.stringify(res.data));
+        if (res.status !== 200) throw new Error()
         setStatus("success")
       } catch {
         setStatus("failed")
@@ -46,6 +49,12 @@ export default function VerifyEmailPage() {
             <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
             <h2 className="mt-4 text-xl font-semibold text-gray-800">Email Verified</h2>
             <p className="mt-2 text-sm text-gray-600">Your email address has been successfully verified.</p>
+            <button
+              onClick={() => router.push('/')}
+              className="mt-6 rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
+            >
+              Go to Home
+            </button>
           </>
         ) : (
           <>

@@ -326,6 +326,6 @@ export const verifyEmail = async (token: string) => {
     },
   });
   console.log("verify email response is:", JSON.stringify(response.data));
-  return response.data;
+  return response;
 };
 

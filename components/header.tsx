@@ -213,9 +213,9 @@ export default function Header() {
                         className="flex items-center space-x-2 text-sm text-[#374151] user-menu-button" // Added class for click outside
                     >
                       <div className="w-8 h-8 rounded-full bg-[#a855f7] text-white flex items-center justify-center">
-                        {user.name ? user.name.charAt(0) : user.email.charAt(0)}
+                        {user.full_name ? user.full_name.charAt(0) : user.email.charAt(0)}
                       </div>
-                      <span className="hidden md:inline">{user.email}</span>
+                      <span className="hidden md:inline">{user.full_name}</span>
                     </button>
 
                     {isUserMenuOpen && (

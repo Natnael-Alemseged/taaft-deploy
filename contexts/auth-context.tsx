@@ -16,6 +16,7 @@ interface User {
   id: string
   name: string
   email: string
+  full_name: string
   [key: string]: any // Allow for other properties
 }
 
@@ -107,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (currentUser) {
         setUser(currentUser)
         localStorage.setItem("user", JSON.stringify(currentUser)) // Store user data
+        console.log("current user id is:", currentUser.id)
       } else {
         // This case indicates login was successful but fetching user failed,
         // which is a critical error. Clean up.
