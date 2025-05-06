@@ -14,14 +14,23 @@ export const getTools = async (params?: {
     const headers: Record<string, string> = {
       Accept: "application/json",
     }
-    let endpoint = "/public/tools/featured"
+    let endpoint = "/public/tools"
+    const apiParams: Record<string, any> = {}
+    if (params?.featured) {
+      if(params?.search){
+        apiParams.q = params.search;
+        endpoint = "/public/tools/featured/search"
+      }else{
+        endpoint = "/public/tools/featured"
+      }
+    }
     if (token) {
       headers["Authorization"] = `Bearer ${token}`
     }
 
-    const apiParams: Record<string, any> = {}
+   
 
-    if (params?.search) {
+    if (params?.search && !params?.featured) {
       apiParams.q = params.search;
       endpoint = "/tools/search" // Use /tools/search if a search term is provided
     }
@@ -36,9 +45,9 @@ export const getTools = async (params?: {
       apiParams.category = params.category
     }
 
-    if (params?.featured) {
-      apiParams.featured = true
-    }
+    // if (params?.featured) {
+    //   apiParams.featured = true
+    // }
 
     const response = await apiClient.get<{ tools: Tool[]; total: number }>(endpoint, {
       params: apiParams,
