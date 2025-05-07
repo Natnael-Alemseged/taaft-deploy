@@ -30,9 +30,17 @@ interface BrowseToolsClientContentProps {
   initialToolsData: ToolsData | null;
   isErrorInitial: boolean;
   isFeaturedPage?: boolean;
+  categoryName?: string;
+  isCategoryPage?: boolean;
 }
 
-export default function BrowseToolsClientContent({ initialToolsData, isErrorInitial, isFeaturedPage = false }: BrowseToolsClientContentProps) {
+export default function BrowseToolsClientContent({ 
+  initialToolsData, 
+  isErrorInitial, 
+  isFeaturedPage = false,
+  categoryName,
+  isCategoryPage = false
+}: BrowseToolsClientContentProps) {
   // --- Hooks ---
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -101,11 +109,13 @@ export default function BrowseToolsClientContent({ initialToolsData, isErrorInit
     isLoading: isLoadingTools,
     isError: isErrorTools,
   } = useTools({
-    category: selectedCategory !== "all-categories" ? selectedCategory : undefined,
+    category: isCategoryPage ? categoryName : selectedCategory !== "all-categories" ? selectedCategory : undefined,
     search: debouncedQuery || undefined,
     page,
     limit,
     featured: isFeaturedPage ? true : undefined,
+    sort_by: isCategoryPage ? 'name' : undefined,
+    sort_order: isCategoryPage ? 'asc' : undefined,
   }) as { data: ToolsData | undefined; isLoading: boolean; isError: boolean }
 
   // Fetch categories data for the dropdown
@@ -221,12 +231,19 @@ export default function BrowseToolsClientContent({ initialToolsData, isErrorInit
         {/* Page Title */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#111827] dark:text-white mb-1">
-            {isFeaturedPage ? "Featured AI Tools" : "Browse AI Tools"}
+            {categoryName 
+              ? `${categoryName} AI Tools`
+              : isFeaturedPage 
+                ? "Featured AI Tools" 
+                : "Browse AI Tools"
+            }
           </h1>
           <p className="text-[#6b7280] dark:text-gray-400">
-            {isFeaturedPage 
-              ? "Discover and explore our featured AI tools"
-              : "Discover and compare the best AI tools for your needs"
+            {categoryName
+              ? `Discover and explore the best ${categoryName} AI tools`
+              : isFeaturedPage
+                ? "Discover and explore our featured AI tools"
+                : "Discover and compare the best AI tools for your needs"
             }
           </p>
         </div>
@@ -240,56 +257,58 @@ export default function BrowseToolsClientContent({ initialToolsData, isErrorInit
             </div>
             <Input
               type="text"
-              placeholder="Search for tools..."
+              placeholder={isCategoryPage ? `Search ${categoryName} tools...` : "Search for tools..."}
               className="pl-10 pr-4 py-2 w-full border border-[#e5e7eb] dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-transparent dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
               value={searchQuery}
               onChange={handleSearchChange}
             />
           </div>
 
-          {/* Category Dropdown */}
-          <div className="relative w-full md:w-48">
-            <button
-              className="w-full flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border border-[#e5e7eb] dark:border-gray-700 rounded-md focus:outline-none text-gray-900 dark:text-white"
-              onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-              disabled={isLoadingCategories || isErrorCategories}
-            >
-              <span>{currentCategoryDisplayName}</span>
-              <ChevronDown
-                className={`h-4 w-4 ml-2 transition-transform ${
-                  showCategoryDropdown ? "rotate-180" : "rotate-0"
-                } text-gray-500 dark:text-gray-400`}
-              />
-            </button>
+          {/* Category Dropdown - Only show if not on a category page */}
+          {!isCategoryPage && (
+            <div className="relative w-full md:w-48">
+              <button
+                className="w-full flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border border-[#e5e7eb] dark:border-gray-700 rounded-md focus:outline-none text-gray-900 dark:text-white"
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                disabled={isLoadingCategories || isErrorCategories}
+              >
+                <span>{currentCategoryDisplayName}</span>
+                <ChevronDown
+                  className={`h-4 w-4 ml-2 transition-transform ${
+                    showCategoryDropdown ? "rotate-180" : "rotate-0"
+                  } text-gray-500 dark:text-gray-400`}
+                />
+              </button>
 
-            {/* Dropdown Menu */}
-            {showCategoryDropdown && (
-              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                <div className="py-1">
-                  {isLoadingCategories ? (
-                    <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">Loading categories...</div>
-                  ) : isErrorCategories ? (
-                    <div className="px-4 py-2 text-sm text-red-600">Error loading categories.</div>
-                  ) : (
-                    categoryDropdownList.map((category) => (
-                      <button
-                        key={category.slug}
-                        onClick={() => handleCategorySelect(category)}
-                        className={`flex items-center justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                          selectedCategory === category.slug ? "font-medium bg-gray-50 dark:bg-gray-700" : ""
-                        }`}
-                      >
-                        <span>{category.name}</span>
-                        {typeof category.count === "number" && (
-                          <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{category.count}</span>
-                        )}
-                      </button>
-                    ))
-                  )}
+              {/* Dropdown Menu */}
+              {showCategoryDropdown && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  <div className="py-1">
+                    {isLoadingCategories ? (
+                      <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">Loading categories...</div>
+                    ) : isErrorCategories ? (
+                      <div className="px-4 py-2 text-sm text-red-600">Error loading categories.</div>
+                    ) : (
+                      categoryDropdownList.map((category) => (
+                        <button
+                          key={category.slug}
+                          onClick={() => handleCategorySelect(category)}
+                          className={`flex items-center justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                            selectedCategory === category.slug ? "font-medium bg-gray-50 dark:bg-gray-700" : ""
+                          }`}
+                        >
+                          <span>{category.name}</span>
+                          {typeof category.count === "number" && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{category.count}</span>
+                          )}
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Tool Count Display */}

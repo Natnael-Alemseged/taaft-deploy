@@ -22,11 +22,13 @@ export function useTools(params?: {
   page?: number
   limit?: number
   featured?: boolean
+  sort_by?: string
+  sort_order?: 'asc' | 'desc'
 }) {
   return useQuery({
-    queryKey: ["tools", params?.category, params?.search, params?.page, params?.limit, params?.featured],
+    queryKey: ["tools", params?.category, params?.search, params?.page, params?.limit, params?.featured, params?.sort_by, params?.sort_order],
     queryFn: () => getTools(params),
-    keepPreviousData: true,         // Prevent flickering on pagination
+    placeholderData: (previousData) => previousData,  // Prevent flickering on pagination
     staleTime: 1000 * 10,           // Consider data fresh for 10 seconds
     refetchOnWindowFocus: false,    // Avoid refetching on focus (optional)
   })

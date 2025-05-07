@@ -8,7 +8,9 @@ export const getTools = async (params?: {
   page?: number
   limit?: number
   featured?: boolean
-}) => {
+  sort_by?: string
+  sort_order?: 'asc' | 'desc'
+}): Promise<{ tools: Tool[]; total: number }> => {
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
     const headers: Record<string, string> = {
@@ -16,7 +18,11 @@ export const getTools = async (params?: {
     }
     let endpoint = "/public/tools"
     const apiParams: Record<string, any> = {}
-    if (params?.featured) {
+
+    // Handle category-specific endpoint
+    if (params?.category && params.category !== "all-categories") {
+      endpoint = `/tools/category/${params.category}`
+    } else if (params?.featured) {
       if(params?.search){
         apiParams.q = params.search;
         endpoint = "/public/tools/featured/search"
@@ -24,13 +30,12 @@ export const getTools = async (params?: {
         endpoint = "/public/tools/featured"
       }
     }
+
     if (token) {
       headers["Authorization"] = `Bearer ${token}`
     }
 
-   
-
-    if (params?.search && !params?.featured) {
+    if (params?.search && !params?.featured && !params?.category) {
       apiParams.q = params.search;
       endpoint = "/tools/search" // Use /tools/search if a search term is provided
     }
@@ -41,13 +46,13 @@ export const getTools = async (params?: {
     const page = params?.page ?? 1
     apiParams.skip = (page - 1) * limit
 
-    if (params?.category && params.category !== "all categories" && params.category !== "all-categories") {
-      apiParams.category = params.category
+    // Add sort parameters if needed
+    if (params?.sort_by) {
+      apiParams.sort_by = params.sort_by
     }
-
-    // if (params?.featured) {
-    //   apiParams.featured = true
-    // }
+    if (params?.sort_order) {
+      apiParams.sort_order = params.sort_order
+    }
 
     const response = await apiClient.get<{ tools: Tool[]; total: number }>(endpoint, {
       params: apiParams,
@@ -59,13 +64,9 @@ export const getTools = async (params?: {
 
   } catch (error) {
     console.error("Error fetching tools:", error)
-    return { tools: [] }
-    // return getMockTools(params)
+    return { tools: [], total: 0 }
   }
 }
-
-
-
 
 // Get a single tool by ID
 export const getToolById = async (id: string): Promise<Tool> => {
@@ -89,13 +90,9 @@ export const getToolById = async (id: string): Promise<Tool> => {
     return response.data
   } catch (error) {
     console.error(`Error fetching tool with ID ${id}:`, error)
-
-    // Return mock data for the specific tool ID
-    // return { tools: [] }
+    throw error // Re-throw the error to be handled by the caller
   }
 }
-
-
 
 // Get featured tools - No static data fallback, only return what API provides
 export const getFeaturedTools = async (limit?: number) => {

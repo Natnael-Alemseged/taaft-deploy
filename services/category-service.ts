@@ -5,6 +5,7 @@ import type { Category } from "@/types/category"
 export const getCategories = async (): Promise<Category[]> => {
   try {
     const response = await apiClient.get("/api/categories")
+    console.log('Categories are',JSON.stringify(response.data));
     return response.data
   } catch (error) {
     console.error("Error fetching categories:", error)

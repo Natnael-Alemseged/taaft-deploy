@@ -10,22 +10,28 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ category }: CategoryCardProps) {
   const linkHref = {
-    pathname: "/categories",
+    pathname: "/category-tools",
     query: { category: category.slug },
   }
+
+  const svgUrl = category.svg
+    ? `${process.env.NEXT_PUBLIC_API_URL}${category.svg}`
+    : null
 
   return (
     <Link href={linkHref} className="block">
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow h-full relative">
         <div className="flex flex-col items-center text-center space-y-2">
           {/* Circular icon background */}
-          <div className="w-16 h-16 bg-[#f5f0ff] dark:bg-gray-700 rounded-full flex items-center justify-center mb-4 overflow-hidden">
-            {category.svg ? (
-              <div
-              dangerouslySetInnerHTML={{ __html: category.svg }}
-              role="img"
-              aria-label={`${category.name} Category Icon`}
-            />
+          <div className="w-11 h-11 bg-[#f5f0ff] dark:bg-gray-700 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+            {svgUrl ? (
+              <Image
+                src={svgUrl}
+                alt={`${category.name} Category Icon`}
+                width={40}
+                height={40}
+                className="object-contain"
+              />
             ) : (
               <Banknote className="text-purple-600 w-6 h-6" />
             )}

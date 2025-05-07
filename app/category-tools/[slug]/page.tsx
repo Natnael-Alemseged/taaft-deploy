@@ -1,3 +1,6 @@
+// app/category/[slug]/page.tsx
+// NO "use client" HERE - This is a Server Component
+
 import React from 'react';
 import { Metadata } from 'next';
 import { getTools } from "@/services/tool-service";
@@ -118,4 +121,4 @@ export default async function CategoryPage({ params }: { params: { slug: string 
             />
         </>
     );
-} 
+}
