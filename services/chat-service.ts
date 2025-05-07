@@ -168,84 +168,216 @@ export const createChatSession = async (title: string): Promise<ChatSession> => 
 
 
 
+// export const sendChatMessage = async (
+//     sessionId: string,
+//     message: string,
+//     model = "gpt4",
+//     systemPrompt = "You are a helpful assistant.",
+//     metadata?: Record<string, any>,
+// ): Promise<{ message: Message; toolRecommendations?: string[]; data?: any }> => {
+//     try {
+//         console.log(`Sending message to session ${sessionId} with model ${model}`)
+
+//         // Create the request payload
+//         const payload = {
+//             message,
+//             model,
+//             system_prompt: systemPrompt,
+//             ...(metadata && { metadata }),
+//         }
+
+//         // Make the API request
+//         const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages/stream`, payload)
+
+//         console.log(`Response received for session ${sessionId}`)
+
+//         const rawResponseMessage = response.data.message
+
+//         console.log("response api is:" + rawResponseMessage)
+
+//         // Extract options if present
+//         let options: string[] = []
+//         const optionsPattern = "options ="
+//         const optionsIndex = rawResponseMessage.indexOf(optionsPattern)
+
+//         if (optionsIndex !== -1) {
+//             // Extract the part after "options ="
+//             const optionsStringRaw = rawResponseMessage.substring(optionsIndex + optionsPattern.length)
+
+// // Trim whitespace from both ends first
+// let cleanedOptionsString = optionsStringRaw.trim()
+
+// // Now remove the leading '[' and trailing ']' if they exist
+// cleanedOptionsString = cleanedOptionsString.replace(/^\[|\]$/g, "").trim()
+
+// // Split by comma, trim, and remove quotes from each option
+// options = cleanedOptionsString
+//     .split(",")
+//     .map((option) => option.trim().replace(/'/g, "").replace(/"/g, ""))
+//     .filter((option) => option.length > 0) // Filter out any empty strings
+// }
+
+// // Clean the message content (remove "options = ..." part)
+// const cleanedMessage =
+//     optionsIndex !== -1 ? rawResponseMessage.substring(0, optionsIndex).trim() : rawResponseMessage.trim()
+
+// return {
+//     message: {
+//         role: "assistant",
+//         content: cleanedMessage,
+//         id: response.data.message_id,
+//         timestamp: new Date(response.data.timestamp),
+//     },
+//     toolRecommendations: options.length > 0 ? options : undefined,
+//     data: response.data, // Include the entire response data
+// }
+// } catch (error: any) {
+//     console.error(`Error sending message to session ${sessionId}:`, error)
+
+//     if (error.response) {
+//         console.error("Error response data:", error.response.data)
+//         console.error("Error response status:", error.response.status)
+//     } else if (error.request) {
+//         console.error("No response received:", error.request)
+//     } else {
+//         console.error("Error message:", error.message)
+//     }
+
+//     throw error
+// }
+// }
+
+import { Message } from "./types"; // Assuming Message type is defined elsewhere
+
+// Define the Message type if not already
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+  id?: string; // Optional ID
+  timestamp?: Date; // Optional timestamp
+  hasSearchResults?: boolean; // Add this property based on UI usage
+  formattedData?: any; // Add this property based on UI usage
+}
+
+
 export const sendChatMessage = async (
     sessionId: string,
     message: string,
     model = "gpt4",
     systemPrompt = "You are a helpful assistant.",
     metadata?: Record<string, any>,
+    onToken?: (token: string) => void // Stream each token
 ): Promise<{ message: Message; toolRecommendations?: string[]; data?: any }> => {
     try {
         console.log(`Sending message to session ${sessionId} with model ${model}`)
 
-        // Create the request payload
-        const payload = {
+        // Correction: Content-Type for the request body is application/json
+        console.log('message body to stream is:'+JSON.stringify({
             message,
             model,
             system_prompt: systemPrompt,
             ...(metadata && { metadata }),
+        }));
+
+        const response = await fetch(`/api/chat/sessions/${sessionId}/messages/stream`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json", // Corrected: Body is JSON
+                // If your server *requires* it, you might add Accept: "text/event-stream"
+            },
+            body: JSON.stringify({
+                message,
+                model,
+                system_prompt: systemPrompt,
+                ...(metadata && { metadata }),
+            }),
+        });
+
+        if (!response.body) throw new Error("No response body for streaming");
+
+        // Use pipeThrough(new TextDecoderStream()) which handles the decoding
+        const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+
+        let rawMessageContent = ""; // Accumulate the raw content for final processing
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            // value is already a string chunk thanks to TextDecoderStream
+            const chunk = value; // Corrected: Use the value directly
+            rawMessageContent += chunk;
+
+            if (onToken) onToken(chunk); // Pass the chunk to the UI handler
         }
 
-        // Make the API request
-        const response = await apiClient.post<ChatCompletionResponse>(`/api/chat/sessions/${sessionId}/messages`, payload)
+        console.log("Streaming complete. Full raw response:", rawMessageContent);
 
-        console.log(`Response received for session ${sessionId}`)
-
-        const rawResponseMessage = response.data.message
-
-        console.log("response api is:" + rawResponseMessage)
-
-        // Extract options if present
-        let options: string[] = []
-        const optionsPattern = "options ="
-        const optionsIndex = rawResponseMessage.indexOf(optionsPattern)
+        // Extract tool recommendations (same logic, applied to the full raw content)
+        let options: string[] = [];
+        const optionsPattern = "options =";
+        const optionsIndex = rawMessageContent.indexOf(optionsPattern);
 
         if (optionsIndex !== -1) {
-            // Extract the part after "options ="
-            const optionsStringRaw = rawResponseMessage.substring(optionsIndex + optionsPattern.length)
+            let optionsStringRaw = rawMessageContent.substring(optionsIndex + optionsPattern.length).trim();
+            optionsStringRaw = optionsStringRaw.replace(/^\[|\]$/g, "").trim();
 
-// Trim whitespace from both ends first
-let cleanedOptionsString = optionsStringRaw.trim()
+            options = optionsStringRaw
+                .split(",")
+                .map((option) => option.trim().replace(/['"]/g, ""))
+                .filter((option) => option.length > 0);
+        }
 
-// Now remove the leading '[' and trailing ']' if they exist
-cleanedOptionsString = cleanedOptionsString.replace(/^\[|\]$/g, "").trim()
+        // Clean the message content by removing the options part if present
+        const cleanedMessage =
+            optionsIndex !== -1 ? rawMessageContent.substring(0, optionsIndex).trim() : rawMessageContent.trim();
 
-// Split by comma, trim, and remove quotes from each option
-options = cleanedOptionsString
-    .split(",")
-    .map((option) => option.trim().replace(/'/g, "").replace(/"/g, ""))
-    .filter((option) => option.length > 0) // Filter out any empty strings
-}
+        // Construct the final message object
+        const finalMessage: Message = {
+            role: "assistant",
+            content: cleanedMessage,
+            timestamp: new Date(),
+            id: `${Date.now()}-${Math.random()}`, // Generate a unique ID for the final message
+            // Note: If your API returns a final message structure with an ID, use that instead
+        };
 
-// Clean the message content (remove "options = ..." part)
-const cleanedMessage =
-    optionsIndex !== -1 ? rawResponseMessage.substring(0, optionsIndex).trim() : rawResponseMessage.trim()
 
-return {
-    message: {
-        role: "assistant",
-        content: cleanedMessage,
-        id: response.data.message_id,
-        timestamp: new Date(response.data.timestamp),
-    },
-    toolRecommendations: options.length > 0 ? options : undefined,
-    data: response.data, // Include the entire response data
-}
-} catch (error: any) {
-    console.error(`Error sending message to session ${sessionId}:`, error)
+        // Assuming your API might return structured data *after* the stream or as a separate part of the final response
+        // This part depends heavily on your backend implementation. The provided code checks response.data.formatted_data
+        // If the API sends this data embedded *within* the stream (e.g., as JSON blocks),
+        // you'd need to parse those blocks out of the `rawMessageContent` during or after the stream.
+        // For now, we'll assume response.data is available *after* the fetch resolves, if the API does that.
+        // If the API only streams text and appends options, `response.data` from the fetch call won't exist as it's handled by the stream reader.
+        // If data *is* sent in the stream (e.g., SSE with different event types), the reading loop needs to parse events.
+        // Let's stick to the current logic where the `response` object *might* contain data properties after the stream, though it's less common with raw streaming.
+        // A typical pattern is the server sending a final JSON payload *after* the text stream, or embedding JSON in the stream itself.
+        // Given the current code extracts options from the *text* stream, it's likely structured data like search results would also need to be parsed from the stream text
+        // or fetched separately. The `response.data` check in the UI suggests the *mutation result* might have this data, which implies the server sends it alongside the stream or after.
+        // Let's assume the server sends the data *after* the stream completes, and it's available somehow through the same fetch response object (less likely for raw streams)
+        // OR, more likely, the `useMutation` wrapper might receive additional data in its `onSuccess` callback if the API returns a final JSON payload after the stream.
+        // Re-reading the UI code, the check `response.data?.formatted_data` happens *after* the `await chatCompletion.mutateAsync`. This implies the `mutateAsync` promise resolves
+        // with an object that *includes* the `message` (from the stream's full content) and potentially `data`. This means the server *might* be closing the stream and *then* sending a JSON response,
+        // or the library/framework on the server side is handling this.
+        // Let's keep the data processing in the UI for now, assuming `response.data` is available there.
 
-    if (error.response) {
-        console.error("Error response data:", error.response.data)
-        console.error("Error response status:", error.response.status)
-    } else if (error.request) {
-        console.error("No response received:", error.request)
-    } else {
-        console.error("Error message:", error.message)
+         // Placeholder for data extraction if needed from rawMessageContent or elsewhere
+         let extractedData: any = null;
+         // Example: If your stream includes JSON lines like `{"type": "data", "payload": {...}}`
+         // You would parse rawMessageContent for these lines.
+         // For now, we rely on the `response.data` passed back from `mutateAsync`.
+
+
+        return {
+            message: finalMessage,
+            toolRecommendations: options.length > 0 ? options : undefined,
+            data: extractedData, // Pass any data extracted from the stream if applicable
+        };
+    } catch (error: any) {
+        console.error(`Error sending message to session ${sessionId}:`, error);
+        throw error;
     }
-
-    throw error
-}
-}
+};
+  
 
 
 

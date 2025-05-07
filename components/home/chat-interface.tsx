@@ -11,6 +11,7 @@ import clsx from "clsx"
 import { useClickOutside } from "@/hooks/use-click-outside"
 import { useChatCompletion, useChatSessions, useChatSessionMessages, useCreateChatSession } from "@/hooks/use-chat"
 import { keywordSearch, type Message } from "@/services/chat-service"
+import { buffer } from "stream/consumers"
 
 interface ChatInterfaceProps {
   isOpen: boolean
@@ -87,6 +88,12 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
   const [showSessions, setShowSessions] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [toolRecommendations, setToolRecommendations] = useState<any[]>([])
+  const [streamingMessage, setStreamingMessage] = useState(''); // Message currently being streamed
+  const [isLoading, setIsLoading] = useState(false); // To show a loading indicator
+  
+
+
+
 
   const chatEndRef = useRef<HTMLDivElement>(null)
   const chatRef = useRef<HTMLDivElement>(null)
@@ -101,6 +108,13 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
     !!activeChatId,
   )
   const createChatSession = useCreateChatSession()
+
+
+
+useEffect(() => {
+  // Scroll to the bottom whenever the streaming message updates
+  chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [streamingMessage]); // Add streamingMessage as a dependency
 
   // Check for existing sessions first
   useEffect(() => {
@@ -220,153 +234,218 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
     }
   }, [isOpen, onClose])
 
-  async function handleDirectSendMessage(content?: string) {
-    const messageContent = content || input.trim()
-    if (!messageContent) return
-
-    setError(null)
-    setToolRecommendations([])
-
-    try {
-      const keywords = messageContent.split(/\s+/)
-      const results = await keywordSearch(keywords)
-
-      console.log("Direct search results:", results)
-
-      // Store results for access in the UI (if needed)
-      if (Array.isArray(results.hits)) {
-        sessionStorage.setItem("chatResponseTools", JSON.stringify(results))
-      }
-
-      // You can render the search as a chat-like message if needed
-      const searchMessage: Message = {
-        role: "assistant",
-        content: `Found ${results.hits.length} result(s) for "${messageContent}".`,
-        hasSearchResults: true,
-        formattedData: results,
-      }
-
-      setMessages((prev) => [...prev, { role: "user", content: messageContent }, searchMessage])
-    } catch (error) {
-      console.error("Error in direct search:", error)
-      setError("Sorry, we couldn’t perform the search. Please try again later.")
-    }
-  }
+  
 
   // Handle sending a message
-  async function handleSendMessage(content?: string) {
-    const messageContent = content || input.trim()
-    if (!messageContent) return
+ // Assuming these are defined in your component's state:
+ // const [messages, setMessages] = useState<Message[]>([]);
+ // const [streamingMessage, setStreamingMessage] = useState('');
+ // const [isLoading, setIsLoading] = useState(false);
+ // const [input, setInput] = useState("");
+ // const [activeChatId, setActiveChatId] = useState<string | null>(null);
+ // const [error, setError] = useState<string | null>(null);
+ // const [toolRecommendations, setToolRecommendations] = useState<any[]>([]);
+ // const createChatSession = useCreateChatSession(); // Assuming this hook provides mutateAsync
+ // const refetchSessions = useChatSessions().refetch; // Assuming this hook provides refetch
+ // const router = useRouter(); // Assuming you are using Next.js router for navigation
+ // const chatEndRef = useRef<HTMLDivElement>(null); // Assuming you have this ref for scrolling
 
-    const userMessage: Message = { role: "user", content: messageContent }
-    setMessages((prev) => [...prev, userMessage])
-    if (!content) setInput("") // Only clear input if it's not a recommendation
-    setError(null)
-    setToolRecommendations([])
+ async function handleSendMessage(content?: string) {
+  // Prevent sending if input is empty or already loading
+  if (!input.trim() && !content) return; // Ensure there's content to send
+  if (isLoading) return;
 
-    try {
-      let chatId = activeChatId
-      if (!chatId) {
-        console.log("No active chat ID, creating new session")
-        try {
-          const sessionTitle = messageContent.substring(0, 50) || "New Chat"
-          const newSession = await createChatSession.mutateAsync(sessionTitle)
-          console.log("New session created:", newSession._id)
-          setActiveChatId(newSession._id)
-          chatId = newSession._id
-          await refetchSessions()
-        } catch (sessionError) {
-          console.error("Failed to create chat session:", sessionError)
-          setError("Failed to create a new chat session. Please try again.")
-          return
-        }
+  const messageContent = content || input.trim();
+  if (!messageContent) return; // Double check after trimming
+
+  // Add the user's message to the main list immediately
+  // Ensure user message also matches the Message interface
+  const userMessage: Message = { role: "user", content: messageContent, id: 'user-' + Date.now() }; // Added id for consistency
+  setMessages((prev) => [...prev, userMessage]);
+
+  // Clear input field if it's not a recommendation being sent
+  if (!content) setInput("");
+
+  // Clear any previous errors and recommendations
+  setError(null);
+  setToolRecommendations([]);
+
+  // --- Set loading state and clear previous streaming message ---
+  setIsLoading(true);
+  setStreamingMessage('');
+
+  try {
+    let chatId = activeChatId;
+
+    // Create a new chat session if one isn't active
+    if (!chatId) {
+      console.log("No active chat ID, creating new session");
+      try {
+        const sessionTitle = messageContent.substring(0, 50) || "New Chat";
+        const newSession = await createChatSession.mutateAsync(sessionTitle);
+        console.log("New session created:", newSession._id);
+        setActiveChatId(newSession._id);
+        chatId = newSession._id;
+        await refetchSessions(); // Refresh the sessions list
+      } catch (sessionError) {
+        console.error("Failed to create chat session:", sessionError);
+        setError("Failed to create a new chat session. Please try again.");
+        setIsLoading(false); // Stop loading on session creation error
+        return; // Stop execution
       }
+    }
 
-      console.log(`Sending message to chat ID: ${chatId}`)
+    console.log(`Sending message to chat ID: ${chatId}`);
 
-      const response = await chatCompletion.mutateAsync({
+    // --- Fetch the streaming response ---
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/sessions/${chatId}/messages/stream`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         sessionId: chatId,
         message: messageContent,
-        model: "gpt4",
-        systemPrompt: "You are a helpful assistant.",
+        model: "gpt4", // Consider making this dynamic
+        systemPrompt: "You are a helpful assistant.", // Consider making this dynamic
       })
+    });
 
-      console.log("Response received:", response)
-
-      // Extract options if present in the message content
-      let options: string[] = []
-      const rawResponseMessage = response.message.content
-      const optionsPattern = "options ="
-      const optionsIndex = rawResponseMessage.indexOf(optionsPattern)
-
-      if (optionsIndex !== -1) {
-        // Extract the part after "options ="
-        const optionsStringRaw = rawResponseMessage.substring(optionsIndex + optionsPattern.length)
-
-        // Trim whitespace from both ends first
-        let cleanedOptionsString = optionsStringRaw.trim()
-
-        // Now remove the leading '[' and trailing ']' if they exist
-        if (cleanedOptionsString.startsWith("[") && cleanedOptionsString.endsWith("]")) {
-          cleanedOptionsString = cleanedOptionsString.substring(1, cleanedOptionsString.length - 1).trim()
-        } else if (cleanedOptionsString.startsWith("[")) {
-          cleanedOptionsString = cleanedOptionsString.substring(1).trim()
-        } else if (cleanedOptionsString.endsWith("]")) {
-          cleanedOptionsString = cleanedOptionsString.substring(0, cleanedOptionsString.length - 1).trim()
-        }
-
-        // Split by comma, trim, and remove quotes from each option
-        options = cleanedOptionsString
-          .split(",")
-          .map((option) => option.trim().replace(/'/g, "").replace(/"/g, "").replace(/\]$/, ""))
-          .filter((option) => option.length > 0) // Filter out any empty strings
-
-        // Set the tool recommendations
-        if (options.length > 0) {
-          setToolRecommendations(options)
-        }
-
-        // Clean the message content (remove "options = ..." part)
-        const cleanedMessage = rawResponseMessage.substring(0, optionsIndex).trim()
-        response.message.content = cleanedMessage
-      }
-
-      // Check for formatted_data in the response
-      if (response.data?.formatted_data && Array.isArray(response.data.formatted_data.hits)) {
-        // Store the formatted data in sessionStorage for the search page to access
-        try {
-          sessionStorage.setItem("chatResponseTools", JSON.stringify(response.data.formatted_data))
-          console.log("Data successfully stored in sessionStorage")
-        } catch (error) {
-          console.error("Error storing data in sessionStorage:", error)
-        }
-
-        // Add the message with a special flag for UI rendering
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...response.message,
-            hasSearchResults: true,
-            formattedData: response.data.formatted_data,
-          },
-        ])
-      } else {
-        setMessages((prev) => [...prev, response.message])
-      }
-
-      // Use the tool recommendations from the response if available
-      if (response.toolRecommendations && response.toolRecommendations.length > 0) {
-        console.log("Tool recommendations received from response:", response.toolRecommendations)
-        setToolRecommendations(response.toolRecommendations)
-      } else if (options.length > 0) {
-        console.log("Tool recommendations extracted from message:", options)
-        setToolRecommendations(options)
-      }
-    } catch (error) {
-      console.error("Error in chat completion:", error)
-      setError("Sorry, I couldn't process your request. Please try again later.")
+    // Check if the HTTP request itself was successful
+    if (!response.ok) {
+      const errorBody = await response.text(); // Attempt to read error body
+      console.error(`HTTP error! status: ${response.status}`, errorBody);
+      setError(`Error from server: ${response.status} ${response.statusText}`);
+      setIsLoading(false); // Stop loading on fetch error
+      return; // Stop execution
     }
+
+    // Ensure response body is available and readable
+    if (!response.body) {
+        console.error("Response body is not a readable stream.");
+        setError("Server did not return a readable stream.");
+        setIsLoading(false);
+        return;
+    }
+
+    // Get the readable stream and decoder
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    // --- Variables for stream processing ---
+    let receivedMessageContent = ''; // Accumulate the full message content
+    let buffer = ''; // Buffer to handle incomplete lines
+    let messageFinalized = false; // Flag to track if the message has been added to the main list
+
+    console.log("Receiving stream data...");
+
+    // --- Loop to continuously read chunks from the stream ---
+    while (true) {
+      const { done, value } = await reader.read();
+
+      // 'done' is true when the stream is finished
+      if (done) {
+        console.log("Stream finished.");
+        // If the message wasn't finalized by an 'end' event, finalize it now
+        if (!messageFinalized && receivedMessageContent) {
+             console.warn("Stream done without explicit 'end' event. Finalizing message.");
+             // --- Corrected assignment for fallback ---
+             setMessages(prevMessages => [...prevMessages, { id: 'bot-' + Date.now(), content: receivedMessageContent, role: "assistant" }]);
+             messageFinalized = true; // Mark as finalized
+        }
+        setStreamingMessage(''); // Ensure streaming state is cleared
+        setIsLoading(false); // Ensure loading is false
+        break; // Exit the chunk reading loop
+      }
+
+      // 'value' is a Uint8Array chunk of data
+      // Decode the chunk and append to the buffer
+      const chunkString = decoder.decode(value, { stream: true });
+      buffer += chunkString;
+
+      // --- Process complete lines from the buffer ---
+      let newlineIndex;
+      while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+        const completeLine = buffer.substring(0, newlineIndex); // Get the complete line
+        buffer = buffer.substring(newlineIndex + 1); // Remove the processed line from the buffer
+
+        const line = completeLine.trim(); // Trim whitespace
+
+        if (line === '') {
+          // Ignore empty lines
+          continue;
+        }
+
+        // Process the complete and trimmed line
+        if (line.startsWith('data: ')) {
+          try {
+            const jsonString = line.substring(6); // Remove "data: " prefix
+            const eventData = JSON.parse(jsonString);
+
+            console.log('Parsed event:', eventData);
+
+            if (eventData.event === 'chunk') {
+              if (eventData.content) { // Check if content exists
+                receivedMessageContent += eventData.content;
+                // Update the state that displays the *currently streaming* message
+                // This triggers UI re-render as data comes in
+                setStreamingMessage(receivedMessageContent);
+              }
+            } else if (eventData.event === 'end') {
+              console.log('End event received:', eventData);
+              // --- Finalize the message when the 'end' event is received ---
+              // Add the complete accumulated message to the main messages list
+              // Use eventData.message_id if available, otherwise generate one
+              // --- Corrected assignment for 'end' event ---
+              setMessages(prevMessages => [...prevMessages, { id: eventData.message_id || 'bot-' + Date.now(), content: receivedMessageContent, role: "assistant" }]);
+              setStreamingMessage(''); // Clear the temporary streaming state
+              setIsLoading(false); // Stop loading
+              messageFinalized = true; // Mark as finalized
+
+              // If the 'end' event guarantees no more data, you can exit the function
+              // immediately here.
+              // return; // Uncomment if 'end' means stop processing stream immediately
+
+            }
+            // Handle other event types if your API sends them (e.g., 'tool_start', 'tool_output')
+            // You would update other state variables (like toolRecommendations) here
+            // based on the eventData.event type.
+            // Example for tool recommendations (adjust based on actual API response structure):
+            // if (eventData.event === 'tool_recommendations' && eventData.recommendations) {
+            //   setToolRecommendations(eventData.recommendations);
+            // }
+
+          } catch (e) {
+            console.error('Failed to parse JSON line:', line, e);
+            // Decide how to handle a parsing error - maybe show an error message
+            // setError("Error processing streamed data.");
+            // setIsLoading(false);
+            // reader.cancel(); // Abort the stream
+            // return; // Exit the async function
+          }
+        } else {
+          console.warn('Ignoring unexpected line format:', line);
+          // Handle non-'data:' lines if necessary (e.g., comments starting with ':')
+        }
+      } // End of while loop for processing lines in buffer
+
+      // Any data remaining in the buffer is an incomplete line, which will be
+      // processed when the next chunk arrives.
+
+    } // End of while loop for reading chunks from reader
+
+    // This part is only reached if the loop finishes via 'done' and no 'return' was hit in 'end'.
+    // The fallback logic inside the 'done' check handles the final state updates.
+
+
+  } catch (error) {
+    // This catch block handles errors during fetch or stream reading
+    console.error("Error in chat completion:", error);
+    setError("Sorry, I couldn't process your request. Please try again later.");
+    setStreamingMessage(''); // Clear any partial streaming message on error
+    setIsLoading(false); // Stop loading on error
   }
+}
 
   // Handle selecting a chat session
   const handleSelectSession = (sessionId: string) => {
@@ -563,6 +642,37 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                 </div>
               ))
             )}
+
+               {/* --- MOVE THESE BLOCKS INSIDE THIS DIV --- */}
+               {messages.map((message, index) => (
+  <div key={index} className="mb-4 flex justify-start">
+    {message.role === "assistant" && index === 0 && (
+      <div className="mb-1 text-xs text-gray-600 font-medium absolute -top-5 left-0">AI Assistant</div>
+    )}
+    <div
+      className={clsx(
+        "rounded-lg p-3 max-w-[80%]",
+        message.role === "user" ? "bg-purple-600 text-white ml-auto" : "bg-gray-100 text-gray-800",
+        message.role === "assistant" && index === 0 && "relative mt-5",
+      )}
+    >
+      {message.content}
+    </div>
+  </div>
+))}
+
+{/* Streaming Message */}
+{isLoading && streamingMessage && (
+  <div className="mb-4 flex justify-start">
+    <div className="rounded-lg p-3 max-w-[80%] bg-gray-100 text-gray-800">
+      {streamingMessage}
+      <span className="cursor">|</span> {/* Optional: add a typing cursor */}
+    </div>
+  </div>
+)}
+
+            {/* --- END OF MOVED BLOCKS --- */}
+
             {chatCompletion.isPending && (
               <div className="mr-auto max-w-[80%]">
                 <div className="flex items-center space-x-2 rounded-lg bg-gray-100 p-3 text-gray-800">
@@ -580,6 +690,9 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
             )}
             <div ref={chatEndRef} />
           </div>
+
+       
+       
 
           {/* Tool Recommendations */}
           {toolRecommendations.length > 0 && (
@@ -632,17 +745,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
                 Send <Send className="ml-1 h-4 w-4" />
                 <span className="sr-only">Send message</span>
               </Button>
-              {/* <Button
-                                onClick={() => {
-                                    handleDirectSendMessage()
-                                }}
-                                className="rounded-full bg-gray-200 px-3 py-2 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:pointer-events-none"
-                                disabled={!input.trim()}
-                                title="Search directly"
-                            >
-                                <Search className="h-4 w-4" />search directly
-                                <span className="sr-only">Search directly</span>
-                            </Button> */}
+       
             </div>
           </div>
         </div>

@@ -5,28 +5,62 @@ import { useQueryClient } from "@tanstack/react-query"; // Assuming useQueryClie
 
 
 // Hook for sending messages to chat API
+// export function useChatCompletion() {
+//   return useMutation({
+//     mutationFn: ({
+//                    sessionId,
+//                    message,
+//                    model = "gpt4",
+//                    systemPrompt = "You are a helpful assistant.",
+//                    metadata,
+//                    isDirectSearch = false, // Added isDirectSearch parameter here
+//                  }: {
+//       sessionId: string
+//       message: string
+//       model?: string
+//       systemPrompt?: string
+//       metadata?: Record<string, any>
+//       isDirectSearch?: boolean // Added isDirectSearch to the input type
+//     }) => sendChatMessage(sessionId, message, model, systemPrompt, metadata), // <-- Pass isDirectSearch here
+//     onError: (error) => {
+//       console.error("Failed to send message:", error)
+//     },
+//   })
+// }
+
 export function useChatCompletion() {
   return useMutation({
     mutationFn: ({
-                   sessionId,
-                   message,
-                   model = "gpt4",
-                   systemPrompt = "You are a helpful assistant.",
-                   metadata,
-                   isDirectSearch = false, // Added isDirectSearch parameter here
-                 }: {
+      sessionId,
+      message,
+      model = "gpt4",
+      systemPrompt = "You are a helpful assistant.",
+      metadata,
+      isDirectSearch = false, // still here if needed
+      onToken, // 👈 NEW: support streaming updates
+    }: {
       sessionId: string
       message: string
       model?: string
       systemPrompt?: string
       metadata?: Record<string, any>
-      isDirectSearch?: boolean // Added isDirectSearch to the input type
-    }) => sendChatMessage(sessionId, message, model, systemPrompt, metadata, isDirectSearch), // <-- Pass isDirectSearch here
+      isDirectSearch?: boolean
+      onToken?: (token: string) => void // 👈 NEW: token streaming callback
+    }) =>
+      sendChatMessage(
+        sessionId,
+        message,
+        model,
+        systemPrompt,
+        metadata,
+        onToken // 👈 pass the streaming handler to the API call
+      ),
     onError: (error) => {
       console.error("Failed to send message:", error)
     },
   })
 }
+
 
 // Hook for fetching user's chat sessions with pagination
 export function useChatSessions(skip = 0, limit = 20) {
