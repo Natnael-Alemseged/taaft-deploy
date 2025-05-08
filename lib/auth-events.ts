@@ -7,7 +7,7 @@ let lastEventTime = 0
 const DEBOUNCE_TIME = 1000 // ms
 let activeModalId: string | null = null
 
-export function showLoginModal(previousRoute?: string) {
+export function showLoginModal(previousRoute?: string,onCloseCallback?: () => void) {
   if (typeof window !== "undefined") {
     if (activeModalId) {
       console.log("Modal already active, skipping")
@@ -30,6 +30,7 @@ export function showLoginModal(previousRoute?: string) {
           onClose: () => {
             if (activeModalId === modalId) {
               activeModalId = null
+              onCloseCallback?.() // Call the callback when modal closes
             }
           }
         }
