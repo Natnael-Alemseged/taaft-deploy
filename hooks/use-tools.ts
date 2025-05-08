@@ -25,6 +25,7 @@ export function useTools(params?: {
   sort_by?: string
   sort_order?: 'asc' | 'desc'
 }) {
+  console.log('Calling gettools from useTools hook');
   return useQuery({
     queryKey: ["tools", params?.category, params?.search, params?.page, params?.limit, params?.featured, params?.sort_by, params?.sort_order],
     queryFn: () => getTools(params),

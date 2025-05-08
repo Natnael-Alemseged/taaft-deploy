@@ -31,6 +31,7 @@ interface BrowseToolsClientContentProps {
   isErrorInitial: boolean;
   isFeaturedPage?: boolean;
   categoryName?: string;
+  categorySlug?: string;
   isCategoryPage?: boolean;
 }
 
@@ -39,6 +40,7 @@ export default function BrowseToolsClientContent({
   isErrorInitial, 
   isFeaturedPage = false,
   categoryName,
+  categorySlug,
   isCategoryPage = false
 }: BrowseToolsClientContentProps) {
   // --- Hooks ---
@@ -109,7 +111,7 @@ export default function BrowseToolsClientContent({
     isLoading: isLoadingTools,
     isError: isErrorTools,
   } = useTools({
-    category: isCategoryPage ? categoryName : selectedCategory !== "all-categories" ? selectedCategory : undefined,
+    category: isCategoryPage ? categorySlug : selectedCategory !== "all-categories" ? selectedCategory : undefined,
     search: debouncedQuery || undefined,
     page,
     limit,

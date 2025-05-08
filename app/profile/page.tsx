@@ -7,14 +7,18 @@ import Header from "@/components/header"
 import Footer from "@/components/ui/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { User, Mail, Settings, BookmarkIcon } from "lucide-react"
-import { changeUserData } from "@/services/auth-service" // Make sure this exists
+import { changeUserData } from "@/services/auth-service"
 
 export default function ProfilePage() {
   const { user, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
-  const [fullName, setFullName] = useState("")
+  const [tab, setTab] = useState<"profile" | "saved">("profile")
+
+  const [username, setUsername] = useState("")
+  const [bio, setBio] = useState("")
+  const [savedTools, setSavedTools] = useState<any[]>([])
+
   const [isSaving, setIsSaving] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
@@ -22,22 +26,39 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/")
-    } else if (user?.full_name) {
-      setFullName(user.full_name)
+    } else if (user) {
+      setUsername(user.username || "")
+      setBio(user.bio || "")
     }
   }, [isAuthenticated, isLoading, router, user])
+
+  useEffect(() => {
+    if (tab === "saved") {
+      fetchSavedTools()
+    }
+  }, [tab])
 
   const handleSave = async () => {
     setIsSaving(true)
     setSuccessMessage("")
     setErrorMessage("")
     try {
-      await changeUserData({ full_name: fullName })
+      await changeUserData({ username, bio })
       setSuccessMessage("Profile updated successfully.")
     } catch (error) {
       setErrorMessage("Failed to update profile.")
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const fetchSavedTools = async () => {
+    try {
+      const res = await fetch("/api/saved-tools")
+      const data = await res.json()
+      setSavedTools(data)
+    } catch (error) {
+      console.error("Failed to fetch saved tools.")
     }
   }
 
@@ -49,73 +70,81 @@ export default function ProfilePage() {
     )
   }
 
-  if (!isAuthenticated) {
-    return null // Will redirect in useEffect
-  }
-
   return (
     <div className="min-h-screen bg-[#f9fafb]">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-4 py-12">
-        <div>
-          {/* <h1 className="text-3xl font-bold text-[#111827] mb-8">My Profile</h1> */}
+      <main className="max-w-7xl mx-auto px-4 py-12">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar */}
+          <div className="w-full md:w-1/4 space-y-6">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex flex-col items-center">
+                <div className="h-16 w-16 bg-[#f3e8ff] text-[#7c3aed] rounded-full flex items-center justify-center text-xl font-medium mb-4">
+                  {user?.username?.[0]?.toUpperCase() || "U"}
+                </div>
+                <h2 className="text-lg font-semibold">{user?.username || "username"}</h2>
+                <p className="text-sm text-gray-500">{user?.email}</p>
+                <p className="mt-2 text-sm text-gray-500 text-center">{bio || "Technology enthusiast and explorer"}</p>
+              </div>
+            </div>
+          </div>
 
-          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8"> */}
-            {/* Sidebar */}
-            {/* <div className="md:col-span-1"> 
-              <Card>
-                <CardHeader className="pb-4">
-                  <CardTitle>Account</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer text-[#111827]">
-                    <User className="mr-2 h-5 w-5 text-[#a855f7]" />
-                    <span>Profile</span>
-                  </div>
-                  <div className="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer text-[#6b7280]">
-                    <BookmarkIcon className="mr-2 h-5 w-5 text-[#6b7280]" />
-                    <span>Saved Tools</span>
-                  </div>
-                  <div className="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer text-[#6b7280]">
-                    <Settings className="mr-2 h-5 w-5 text-[#6b7280]" />
-                    <span>Settings</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div> */}
+          {/* Main Content */}
+          <div className="w-full md:w-3/4 space-y-6">
+            {/* Tabs at the top */}
+            <div className="flex space-x-4 border-b border-gray-200 pb-2">
+              <button
+                className={`pb-2 px-1 ${tab === "profile" ? "text-[#a855f7] border-b-2 border-[#a855f7]" : "text-gray-500 hover:text-gray-700"}`}
+                onClick={() => setTab("profile")}
+              >
+                Profile Settings
+              </button>
+              <button
+                className={`pb-2 px-1 ${tab === "saved" ? "text-[#a855f7] border-b-2 border-[#a855f7]" : "text-gray-500 hover:text-gray-700"}`}
+                onClick={() => setTab("saved")}
+              >
+                Saved Tools
+              </button>
+            </div>
 
-            {/* Main Content */}
-            <div className="md:col-span-2">
-              <Card>
+            {tab === "profile" ? (
+              <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle>Personal Information</CardTitle>
+                  <CardTitle className="text-xl">Profile Settings</CardTitle>
+                  <p className="text-sm text-gray-500">Update your profile information and preferences.</p>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-[#6b7280]">Full Name</label>
-                    <div className="flex items-center">
-                      <User className="mr-2 h-5 w-5 text-[#6b7280]" />
-                      <input
-                        type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="w-full p-2 border border-[#e5e7eb] rounded-md"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Username</h3>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-full p-2 border border-gray-200 rounded-md bg-gray-50"
+                    />
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-[#6b7280]">Email Address</label>
-                    <div className="flex items-center">
-                      <Mail className="mr-2 h-5 w-5 text-[#6b7280]" />
-                      <input
-                        type="email"
-                        value={user?.email || ""}
-                        className="w-full p-2 border border-[#e5e7eb] rounded-md"
-                        readOnly
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Email</h3>
+                    <input
+                      type="email"
+                      value={user?.email || ""}
+                      className="w-full p-2 border border-gray-200 rounded-md bg-gray-100"
+                      readOnly
+                    />
+                    <p className="text-xs text-gray-500">Contact support to change your email.</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Bio</h3>
+                    <input
+                      type="text"
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      className="w-full p-2 border border-gray-200 rounded-md"
+                      placeholder="Technology enthusiast and explorer"
+                    />
                   </div>
 
                   {successMessage && <p className="text-green-600 text-sm">{successMessage}</p>}
@@ -130,8 +159,28 @@ export default function ProfilePage() {
                   </Button>
                 </CardContent>
               </Card>
-            </div>
-          {/* </div> */}
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Saved Tools</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {savedTools.length === 0 ? (
+                    <p className="text-sm text-gray-500">No saved tools found.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {savedTools.map((tool, index) => (
+                        <li key={index} className="p-3 border rounded-md bg-white">
+                          <h3 className="font-medium">{tool.name}</h3>
+                          <p className="text-sm text-gray-500">{tool.description}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </main>
     </div>

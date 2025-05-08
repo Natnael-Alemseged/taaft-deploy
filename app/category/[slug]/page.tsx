@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { getTools } from "@/services/tool-service";
 import BrowseToolsClientContent from "@/components/BrowseToolsClientContent";
 import type { Tool } from "@/types/tool";
+import { useTools } from '@/hooks/use-tools';
 
 // Define metadata for better SEO
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -84,36 +85,38 @@ export default async function CategoryPage({ params }: { params: { slug: string 
     let initialToolsData: ToolsData | null = null;
     let isError = false;
 
-    try {
-        // Use the category-specific endpoint with default sorting
-        initialToolsData = await getTools({ 
-            category: params.slug,
-            sort_by: 'name',
-            sort_order: 'asc'
-        });
-    } catch (error) {
-        console.error("Server failed to fetch category tools data:", error);
-        isError = true;
-    }
+    // try {
+    //     // Use the category-specific endpoint with default sorting
+    //     console.log('calling gettools from category page');
+    //     initialToolsData = await useTools({ 
+    //         category: params.slug,
+    //         sort_by: 'name',
+    //         sort_order: 'asc'
+    //     });
+    // } catch (error) {
+    //     console.error("Server failed to fetch category tools data:", error);
+    //     isError = true;
+    // }
 
     // Generate schema using the data fetched on the server
-    const schemaMarkup = generateToolsSchema(initialToolsData, categoryName);
+    // const schemaMarkup = generateToolsSchema(initialToolsData, categoryName);
 
     return (
         <>
-            {/* Inject Schema.org JSON-LD in the server-rendered HTML */}
+            {/* Inject Schema.org JSON-LD in the server-rendered HTML
             {schemaMarkup && (
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: schemaMarkup }}
                 />
-            )}
+            )} */}
 
             {/* Render the Client Component */}
             <BrowseToolsClientContent
                 initialToolsData={initialToolsData}
                 isErrorInitial={isError}
                 categoryName={categoryName}
+                categorySlug={params.slug}
                 isCategoryPage={true}
             />
         </>

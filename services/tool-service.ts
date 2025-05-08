@@ -22,6 +22,7 @@ export const getTools = async (params?: {
     // Handle category-specific endpoint
     if (params?.category && params.category !== "all-categories") {
       endpoint = `/tools/category/${params.category}`
+      console.log("endpoint for category is", endpoint)
     } else if (params?.featured) {
       if(params?.search){
         apiParams.q = params.search;
@@ -54,12 +55,14 @@ export const getTools = async (params?: {
       apiParams.sort_order = params.sort_order
     }
 
+    console.log("apiParams", JSON.stringify(apiParams, null, 2))
+
     const response = await apiClient.get<{ tools: Tool[]; total: number }>(endpoint, {
       params: apiParams,
       headers,
     })
 
-    console.log(`Fetched from ${endpoint}:`,  JSON.stringify(response.data, null, 2))
+    console.log(`Fetched tools from ${endpoint}:`,  JSON.stringify(response.data, null, 2))
     return response.data
 
   } catch (error) {
