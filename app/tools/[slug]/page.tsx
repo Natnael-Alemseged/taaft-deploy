@@ -18,6 +18,7 @@ import { getToolByUniqueId, getToolByUniqueName } from "@/services/tool-detail-s
 import { useQueryClient } from "@tanstack/react-query" // Assuming React Query is used
 import Script from "next/script" // Add this import for schema markup
 import { showLoginModal } from "@/lib/auth-events"
+import { ShareButtonWithPopover } from "@/components/ShareButtonWithPopover"
 
 // Add TypeScript interfaces
 interface Tool {
@@ -219,31 +220,23 @@ export default function ToolDetail() {
 
 
   // Handle save toggle
-  const handleSaveToggle = () => {
-    // Check if authenticated and tool exists before attempting to save/unsave
-    if (!isAuthenticated || !safeTool) {
-        // If not authenticated, trigger the login modal and return
-        showLoginModal(router.asPath, () => {
-          // This callback will be executed when the modal is closed
-          router.push('/') // Redirect to home
-        });
-        return;
+const handleSaveToggle = (toolId: string, savedByUser: boolean) => {
+ 
+
+  // Optimistic update
+  queryClient.setQueryData(["tool", toolId], (oldTool: Tool | undefined) => {
+    if (oldTool) {
+      return { ...oldTool, savedByUser: !oldTool.savedByUser };
     }
+    return oldTool;
+  });
 
-    // Optimistically update the UI
-    queryClient.setQueryData(["tool", slug], (oldTool: Tool | undefined) => {
-      if (oldTool) {
-        return { ...oldTool, savedByUser: !oldTool.savedByUser };
-      }
-      return oldTool;
-    });
-
-    if (safeTool?.savedByUser) {
-      unsaveTool.mutate(safeTool.id) // Use safeTool.id
-    } else {
-      saveTool.mutate(safeTool.id) // Use safeTool.id
-    }
-  }
+  if (savedByUser) {
+    unsaveTool.mutate(toolId)
+  } else {
+    saveTool.mutate(toolId)
+  }
+}
 
   const getBadgeClass = (label: string) => {
     switch (label) {
@@ -440,9 +433,7 @@ export default function ToolDetail() {
                           <button className="p-1 border border-[#e5e7eb] rounded">
                             <Bookmark className="w-3 h-3 text-[#6b7280]" />
                           </button>
-                          <button className="p-1 border border-[#e5e7eb] rounded">
-                            <Share2 className="w-3 h-3 text-[#6b7280]" />
-                          </button>
+                          <ShareButtonWithPopover itemLink={`/tools/${similarTool.id}`} />
                         </div>
                         <Button
                           className="bg-[#a855f7] hover:bg-[#9333ea] text-white text-xs h-7 rounded-md flex items-center"
@@ -522,17 +513,12 @@ export default function ToolDetail() {
   
               <div className="flex items-center justify-between mt-8">
                 <button
-                  className={`p-2 border border-[#e5e7eb] rounded-lg ${
-                    safeTool?.savedByUser ? "text-purple-600" : "text-gray-600"
-                  } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={handleSaveToggle}
-                  disabled={!isAuthenticated}
+                  className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
+                  onClick={() => handleSaveToggle(tool.unique_id, !!tool.savedByUser)}
                 >
-                  <Bookmark className="w-5 h-5" fill={safeTool?.savedByUser ? "currentColor" : "none"} />
+                  <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
                 </button>
-                <button className="p-2 border border-[#e5e7eb] rounded-lg">
-                  <Share2 className="w-5 h-5 text-[#6b7280]" />
-                </button>
+                <ShareButtonWithPopover itemLink={`/tools/${tool.id}`} />
               </div>
             </div>
           </div>

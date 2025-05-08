@@ -148,7 +148,7 @@ export const createChatSession = async (title: string): Promise<ChatSession> => 
             title: title || "New Chat", // Use default title if empty
             user_id: userId,
             // Include other default session parameters if required by your API
-            model: "gpt4", // Example default model
+            // model: "gpt4", // Example default model
             // system_prompt: "You are a helpful assistant.", // Example default prompt
         })
 

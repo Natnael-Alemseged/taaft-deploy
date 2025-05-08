@@ -105,7 +105,8 @@ POST https://taaft-backend.onrender.com/api/chat/sessions
 Content-Type: application/json
 
 {
-  "title": "My New Chat Session"
+  "title": "My New Chat Session",
+  "user_id":"6819f60178c01672e16ca975"
 }
 
 <> 2025-04-24T231102.201.json

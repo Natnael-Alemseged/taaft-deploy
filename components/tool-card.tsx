@@ -13,6 +13,8 @@ import { useSaveTool, useUnsaveTool } from "@/hooks/use-tools"
 import { robotSvg } from "@/lib/reusable_assets"
 import { SignInModal } from "@/components/home/sign-in-modal"
 import { useState } from "react"
+import { showLoginModal } from "@/lib/auth-events"
+import { useQueryClient } from "@tanstack/react-query" // Assuming React Query is used
 
 interface ToolCardProps {
   tool: Tool
@@ -51,50 +53,36 @@ export default function ToolCard({ tool }: ToolCardProps) {
   const pathname = usePathname()
   const saveTool = useSaveTool()
   const unsaveTool = useUnsaveTool()
-  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false)
-  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false)
-  const [previousRoute, setPreviousRoute] = useState<string | undefined>()
+  const queryClient = useQueryClient()
 
-  const openSignInModal = () => {
-    setIsSignUpModalOpen(false)
-    setIsSignInModalOpen(true)
-  }
-
-  const openSignUpModal = () => {
-    setIsSignInModalOpen(false)
-    setIsSignUpModalOpen(true)
-  }
-
-  const closeAllModals = () => {
-    setIsSignInModalOpen(false)
-    setIsSignUpModalOpen(false)
-    setPreviousRoute(undefined)
-  }
-
-  // Link to the individual tool detail page
-  const toolLinkHref = `/tools/${tool.id}` // Assuming /tools/[id] route
-
-  // Handle click on the tool link
   const handleToolClick = (e: React.MouseEvent) => {
     if (!isAuthenticated) {
       e.preventDefault()
-      setPreviousRoute(pathname)
-      openSignInModal()
+      showLoginModal(pathname, () => {
+        router.push('/')
+      })
     }
   }
 
   const handleSaveToggle = (toolId: string, savedByUser: boolean) => {
     if (!isAuthenticated) {
-      setPreviousRoute(pathname)
-      openSignInModal()
+      showLoginModal(pathname, () => {
+        router.push('/')
+      })
       return
     }
 
+    // Optimistic update
+    queryClient.setQueryData(["tool", toolId], (oldTool: Tool | undefined) => {
+      if (oldTool) {
+        return { ...oldTool, savedByUser: !oldTool.savedByUser };
+      }
+      return oldTool;
+    });
+
     if (savedByUser) {
-      tool.savedByUser = false
       unsaveTool.mutate(toolId)
     } else {
-      tool.savedByUser = true
       saveTool.mutate(toolId)
     }
   }
@@ -106,12 +94,6 @@ export default function ToolCard({ tool }: ToolCardProps) {
 
   return (
     <>
-      <SignInModal 
-        isOpen={isSignInModalOpen} 
-        onClose={closeAllModals} 
-        onSwitchToSignUp={openSignUpModal}
-        previousRoute={previousRoute}
-      />
       <Card
         key={tool.id}
         className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 shadow-lg w-full mx-auto"
@@ -132,14 +114,14 @@ export default function ToolCard({ tool }: ToolCardProps) {
             <span className="flex items-center py-3">
               {tool.image?? robotSvg}
               <h3 className="mb-1 text-lg font-semibold text-gray-900 pl-2"> 
-                {tool.name.length > 30 ? `${tool.name.slice(0, 1)}...` : tool.name}
+                {tool.name.length > 30 ? `${tool.name.slice(0, 20)}...` : tool.name}
                 </h3>
             </span>
             <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
   {tool.categories && tool.categories.length !== 0
     ? (() => {
         const categoryText = tool.categories[0].name;
-        return categoryText.length > 20 ? `${categoryText.slice(0, 20)}...` : categoryText;
+        return categoryText.length > 15 ? `${categoryText.slice(0, 15)}...` : categoryText;
       })()
     : null}
 </span>
@@ -154,8 +136,14 @@ export default function ToolCard({ tool }: ToolCardProps) {
              
 
                 return (
-                  <span key={index} className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-600">
-                    {feature}
+                  <span
+    key={index}
+    className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-600 cursor-help"
+    title={feature} // <-- Added this line
+>
+                    { feature.length > 15 ? `${feature.slice(0, 10)}...` : feature
+                    // feature
+                    }
                   </span>
                 )
               })}
@@ -178,7 +166,9 @@ export default function ToolCard({ tool }: ToolCardProps) {
                 onClick={() => {
                   if (!isAuthenticated) {
                     // Use the shared showLoginModal function
-                    openSignInModal()
+                    showLoginModal(pathname, () => {
+                      router.push('/')
+                    })
                   } else {
                     // Navigate to tool detail page if authenticated
                     window.location.href = `/tools/${tool.id}`

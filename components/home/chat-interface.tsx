@@ -90,7 +90,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
   const [toolRecommendations, setToolRecommendations] = useState<any[]>([])
   const [streamingMessage, setStreamingMessage] = useState(''); // Message currently being streamed
   const [isLoading, setIsLoading] = useState(false); // To show a loading indicator
-  
+  const [conversationalRecommendations, setConversationalRecommendations] = useState<string[]>([]); // New state for conversational recommendations
 
 
 
@@ -269,6 +269,7 @@ useEffect(() => {
   // Clear any previous errors and recommendations
   setError(null);
   setToolRecommendations([]);
+  setConversationalRecommendations([]); // Clear previous conversational recommendations
 
   // --- Set loading state and clear previous streaming message ---
   setIsLoading(true);
@@ -336,6 +337,8 @@ useEffect(() => {
     let receivedMessageContent = ''; // Accumulate the full message content
     let buffer = ''; // Buffer to handle incomplete lines
     let messageFinalized = false; // Flag to track if the message has been added to the main list
+    let accumulatedFormattedData: any = null; // To accumulate formatted data if it comes before 'end'
+    let accumulatedConversationalRecommendations: string[] = []; // To accumulate conversational recommendations
 
     console.log("Receiving stream data...");
 
@@ -353,6 +356,9 @@ useEffect(() => {
              setMessages(prevMessages => [...prevMessages, { id: 'bot-' + Date.now(), content: receivedMessageContent, role: "assistant" }]);
              messageFinalized = true; // Mark as finalized
         }
+        if (accumulatedConversationalRecommendations.length > 0) {
+          setConversationalRecommendations(accumulatedConversationalRecommendations);
+      }
         setStreamingMessage(''); // Ensure streaming state is cleared
         setIsLoading(false); // Ensure loading is false
         break; // Exit the chunk reading loop
@@ -368,6 +374,8 @@ useEffect(() => {
       while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
         const completeLine = buffer.substring(0, newlineIndex); // Get the complete line
         buffer = buffer.substring(newlineIndex + 1); // Remove the processed line from the buffer
+
+
 
         const line = completeLine.trim(); // Trim whitespace
 
@@ -385,13 +393,54 @@ useEffect(() => {
             console.log('Parsed event:', eventData);
 
             if (eventData.event === 'chunk') {
-              if (eventData.content) { // Check if content exists
+              if (eventData.content) {
+            
+                // Accumulator for options content
+                if (eventData.content.startsWith('options')) {
+                  accumulatedConversationalRecommendations = []; // Reset accumulator
+                  buffer = ''; // Clear buffer to start fresh
+                }
+            
+                // Accumulate content until the ']' marker is found
+                if (accumulatedConversationalRecommendations !== null) {
+                  buffer += eventData.content;
+            
+                  // Check if the ']' marker has been reached
+                  if (buffer.includes("']")) {
+                    // Extract content within the brackets
+                    const optionsString = buffer.substring(buffer.indexOf("[") + 1, buffer.indexOf("]"));
+                    const recommendations = optionsString
+                      .split("', '")
+                      .map((item) => item.trim().replace(/'/g, ""))
+                      .filter((item) => item !== "");
+            
+                    // Update the state with the parsed recommendations
+                    setConversationalRecommendations(recommendations);
+            
+                    // Reset buffer and accumulator
+                    buffer = '';
+                    accumulatedConversationalRecommendations = [];
+                  }
+                }
+            
+                // Continue accumulating streaming message content
                 receivedMessageContent += eventData.content;
-                // Update the state that displays the *currently streaming* message
-                // This triggers UI re-render as data comes in
                 setStreamingMessage(receivedMessageContent);
               }
-            } else if (eventData.event === 'end') {
+                        
+
+            }  else if (eventData.event === 'formatted_data') {
+              console.log('Formatted data event received:', eventData);
+           
+              // Check if the data has a 'hits' array (tool recommendations)
+              if (eventData.data && eventData.data.hits && Array.isArray(eventData.data.hits)) {
+              setToolRecommendations(eventData.data.hits);
+                               accumulatedFormattedData = eventData.data; // Store for the final message
+              console.log("Tool recommendations received and stored.");
+              }
+            }
+            
+            else if (eventData.event === 'end') {
               console.log('End event received:', eventData);
               // --- Finalize the message when the 'end' event is received ---
               // Add the complete accumulated message to the main messages list
@@ -407,13 +456,7 @@ useEffect(() => {
               // return; // Uncomment if 'end' means stop processing stream immediately
 
             }
-            // Handle other event types if your API sends them (e.g., 'tool_start', 'tool_output')
-            // You would update other state variables (like toolRecommendations) here
-            // based on the eventData.event type.
-            // Example for tool recommendations (adjust based on actual API response structure):
-            // if (eventData.event === 'tool_recommendations' && eventData.recommendations) {
-            //   setToolRecommendations(eventData.recommendations);
-            // }
+     
 
           } catch (e) {
             console.error('Failed to parse JSON line:', line, e);
@@ -429,8 +472,7 @@ useEffect(() => {
         }
       } // End of while loop for processing lines in buffer
 
-      // Any data remaining in the buffer is an incomplete line, which will be
-      // processed when the next chunk arrives.
+
 
     } // End of while loop for reading chunks from reader
 
@@ -452,6 +494,7 @@ useEffect(() => {
     setActiveChatId(sessionId)
     setShowSessions(false)
     setToolRecommendations([])
+    setConversationalRecommendations([]); // Clear conversational recommendations
   }
 
   // Handle creating a new chat
@@ -467,6 +510,7 @@ useEffect(() => {
       // ])
       setShowSessions(false)
       setToolRecommendations([])
+      setConversationalRecommendations([]); // Clear conversational recommendations for new chat
       await refetchSessions()
     } catch (error) {
       console.error("Failed to create new chat:", error)
