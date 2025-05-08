@@ -8,6 +8,7 @@ import Footer from "@/components/ui/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { changeUserData } from "@/services/auth-service"
+import { Bookmark, BookmarkCheck, Cog, Settings } from "lucide-react"
 
 export default function ProfilePage() {
   const { user, isAuthenticated, isLoading } = useAuth()
@@ -25,7 +26,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push("/")
+      // router.push("/")
     } else if (user) {
       setUsername(user.username || "")
       setBio(user.bio || "")
@@ -93,20 +94,33 @@ export default function ProfilePage() {
           {/* Main Content */}
           <div className="w-full md:w-3/4 space-y-6">
             {/* Tabs at the top */}
-            <div className="flex space-x-4 border-b border-gray-200 pb-2">
-              <button
-                className={`pb-2 px-1 ${tab === "profile" ? "text-[#a855f7] border-b-2 border-[#a855f7]" : "text-gray-500 hover:text-gray-700"}`}
-                onClick={() => setTab("profile")}
-              >
-                Profile Settings
-              </button>
-              <button
-                className={`pb-2 px-1 ${tab === "saved" ? "text-[#a855f7] border-b-2 border-[#a855f7]" : "text-gray-500 hover:text-gray-700"}`}
-                onClick={() => setTab("saved")}
-              >
-                Saved Tools
-              </button>
-            </div>
+            <div className="flex space-x-1 rounded-lg bg-gray-100 p-1 inline-flex"> {/* Container matching the image */}
+        {/* Settings Button */}
+        <button
+            className={`flex items-center px-3 py-1.5 rounded-md transition-colors ${
+                tab === "profile" // Or tab === "settings"
+                    ? "bg-white text-gray-800 shadow-sm" // Active state styles
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-200" // Inactive state styles
+            }`}
+            onClick={() => setTab("profile")} // Or setTab("settings")
+        >
+            <Settings className="mr-2 h-4 w-4" /> {/* Settings Icon */}
+            Settings {/* Text matching the image */}
+        </button>
+
+        {/* Saved Tools Button */}
+        <button
+            className={`flex items-center px-3 py-1.5 rounded-md transition-colors ${
+                tab === "saved"
+                    ? "bg-white text-gray-800 shadow-sm" // Active state styles
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-200" // Inactive state styles
+            }`}
+            onClick={() => setTab("saved")}
+        >
+             <BookmarkCheck className="mr-2 h-4 w-4" /> {/* Saved Tools Icon */}
+            Saved Tools {/* Text matching the image */}
+        </button>
+    </div>
 
             {tab === "profile" ? (
               <Card className="shadow-lg">
