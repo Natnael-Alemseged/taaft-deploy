@@ -26,7 +26,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      // router.push("/")
+      router.push("/")
     } else if (user) {
       setUsername(user.username || "")
       setBio(user.bio || "")
