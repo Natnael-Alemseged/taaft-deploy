@@ -126,21 +126,38 @@ export const getTools = async (params?: {
 
 // In your service file
 export const getToolByUniqueId = async (unique_id: string): Promise<{ status: number; data?: Tool }> => {
-    try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}`, Accept: "application/json" } : { Accept: "application/json" };
-  
-      const response = await apiClient.get<Tool>(`/tools/unique/${unique_id}`, { headers });
-  
-      // Return the full response or a structure containing status and data
-      return { status: response.status, data: response.data };
-  
-    } catch (error: any) {
-      console.error(`Error fetching tool with unique ID ${unique_id}:`, error);
-      // Return the status from the error response if available, otherwise a generic error status
-      return { status: error.response?.status || 500 };
-    }
+  try {
+    // Handle server-side case where localStorage isn't available
+    let token = null;
+    if (typeof window !== "undefined") {
+      token = localStorage.getItem("access_token");
+    }
+
+    const headers: Record<string, string> = { 
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+
+    console.log("unique_id for the request is", unique_id);
+
+    const response = await apiClient.get<Tool>(`/tools/unique/${unique_id}`, { 
+      headers,
+      // Important for SSR to include credentials if needed
+      withCredentials: true
+    });
+
+    console.log("getToolByUniqueId response", JSON.stringify(response.data, null, 2));
+
+    return { status: response.status, data: response.data };
+  } catch (error: any) {
+    console.error(`Error fetching tool with unique ID ${unique_id}:`, error);
+    // Return more detailed error information
+    return { 
+      status: error.response?.status || 500,
+      ...(error.response?.data ? { data: error.response.data } : {})
+    };
   }
+}
   
   export const getToolById = async (id: string): Promise<{ status: number; data?: Tool }> => {
     try {

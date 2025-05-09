@@ -20,50 +20,51 @@ import Script from "next/script" // Add this import for schema markup
 import { showLoginModal } from "@/lib/auth-events"
 import { ShareButtonWithPopover } from "@/components/ShareButtonWithPopover"
 import { getToolById, getToolByUniqueId, getTools } from "@/services/tool-service"
+import { Category, Tool } from "@/types/tool"
 
 // Add TypeScript interfaces
-interface Tool {
-  id: string;
-  name: string;
-  slug: string;
-  link: string;
-  category: string;
-  description: string;
-  features: string[];
-  keywords: string[];
-  pricing: string;
-  hasFreeVersion: boolean;
-  logoUrl: string;
-  screenshotUrls: string[];
-  rating?: number;
-  reviewCount?: number;
-  company?: string;
-  image?: string;
-  website?: string;
-  pricingPlans?: Array<{
-    name: string;
-    price: string;
-    description: string;
-    ctaUrl?: string;
-  }>;
-  savedByUser?: boolean;
-  // Assuming reviews and relatedTools might be part of the Tool data
-  reviews?: Array<{
-      id: string;
-      rating: number;
-      content: string;
-      createdAt: string;
-      user: { name: string }; // Basic user info for review
-  }>;
-  relatedTools?: Array<{
-      id: string;
-      name: string;
-      category: string;
-      description: string;
-      // Add other relevant fields for related tools preview
-  }>;
-  updatedAt?: string; // Assuming updatedAt might be part of the data
-}
+// interface Tool {
+//   id: string;
+//   name: string;
+//   slug: string;
+//   link: string;
+//   categories: Category[];
+//   description: string;
+//   features: string[];
+//   keywords: string[];
+//   pricing: string;
+//   hasFreeVersion: boolean;
+//   logoUrl: string;
+//   screenshotUrls: string[];
+//   rating?: number;
+//   reviewCount?: number;
+//   company?: string;
+//   image?: string;
+//   website?: string;
+//   pricingPlans?: Array<{
+//     name: string;
+//     price: string;
+//     description: string;
+//     ctaUrl?: string;
+//   }>;
+//   savedByUser?: boolean;
+//   // Assuming reviews and relatedTools might be part of the Tool data
+//   reviews?: Array<{
+//       id: string;
+//       rating: number;
+//       content: string;
+//       createdAt: string;
+//       user: { name: string }; // Basic user info for review
+//   }>;
+//   relatedTools?: Array<{
+//       id: string;
+//       name: string;
+//       category: string;
+//       description: string;
+//       // Add other relevant fields for related tools preview
+//   }>;
+//   updatedAt?: string; // Assuming updatedAt might be part of the data
+// }
 
 // Keep Schema interface as is, not used in the render logic directly, but good for reference
 interface Schema {
@@ -125,45 +126,42 @@ const [tool, setTool] = useState<Tool | null>(null)
     setSelectedPlan(selectedPlan === planName ? null : planName) // Deselect if it's already selected
   }
 
-// In your component
 useEffect(() => {
-    const fetchTool = async () => {
-      setIsToolLoading(true); // Set loading state
-      setIsError(false); // Reset error state
-  
-      try {
-        // Attempt fetch by Unique ID
-        const uniqueIdResponse = await getToolByUniqueId(slug);
-  
-        if (uniqueIdResponse.status === 200 && uniqueIdResponse.data) {
-          setTool(uniqueIdResponse.data);
-        } else {
-          // If Unique ID failed (status not 200), attempt fetch by regular ID
-          console.warn(`Unique ID lookup for ${slug} failed with status ${uniqueIdResponse.status || 'N/A'}, trying regular ID.`);
-          const idResponse = await getToolById(slug); // Assuming slug can also be the regular ID
-  
-          if (idResponse.status === 200 && idResponse.data) {
-            setTool(idResponse.data);
-          } else {
-            // Both attempts failed
-            console.error(`Both Unique ID and regular ID lookup failed for ${slug}.`);
-            setIsError(true); // Set error flag if both failed
-        }
-        }
-      } catch (error) {
-        // This catch block would now only catch unexpected errors (e.g., code issues)
-        console.error("Unexpected error during tool fetch process:", error);
-        setIsError(true);
-      } finally {
-        setIsToolLoading(false); // Turn off loading state regardless of success or failure
-      }
-    };
-  
-    if (slug) { // Only fetch if slug is available
-      fetchTool();
-    }
-  
-  }, [slug, router]); // router might not need to be a dependency here unless its path is used in fetch logic
+  const fetchTool = async () => {
+    setIsToolLoading(true);
+    setIsError(false);
+    console.log("Fetching tool with slug:", slug);
+
+    try {
+      // First attempt with unique_id
+      let response = await getToolByUniqueId(slug);
+
+      if (response.status === 200 && response.data) {
+        console.log('sucessful unique id');
+        setTool(response.data);
+        return;
+      }
+
+      // If not found, attempt with ID
+      response = await getToolById(slug);
+
+      if (response.status === 200 && response.data) {
+        console.log('sucessful id');
+        setTool(response.data);
+      } else {
+        setIsError(true);
+      }
+
+    } catch (error) {
+      console.error('Error fetching tool:', error);
+      setIsError(true);
+    } finally {
+      setIsToolLoading(false);
+    }
+  };
+
+  if (slug) fetchTool();
+}, [slug]);
 
   // Effect to show login modal if not authenticated.
   // This effect will run when isAuthenticated changes.
@@ -195,22 +193,22 @@ useEffect(() => {
 
   // --- Handle Error State After Loading ---
   // Show error message if tool loading finished but resulted in an error AND no tool data is available
-  if (isError && !tool) {
-    console.error("Failed to load tool details after attempts.");
-    // Redirect to 404 or show an error message
-    router.push("/404");
-    return null; // Return null while redirecting
-  }
+//   if (isError && !tool) {
+//     console.error("Failed to load tool details after attempts.");
+//     // Redirect to 404 or show an error message
+//     router.push("/404");
+//     return null; // Return null while redirecting
+//   }
 
-  // --- Handle Case Where No Tool Found After Loading/Error Check ---
-  // This might catch scenarios where the tool was found but is null for some reason,
-  // or the error handling above wasn't triggered but no tool exists.
-  // This is a final safeguard before attempting to render the rest of the page.
-  if (!tool) {
-     console.error("Tool data is unexpectedly null after loading and error checks.");
-     router.push("/404"); // Redirect if no tool object exists
-     return null; // Return null while redirecting
-  }
+//   // --- Handle Case Where No Tool Found After Loading/Error Check ---
+//   // This might catch scenarios where the tool was found but is null for some reason,
+//   // or the error handling above wasn't triggered but no tool exists.
+//   // This is a final safeguard before attempting to render the rest of the page.
+//   if (!tool) {
+//      console.error("Tool data is unexpectedly null after loading and error checks.");
+//      router.push("/404"); // Redirect if no tool object exists
+//      return null; // Return null while redirecting
+//   }
 
 
   // --- If we reach here, loading is complete, and we have a tool object ---
@@ -433,7 +431,7 @@ const handleSaveToggle = (toolId: string, savedByUser: boolean) => {
                           <button className="p-1 border border-[#e5e7eb] rounded">
                             <Bookmark className="w-3 h-3 text-[#6b7280]" />
                           </button>
-                          <ShareButtonWithPopover itemLink={`/tools/${similarTool.id}`} />
+                          {/* <ShareButtonWithPopover itemLink={`/tools/${similarTool.id}`} /> */}
                         </div>
                         <Button
                           className="bg-[#a855f7] hover:bg-[#9333ea] text-white text-xs h-7 rounded-md flex items-center"
@@ -512,12 +510,12 @@ const handleSaveToggle = (toolId: string, savedByUser: boolean) => {
               </div>
   
               <div className="flex items-center justify-between mt-8">
-                <button
+                {/* <button
                   className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
                   onClick={() => handleSaveToggle(tool.unique_id, !!tool.savedByUser)}
                 >
                   <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
-                </button>
+                </button> */}
                 <ShareButtonWithPopover itemLink={`/tools/${tool.id}`} />
               </div>
             </div>

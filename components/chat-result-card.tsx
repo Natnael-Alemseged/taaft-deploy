@@ -33,6 +33,8 @@ export default function ChatResultCard({ tool, index, viewMode = "grid" }: ChatR
 
       // if (response?.id) {
         // const toolUrl = `/tools/${encodeURIComponent(response.id)}`
+        console.log("Tool ID:", tool.unique_id);
+
         router.push(`tools/${tool.unique_id}`);
       // } else {
       //   console.warn("Tool ID not found")
