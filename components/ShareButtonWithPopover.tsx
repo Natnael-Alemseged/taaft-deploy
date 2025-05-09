@@ -87,15 +87,17 @@ export function ShareButtonWithPopover({ itemLink }: ShareButtonWithPopoverProps
 
     return (
         <div className="relative inline-block" ref={popoverRef}>
-            <button
-                className="p-1 border rounded text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
-                onClick={handleShareClick}
-                aria-expanded={isShareOptionsOpen}
-                aria-haspopup="true"
-                aria-label="Share content"
-            >
-                <Share2 className="w-4 h-4" />
-            </button>
+        <button
+            className="p-1 rounded text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200" // Removed 'border' class
+            onClick={handleShareClick}
+            aria-expanded={isShareOptionsOpen}
+            aria-haspopup="true"
+            aria-label="Share content"
+        >
+            <Share2 className="w-4 h-4" />
+        </button>
+        {/* ... rest of the popover content */}
+
 
             {/* Success Message */}
             {showSuccessMessage && (

@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Search, ChevronDown, ArrowLeft, Bookmark, Grid, List, Share2, Star } from "lucide-react" // Added Star icon
+import { Search, ChevronDown, ArrowLeft, Bookmark, Grid, List, Share2, Star, ExternalLink, Router } from "lucide-react" // Added Star icon
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card" // Assuming Card components are available
 import { useSearchTools } from "@/hooks/use-search" // Assuming this hook exists and works
 import { useSaveTool, useUnsaveTool } from "@/hooks/use-tools" // Assuming these hooks exist and work
 import { useAuth } from "@/contexts/auth-context" // Assuming this hook exists and works
 import type { Tool } from "@/types/tool" // Assuming Tool type is defined
-import { useSearchParams } from "next/navigation" // Correct import for App Router
+import { usePathname, useRouter, useSearchParams } from "next/navigation" // Correct import for App Router
 import ChatResultCard from "@/components/chat-result-card" // Assuming this component exists
+import { showLoginModal } from "@/lib/auth-events"
+import { ShareButtonWithPopover } from "./ShareButtonWithPopover"
+import { robotSvg } from "@/lib/reusable_assets"
 
 interface SearchResultsProps {
   initialQuery?: string
@@ -35,6 +38,11 @@ export default function SearchResults({ initialQuery, category, source }: Search
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [chatResults, setChatResults] = useState<any[]>([]) // State for chat results
+    const router = useRouter();
+    const pathname = usePathname();
+
+
+
 
   // Sync query and category from URL on initial load
   useEffect(() => {
@@ -451,114 +459,140 @@ export default function SearchResults({ initialQuery, category, source }: Search
                     ) : (
                         // Custom Card for regular search results
                         <Card
-                            key={tool.id}
-                            className={`overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col ${viewMode === "list" ? "md:flex-row" : ""}`} // Added dark modes, adjusted list view flex
-                        >
-                          {/* Optional: Add Tool Logo/Image here if available */}
-                          {/* {tool.logoUrl && (
-                           <div className={`p-4 ${viewMode === "list" ? "md:w-1/4 flex items-center justify-center" : ""}`}>
-                               <img src={tool.logoUrl} alt={`${tool.name} logo`} className="w-16 h-16 object-contain" />
-                           </div>
-                       )} */}
-                          <CardContent
-                              className={`p-4 flex-grow ${viewMode === "list" ? "md:flex md:flex-col md:justify-between md:w-3/4" : ""}`} // Adjusted padding, added list view flex
-                          >
-                            <div>
-                              <h3 className="mb-1 text-lg font-semibold text-gray-800 dark:text-white"> {/* Added dark mode */}
-                                <Link href={getToolDetailUrl(tool)} className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors"> {/* Added dark mode hover */}
-                                  {tool.name}
-                                </Link>
-                              </h3>
-                              <div className="mb-2 flex flex-wrap gap-1">
-                                   <span className="rounded-full bg-purple-100 dark:bg-purple-900 px-2 py-0.5 text-xs font-medium text-purple-600 dark:text-purple-300"> {/* Added dark mode */}
-                                     {tool.category || "AI Tool"}
-                                   </span>
-                                <span
-                                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass(tool.pricing)}`}
-                                >
-                                       {formatPricingLabel(tool.pricing)}
-                                   </span>
-                                {/* Assuming isFeatured comes from your Tool type */}
-                                {tool.isFeatured && (
-                                    <span
-                                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}
-                                    >
-                                         Featured
-                                       </span>
-                                )}
-                              </div>
-                              <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">{truncateDescription(tool.description)}</p> {/* Added dark mode */}
-
-                              {/* Display Features/Tags */}
-                              <div className="mb-4 flex flex-wrap gap-1">
-                                {tool.features &&
-                                    Array.isArray(tool.features) &&
-                                    tool.features.slice(0, 3).map((tag, idx) => (
-                                        <span key={idx} className="rounded-md bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs text-gray-600 dark:text-gray-300"> {/* Added dark mode */}
-                                          {tag}
-                                           </span>
-                                    ))}
-                              </div>
-                            </div>
-                            {/* Card Footer / Actions */}
-                            <div className="p-0 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between pt-4"> {/* Added dark mode border */}
-                              <div className="flex items-center space-x-1">
-                                <button
-                                    className={`rounded p-1 ${tool.savedByUser ? "text-purple-600 dark:text-purple-400" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-400"}`} // Added dark modes
-                                    onClick={() => handleSaveToggle(tool)}
-                                    aria-label={tool.savedByUser ? "Unsave tool" : "Save tool"}
-                                >
-                                  <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
-                                </button>
-                                <button
-                                    className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-400" // Added dark modes
-                                    aria-label={`Share ${tool.name}`}
-                                >
-                                  <Share2 className="h-4 w-4" />
-                                </button>
-                                {/* Optional: Add Rating display here if available in Tool type */}
-                                {/* {tool.rating && (
-                                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 ml-2">
-                                            <Star className="h-4 w-4 text-yellow-500 mr-1" fill="currentColor" />
-                                            <span>{tool.rating.toFixed(1)}</span>
-                                        </div>
-                                    )} */}
-                              </div>
-                              <div className="flex space-x-2">
-                                <Button
-                                    className="rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs px-3 py-1.5 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white" // Added dark modes
-                                    asChild
-                                >
-                                  <Link href={getToolDetailUrl(tool)}>View Details</Link>
-                                </Button>
-                                {tool.website && ( // Assuming 'website' is the link to try the tool
-                                    <Button
-                                        className="rounded-full bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1.5 dark:bg-purple-700 dark:hover:bg-purple-600" // Added dark modes
-                                        asChild
-                                    >
-                                      <a href={tool.website} target="_blank" rel="noopener noreferrer">
-                                        Try Tool
-                                        <svg
-                                            className="ml-1 h-3 w-3"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg"
+                        key={tool.id} // Use tool.id from the search result data
+                        className="max-w-lg overflow-hidden rounded-2xl  shadow-lg border border-gray-200 shadow-lg w-full mx-auto flex flex-col" // Copied classes from tool-card
+                    >
+                        <CardContent className="p-0 flex-grow flex flex-col"> {/* Copied classes from tool-card */}
+                            {/* Inner content div takes care of internal padding and flex column layout */}
+                            <div className="p-4 flex flex-col h-full"> {/* Copied classes from tool-card */}
+                    
+                                {/* Top row: (Empty div or logo placeholder) | Featured Badge */}
+                                <div className="mb-2 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        {/* Image/Logo Placeholder - Match tool-card structure visually */}
+                                        {/* Tool-card had {tool.image ?? robotSvg} here. Assuming search result might have logoUrl */}
+                                        {/* If tool.logoUrl exists, use it, otherwise use robotSvg */}
+                                         {tool.logoUrl ? (
+                                            // Replace with your actual Image component or img tag if needed
+                                             <img src={tool.logoUrl} alt={`${tool.name} logo`} className="w-8 h-8 object-contain" />
+                                         ) : (
+                                             // Fallback to robotSvg if no logoUrl
+                                             // Ensure robotSvg is imported or defined
+                                             robotSvg // Or a generic icon component
+                                         )}
+                                    </div>
+                                     {/* Featured Badge - Use tool.isFeatured from search result data */}
+                                    {tool.isFeatured && (
+                                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}>
+                                            Featured
+                                        </span>
+                                    )}
+                                </div>
+                    
+                                {/* Tool Name */}
+                                {/* Match tool-card structure: Name is wrapped in h3, potentially with a link */}
+                                <span className="flex items-center py-3"> {/* Replicating span wrapper from tool-card */}
+                                     {/* Image/Logo - Removed from here to match the tool-card header structure above */}
+                                     <h3 className="mb-1 text-lg font-semibold text-gray-900 pl-2"> {/* Copied classes from tool-card */}
+                                        {/* Link to detail page - Use getToolDetailUrl from search result context */}
+                                        <Link href={getToolDetailUrl(tool)} className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+                                             {/* Truncate name if needed, matching tool-card logic */}
+                                            {tool.name.length > 30 ? `${tool.name.slice(0, 20)}...` : tool.name}
+                                        </Link>
+                                    </h3>
+                                </span>
+                    
+                    
+                                 {/* Category and Pricing Badges - Match tool-card layout (single span for category) */}
+                                 {/* Search result has category and pricing badges, tool-card had category here */}
+                                 {/* Let's put both here, side by side in a flex div, mirroring the *spirit* of the tool-card's badge area */}
+                                 <div className="mb-2 flex flex-wrap gap-1"> {/* Using flex-wrap gap like the features section */}
+                                    {tool.category && (
+                                        <span className="rounded-full bg-purple-100 dark:bg-purple-900 px-2 py-0.5 w-fit text-xs font-medium text-purple-600 dark:text-purple-300"> {/* Copied/adapted classes from tool-card */}
+                                            {/* Use tool.category from search result data */}
+                                            {tool.category.length > 15 ? `${tool.category.slice(0, 15)}...` : tool.category} {/* Apply truncation like tool-card did */}
+                                        </span>
+                                    )}
+                                    {tool.pricing && (
+                                         <span className={`rounded-full px-2 py-0.5 w-fit text-xs font-medium ${getBadgeClass(tool.pricing)}`}>
+                                             {/* Use tool.pricing and formatPricingLabel from search result context */}
+                                             {formatPricingLabel(tool.pricing)}
+                                         </span>
+                                    )}
+                                 </div>
+                    
+                    
+                                {/* Description */}
+                                 {/* Use tool.description from search result data */}
+                                <p className="mb-4 text-sm text-gray-600 dark:text-gray-400 pt-3"> {/* Copied classes from tool-card */}
+                                    {/* Use the 50-character truncation logic from tool-card */}
+                                    {truncateDescription(tool.description)}
+                                </p>
+                    
+                                {/* Features/Tags */}
+                                 {/* Use tool.features from search result data, map to tool-card's keywords section */}
+                                <div className="mb-4 flex flex-wrap gap-2"> {/* Copied classes from tool-card */}
+                                    {(tool.features || []).slice(0, 3).map((feature, index) => { // Use tool.features
+                                        return (
+                                            <span
+                                                key={index}
+                                                className="rounded-full px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-help" // Copied classes from tool-card, added dark mode
+                                                title={feature} // Add tooltip
+                                            >
+                                                {/* Apply truncation like tool-card */}
+                                                { feature.length > 15 ? `${feature.slice(0, 10)}...` : feature }
+                                            </span>
+                                        )
+                                    })}
+                                </div>
+                    
+                                {/* Button Row - Stick to the bottom */}
+                                {/* This div gets mt-auto to push it down */}
+                                <div className="flex items-center justify-between mt-auto"> {/* Copied classes from tool-card */}
+                                    {/* Save and Share Buttons */}
+                                    <div className="flex items-center gap-2"> {/* Copied classes from tool-card */}
+                                        {/* Save Button - Use tool.savedByUser and tool.id from search result data */}
+                                        <button
+                                             className={`rounded p-1 ${tool.savedByUser ? "text-purple-600 dark:text-purple-400" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-400"}`} // Copied classes from tool-card, added dark modes
+                                             onClick={() => handleSaveToggle(tool)} // Pass the tool object or tool.id as needed by your handleSaveToggle
+                                             aria-label={tool.savedByUser ? "Unsave tool" : "Save tool"}
                                         >
-                                          <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth="2"
-                                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                          ></path>
-                                        </svg>
-                                      </a>
+                                            {/* Use tool.savedByUser for fill state */}
+                                            <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
+                                        </button>
+                                        {/* Share Button - Use ShareButtonWithPopover and tool.id from search result data */}
+                                        {/* Ensure ShareButtonWithPopover is imported */}
+                                        <ShareButtonWithPopover itemLink={getToolDetailUrl(tool)} /> {/* Link to the tool's detail page */}
+                                    </div>
+                    
+                                    {/* Try Tool Button - Match tool-card's single button */}
+                                     {/* Use tool.website from search result data for the actual link if clicked after auth check */}
+                                    <Button
+                                        className="bg-purple-600 text-white hover:bg-purple-700" // Copied classes from tool-card
+                                         onClick={() => {
+                                            // Replicate tool-card's authentication check and navigation logic
+                                            if (!isAuthenticated) {
+                                                showLoginModal(pathname, () => {
+                                                    // Optional: Redirect after login, tool-card goes to '/'
+                                                    // Maybe better to redirect to the tool detail page?
+                                                    router.push(getToolDetailUrl(tool));
+                                                });
+                                            } else {
+                                                // Navigate to tool detail page if authenticated
+                                                // This matches the tool-card's behavior for this button click
+                                                 window.location.href = getToolDetailUrl(tool);
+                                                // OR if the button *should* open the external site directly:
+                                                // if (tool.website) window.open(tool.website, '_blank');
+                                                // Let's stick to the tool-card's apparent logic of navigating to the detail page first
+                                            }
+                                         }}
+                                    >
+                                        Try Tool <ExternalLink className="h-4 w-4 ml-1" /> {/* Copied text and icon from tool-card */}
                                     </Button>
-                                )}
-                              </div>
+                                </div>
                             </div>
-                          </CardContent>
-                        </Card>
+                        </CardContent>
+                    </Card>
                     )
                 ))}
               </div>

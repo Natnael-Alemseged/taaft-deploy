@@ -5,9 +5,9 @@ export default async function SearchPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
-  const query = typeof (await searchParams.q) === "string" ? await searchParams.q : ""
-  const category = typeof (await searchParams.category) === "string" ? await searchParams.category : ""
-  const source = typeof (await searchParams.source) === "string" ? await searchParams.source : ""
+  const query = typeof ( searchParams.q) === "string" ?  searchParams.q : "" // Make sure no 'await' here
+const category = typeof ( searchParams.category) === "string" ?  searchParams.category : "" // Make sure no 'await' here
+const source = typeof ( searchParams.source) === "string" ? searchParams.source : "" // Make sure no 'await' here
 
   return (
     <div className="container mx-auto px-4 py-8">

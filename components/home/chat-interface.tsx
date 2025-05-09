@@ -416,7 +416,7 @@ else{
                   temp=null;
                 }
 
-                if(temp==null){
+                if(temp==null && eventData.content!=="']" && eventData.content !=='``'){
             
                 receivedMessageContent += eventData.content;
                 setStreamingMessage(receivedMessageContent);

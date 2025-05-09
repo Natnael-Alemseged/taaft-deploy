@@ -96,14 +96,13 @@ export default function ToolCard({ tool }: ToolCardProps) {
     <>
       <Card
         key={tool.id}
-        className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 shadow-lg w-full mx-auto"
+        className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 shadow-lg w-full mx-auto flex flex-col" // Added flex flex-col
       >
-        <CardContent className="p-0">
-          <div className="p-4">
+        <CardContent className="p-0 flex-grow flex flex-col"> {/* Added flex-grow flex flex-col */}
+          <div className="p-4 flex flex-col h-full"> {/* Added flex flex-col h-full */}
             <div className="mb-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
-  
-
+                {/* Content here */}
               </div>
               {tool.isFeatured && (
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeClass("featured")}`}>
@@ -112,35 +111,32 @@ export default function ToolCard({ tool }: ToolCardProps) {
               )}
             </div>
             <span className="flex items-center py-3">
-              {tool.image?? robotSvg}
-              <h3 className="mb-1 text-lg font-semibold text-gray-900 pl-2"> 
+              {tool.image ?? robotSvg}
+              <h3 className="mb-1 text-lg font-semibold text-gray-900 pl-2">
                 {tool.name.length > 30 ? `${tool.name.slice(0, 20)}...` : tool.name}
-                </h3>
+              </h3>
             </span>
-            <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600">
-  {tool.categories && tool.categories.length !== 0
-    ? (() => {
-        const categoryText = tool.categories[0].name;
-        return categoryText.length > 15 ? `${categoryText.slice(0, 15)}...` : categoryText;
-      })()
-    : null}
-</span>
+            <span className="rounded-full bg-purple-100 px-2 py-0.5 w-fit text-xs font-medium text-purple-600">
+              {tool.categories && tool.categories.length !== 0
+                ? (() => {
+                    const categoryText = tool.categories[0].name;
+                    return categoryText.length > 15 ? `${categoryText.slice(0, 15)}...` : categoryText;
+                  })()
+                : null}
+            </span>
             <p className="mb-4 text-sm text-gray-600 pt-3">
               {tool.description && tool.description.length > 50 // Adjust 120 to your desired length
                 ? `${tool.description.substring(0, 50)}...`
                 : tool.description}
             </p>
-
             <div className="mb-4 flex flex-wrap gap-2">
               {(tool.keywords || []).slice(0, 3).map((feature, index) => {
-             
-
                 return (
                   <span
-    key={index}
-    className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-600 cursor-help"
-    title={feature} // <-- Added this line
->
+                    key={index}
+                    className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-600 cursor-help"
+                    title={feature} // <-- Added this line >
+                  >
                     { feature.length > 15 ? `${feature.slice(0, 10)}...` : feature
                     // feature
                     }
@@ -148,21 +144,19 @@ export default function ToolCard({ tool }: ToolCardProps) {
                 )
               })}
             </div>
-
-            <div className="flex items-center justify-between">
+            {/* The div below will now stick to the bottom */}
+            <div className="flex items-center justify-between mt-auto"> {/* Added mt-auto */}
               <div className="flex items-center gap-2">
-                
                   <button
                     className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
                     onClick={() => handleSaveToggle(tool.unique_id, !!tool.savedByUser)}
                   >
                     <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
                   </button>
-                
-                <ShareButtonWithPopover itemLink={`/tools/${tool.id}`} />
+                 <ShareButtonWithPopover itemLink={`/tools/${tool.id}`} />
               </div>
               <Button
-                className="  bg-purple-600 text-white hover:bg-purple-700"
+                className="bg-purple-600 text-white hover:bg-purple-700"
                 onClick={() => {
                   if (!isAuthenticated) {
                     // Use the shared showLoginModal function
@@ -182,5 +176,4 @@ export default function ToolCard({ tool }: ToolCardProps) {
         </CardContent>
       </Card>
     </>
-  )
-}
+  )}
