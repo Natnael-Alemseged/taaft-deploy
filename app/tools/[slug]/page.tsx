@@ -433,14 +433,14 @@ const handleSaveToggle = (toolId: string, savedByUser: boolean) => {
                           </button>
                           {/* <ShareButtonWithPopover itemLink={`/tools/${similarTool.id}`} /> */}
                         </div>
-                        <Button
+                        {/* <Button
                           className="bg-[#a855f7] hover:bg-[#9333ea] text-white text-xs h-7 rounded-md flex items-center"
                           asChild
                         >
                           <Link href={`/tools/${similarTool.id}`}>
                             Try Tool <ExternalLink className="w-3 h-3 ml-1" />
                           </Link>
-                        </Button>
+                        </Button> */}
                       </div>
                     </div>
                   ))}
