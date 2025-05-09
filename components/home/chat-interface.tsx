@@ -204,35 +204,35 @@ useEffect(() => {
   }, [isOpen, activeChatId, isLoadingMessages, messages.length])
 
   // Effect to close chat when scrolling outside
-  useEffect(() => {
-    if (!isOpen) return
+  // useEffect(() => {
+  //   if (!isOpen) return
 
-    const handleScroll = () => {
-      // Check if chat ref exists and is open
-      if (chatRef.current && isOpen) {
-        // Get the chat element's position and dimensions
-        const chatRect = chatRef.current.getBoundingClientRect()
+    // const handleScroll = () => {
+    //   // Check if chat ref exists and is open
+    //   if (chatRef.current && isOpen) {
+    //     // Get the chat element's position and dimensions
+    //     const chatRect = chatRef.current.getBoundingClientRect()
 
-        // Check if the user has scrolled beyond the chat interface
-        const scrolledOutside =
-          window.scrollY > 10 || // Even slight scroll should close it
-          window.scrollY + window.innerHeight < chatRect.top ||
-          window.scrollY > chatRect.bottom
+    //     // Check if the user has scrolled beyond the chat interface
+    //     const scrolledOutside =
+    //       window.scrollY > 10 || // Even slight scroll should close it
+    //       window.scrollY + window.innerHeight < chatRect.top ||
+    //       window.scrollY > chatRect.bottom
 
-        if (scrolledOutside) {
-          onClose()
-        }
-      }
-    }
+    //     // if (scrolledOutside) {
+    //     //   onClose()
+    //     // }
+    //   }
+    // }
 
     // Add scroll event listener
-    window.addEventListener("scroll", handleScroll)
+    // window.addEventListener("scroll", handleScroll)
 
     // Clean up
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-    }
-  }, [isOpen, onClose])
+    // return () => {
+    //   window.removeEventListener("scroll", handleScroll)
+    // }
+  // }, [isOpen, onClose])
 
   
 
