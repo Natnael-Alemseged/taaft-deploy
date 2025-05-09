@@ -516,7 +516,7 @@ const handleSaveToggle = (toolId: string, savedByUser: boolean) => {
                 >
                   <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
                 </button> */}
-                <ShareButtonWithPopover itemLink={`/tools/${tool.id}`} />
+                {/* <ShareButtonWithPopover itemLink={`/tools/${tool.id}`} /> */}
               </div>
             </div>
           </div>
