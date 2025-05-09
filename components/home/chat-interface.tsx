@@ -339,6 +339,9 @@ useEffect(() => {
     let messageFinalized = false; // Flag to track if the message has been added to the main list
     let accumulatedFormattedData: any = null; // To accumulate formatted data if it comes before 'end'
     let accumulatedConversationalRecommendations: string[] = []; // To accumulate conversational recommendations
+    let temp:any=null;
+    let tempRecommednation:string[]=[];
+    let tempToolRec:string='';
 
     console.log("Receiving stream data...");
 
@@ -396,36 +399,39 @@ useEffect(() => {
               if (eventData.content) {
             
                 // Accumulator for options content
-                if (eventData.content.startsWith('options')) {
-                  accumulatedConversationalRecommendations = []; // Reset accumulator
-                  buffer = ''; // Clear buffer to start fresh
+                if (eventData.content==='options') {
+             temp=eventData.content;
                 }
-            
-                // Accumulate content until the ']' marker is found
-                if (accumulatedConversationalRecommendations !== null) {
-                  buffer += eventData.content;
-            
-                  // Check if the ']' marker has been reached
-                  if (buffer.includes("']")) {
-                    // Extract content within the brackets
-                    const optionsString = buffer.substring(buffer.indexOf("[") + 1, buffer.indexOf("]"));
-                    const recommendations = optionsString
-                      .split("', '")
-                      .map((item) => item.trim().replace(/'/g, ""))
-                      .filter((item) => item !== "");
-            
-                    // Update the state with the parsed recommendations
-                    setConversationalRecommendations(recommendations);
-            
-                    // Reset buffer and accumulator
-                    buffer = '';
-                    accumulatedConversationalRecommendations = [];
-                  }
+                if(temp!=null && eventData.content!=='[' && eventData.content!==']' && eventData.content!=='='){
+
+if(eventData.content==="'," || eventData.content==="']"){
+  
+  tempRecommednation.push(tempToolRec);
+  console.log('recomended are:'+tempToolRec);
+  
+}
+else{
+  tempToolRec=eventData.content
+}
+
+                  
+                  
+                  
                 }
+
+
+                if(temp!=null && eventData.content==="']"){
+                  setToolRecommendations(tempRecommednation);
+                  console.log('tool recomended set are:'+tempRecommednation);
+                  tempRecommednation=[];
+                  temp=null;
+                }
+
+                if(temp==null){
             
-                // Continue accumulating streaming message content
                 receivedMessageContent += eventData.content;
                 setStreamingMessage(receivedMessageContent);
+                }
               }
                         
 
