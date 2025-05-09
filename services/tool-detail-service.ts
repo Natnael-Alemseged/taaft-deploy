@@ -1,54 +1,63 @@
-import apiClient from "@/lib/api-client"
-import type { Tool } from "@/types/tool"
+// import apiClient from "@/lib/api-client"
+// import type { Tool } from "@/types/tool"
 
-// Get tool by unique ID
-export const getToolByUniqueId = async (uniqueId: string): Promise<Tool> => {
-  try {
-    // Get token from localStorage for authorization
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+// // Get tool by unique ID
+// export const getToolByUniqueId = async (uniqueId: string): Promise<Tool> => {
+//   try {
+//     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+//     const headers: Record<string, string> = {
+//       Accept: "application/json",
+//     }
+//     if (token) headers["Authorization"] = `Bearer ${token}`
 
-    // Set up headers with authorization if token exists
-    const headers: Record<string, string> = {
-      Accept: "application/json",
-    }
+//     console.log(`[getToolByUniqueId] Fetching tool with unique ID: ${uniqueId}`)
 
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`
-    }
+//     const response = await apiClient.get<Tool>(`/tools/unique/${uniqueId}`, { headers })
+//     console.log(`[getToolByUniqueId] Response status: ${response.status}`)
 
-    // Make the API call with authorization headers
-    const response = await apiClient.get<Tool>(`/tools/unique/${uniqueId}`, { headers })
+//     return response.data
+//   } catch (error) {
+//     console.error(`[getToolByUniqueId] Error fetching tool with unique ID ${uniqueId}:`, error)
+//     throw error
+//   }
+// }
 
-    // Return the response data
-    return response.data
-  } catch (error) {
-    console.error(`Error fetching tool with unique ID ${uniqueId}:`, error)
-    throw error
-  }
-}
+// export const getToolsByAlgoliaId = async (uniqueId: string): Promise<Tool> => {
+//   try {
+//     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+//     const headers: Record<string, string> = {
+//       Accept: "application/json",
+//     }
+//     if (token) headers["Authorization"] = `Bearer ${token}`
 
-// Get tool by unique name
-export const getToolByUniqueName = async (name: string): Promise<Tool> => {
-  try {
-    // Get token from localStorage for authorization
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+//     console.log(`[getToolsByAlgoliaId] Fetching tool with Algolia ID: ${uniqueId}`)
 
-    // Set up headers with authorization if token exists
-    const headers: Record<string, string> = {
-      Accept: "application/json",
-    }
+//     const response = await apiClient.get<Tool>(`/tools/unique/${uniqueId}`, { headers })
+//     console.log(`[getToolsByAlgoliaId] Response status: ${response.status}`)
 
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`
-    }
+//     return response.data
+//   } catch (error) {
+//     console.error(`[getToolsByAlgoliaId] Error fetching tool with Algolia ID ${uniqueId}:`, error)
+//     throw error
+//   }
+// }
 
-    // Make the API call with authorization headers
-    const response = await apiClient.get<Tool>(`/tools/unique/${encodeURIComponent(name)}`, { headers })
+// export const getToolByUniqueName = async (name: string): Promise<Tool> => {
+//   try {
+//     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+//     const headers: Record<string, string> = {
+//       Accept: "application/json",
+//     }
+//     if (token) headers["Authorization"] = `Bearer ${token}`
 
-    // Return the response data
-    return response.data
-  } catch (error) {
-    console.error(`Error fetching tool with unique name ${name}:`, error)
-    throw error
-  }
-}
+//     console.log(`[getToolByUniqueName] Fetching tool with name: ${name}`)
+
+//     const response = await apiClient.get<Tool>(`/tools/unique/${encodeURIComponent(name)}`, { headers })
+//     console.log(`[getToolByUniqueName] Response status: ${response.status}`)
+
+//     return response.data
+//   } catch (error) {
+//     console.error(`[getToolByUniqueName] Error fetching tool with name ${name}:`, error)
+//     throw error
+//   }
+// }

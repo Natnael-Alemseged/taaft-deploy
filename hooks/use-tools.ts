@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getTools,
   getToolById,
+  getToolByUniqueId,
   getFeaturedTools,
   getPopularTools,
   saveTool,
@@ -35,12 +36,12 @@ export function useTools(params?: {
   })
 }
 
-// Hook for fetching a single tool by ID
-export function useTool(id: string) {
+// Hook for fetching a single tool by ID or unique_id
+export function useTool(identifier: string, isUniqueId: boolean = false) {
   return useQuery({
-    queryKey: ["tool", id],
-    queryFn: () => getToolById(id),
-    enabled: !!id, // Only run if id is provided
+    queryKey: ["tool", identifier, isUniqueId],
+    queryFn: () => isUniqueId ? getToolByUniqueId(identifier) : getToolById(identifier),
+    enabled: !!identifier, // Only run if identifier is provided
   })
 }
 

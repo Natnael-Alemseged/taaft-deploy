@@ -72,30 +72,90 @@ export const getTools = async (params?: {
 }
 
 // Get a single tool by ID
-export const getToolById = async (id: string): Promise<Tool> => {
-  try {
-    // Get token from localStorage for authorization
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+// export const getToolById = async (id: string): Promise<Tool> => {
+//   try {
+//     // Get token from localStorage for authorization
+//     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
 
-    // Set up headers with authorization if token exists
-    const headers: Record<string, string> = {
-      Accept: "application/json",
-    }
+//     // Set up headers with authorization if token exists
+//     const headers: Record<string, string> = {
+//       Accept: "application/json",
+//     }
 
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`
-    }
+//     if (token) {
+//       headers["Authorization"] = `Bearer ${token}`
+//     }
 
-    // Make the API call with authorization headers
-    const response = await apiClient.get<Tool>(`/tools/${id}`, { headers })
+//     // Make the API call with authorization headers
+//     const response = await apiClient.get<Tool>(`/tools/${id}`, { headers })
 
-    // Return the response data
-    return response.data
-  } catch (error) {
-    console.error(`Error fetching tool with ID ${id}:`, error)
-    throw error // Re-throw the error to be handled by the caller
+//     // Return the response data
+//     return response.data
+//   } catch (error) {
+//     console.error(`Error fetching tool with ID ${id}:`, error)
+//     throw error // Re-throw the error to be handled by the caller
+//   }
+// }
+
+// export const getToolByUniqueId = async (unique_id: string): Promise<Tool> => {
+//   try {
+//     // Get token from localStorage for authorization
+//     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+
+//     // Set up headers with authorization if token exists
+//     const headers: Record<string, string> = {
+//       Accept: "application/json",
+//     }
+
+//     if (token) {
+//       headers["Authorization"] = `Bearer ${token}`
+//     }
+
+//     // Make the API call with authorization headers
+//     const response = await apiClient.get<Tool>(`/tools/unique/${unique_id}`, { headers })
+
+//     // Return the response data
+//     return response.data
+//   } catch (error) {
+//     console.error(`Error fetching tool with unique ID ${unique_id}:`, error)
+//     throw error // Re-throw the error to be handled by the caller
+//   }
+// }
+
+
+
+// In your service file
+export const getToolByUniqueId = async (unique_id: string): Promise<{ status: number; data?: Tool }> => {
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}`, Accept: "application/json" } : { Accept: "application/json" };
+  
+      const response = await apiClient.get<Tool>(`/tools/unique/${unique_id}`, { headers });
+  
+      // Return the full response or a structure containing status and data
+      return { status: response.status, data: response.data };
+  
+    } catch (error: any) {
+      console.error(`Error fetching tool with unique ID ${unique_id}:`, error);
+      // Return the status from the error response if available, otherwise a generic error status
+      return { status: error.response?.status || 500 };
+    }
   }
-}
+  
+  export const getToolById = async (id: string): Promise<{ status: number; data?: Tool }> => {
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}`, Accept: "application/json" } : { Accept: "application/json" };
+  
+      const response = await apiClient.get<Tool>(`/tools/${id}`, { headers });
+  
+      return { status: response.status, data: response.data };
+  
+    } catch (error: any) {
+      console.error(`Error fetching tool with ID ${id}:`, error);
+      return { status: error.response?.status || 500 };
+    }
+  }
 
 // Get featured tools - No static data fallback, only return what API provides
 export const getFeaturedTools = async (limit?: number) => {

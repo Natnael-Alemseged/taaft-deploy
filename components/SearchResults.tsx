@@ -265,8 +265,10 @@ export default function SearchResults({ initialQuery, category, source }: Search
 
   // Function to get the tool detail URL - use slug if available, otherwise name
   const getToolDetailUrl = (tool: Tool | any) => { // Allow any type for chat results
+    console.log(`tool data is: ${tool}`);
     // Prioritize slug if it exists, otherwise use name
     const identifier = tool.unique_id || tool.slug || tool.name || tool.id; // Use id as fallback
+    console.log(`unique_id is :${tool.unique_id}`);
     return `/tools/${encodeURIComponent(identifier)}`;
   }
 
@@ -455,7 +457,15 @@ export default function SearchResults({ initialQuery, category, source }: Search
                 {toolsToDisplay.map((tool, index) => (
                     // Use ChatResultCard for chat results, and a new custom card for regular tools
                     source === "chat" ? (
-                        <ChatResultCard key={tool.id || index} result={tool} index={index} viewMode={viewMode} onSaveToggle={handleSaveToggle} isAuthenticated={isAuthenticated} />
+                      <ChatResultCard 
+                      key={tool.id || index} 
+                      tool={tool} 
+                      index={index} 
+                      viewMode={viewMode} 
+                      onSaveToggle={handleSaveToggle} 
+                      isAuthenticated={isAuthenticated} 
+                    />
+                    
                     ) : (
                         // Custom Card for regular search results
                         <Card

@@ -14,11 +14,12 @@ import { withFallbackTool } from "@/lib/utils" // Assuming this utility exists
 import { useParams } from "next/navigation" // Correct import for App Router
 import LoadingToolDetailSkeleton from "@/components/skeletons/loading-tool-detail-skeleton" // Assuming skeleton component exists
 // Add the import for the new tool detail service at the top
-import { getToolByUniqueId, getToolByUniqueName } from "@/services/tool-detail-service" // Assuming these service functions exist
+
 import { useQueryClient } from "@tanstack/react-query" // Assuming React Query is used
 import Script from "next/script" // Add this import for schema markup
 import { showLoginModal } from "@/lib/auth-events"
 import { ShareButtonWithPopover } from "@/components/ShareButtonWithPopover"
+import { getToolById, getToolByUniqueId, getTools } from "@/services/tool-service"
 
 // Add TypeScript interfaces
 interface Tool {
@@ -104,12 +105,15 @@ export default function ToolDetail() {
   const slug = params?.slug as string
   const router = useRouter()
   const queryClient = useQueryClient()
+const [isToolLoading, setIsToolLoading] = useState(false)
+const [isError, setIsError] = useState(false)
+const [tool, setTool] = useState<Tool | null>(null)
 
   // Get auth state and loading state from useAuth
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
 
   // Get tool data and loading/error state from useTool
-  const { data: tool, isLoading: isToolLoading, isError } = useTool(slug)
+//   const { data: tool, isLoading: isToolLoading, isError } = useTool(slug)
 
   const saveTool = useSaveTool()
   const unsaveTool = useUnsaveTool()
@@ -121,49 +125,45 @@ export default function ToolDetail() {
     setSelectedPlan(selectedPlan === planName ? null : planName) // Deselect if it's already selected
   }
 
-  // Add useEffect to try the unique name endpoint first, then fall back to unique ID if that fails
-  useEffect(() => {
-    const fetchToolData = async () => {
-      // Only attempt fallback fetches if the primary useTool hook failed and is not loading
-      if (isError && !isToolLoading && !tool) { // Ensure no tool data exists
-        console.log("Primary fetch failed, attempting fallback lookups for slug:", slug);
-        try {
-          // First try to fetch by unique name
-          const uniqueNameTool = await getToolByUniqueName(slug)
-          if (uniqueNameTool) {
-            console.log("Found tool by unique name:", uniqueNameTool.name);
-            // Replace the tool data in the React Query cache
-            queryClient.setQueryData(["tool", slug], uniqueNameTool)
-            return // Stop here if successful
-          }
-        } catch (nameError) {
-          console.log("Name lookup failed for slug:", slug, nameError);
-
-          // If name lookup fails, try fetching by unique ID
-          try {
-            const uniqueIdTool = await getToolByUniqueId(slug)
-            if (uniqueIdTool) {
-              console.log("Found tool by unique ID:", uniqueIdTool.name);
-              // Replace the tool data in the React Query cache
-              queryClient.setQueryData(["tool", slug], uniqueIdTool)
-              return // Stop here if successful
-            }
-          } catch (idError) {
-            console.error("Failed to fetch by unique ID as well for slug:", slug, idError);
-            // If both fail, the isError state from useTool will remain true
-          }
-        }
-      }
-    }
-
-    // Trigger the fallback fetch logic if the initial hook indicates an error
-    if (isError && !isToolLoading && !tool) {
-      fetchToolData()
-    }
-    // Ensure the effect reruns if slug changes, assuming useTool might not cover all edge cases
-    // React Query's useQuery with [tool, slug] as key should refetch when slug changes,
-    // but keeping isError as a dependency is important for the *fallback* logic.
-  }, [isError, isToolLoading, tool, slug, router, queryClient]) // Dependencies
+// In your component
+useEffect(() => {
+    const fetchTool = async () => {
+      setIsToolLoading(true); // Set loading state
+      setIsError(false); // Reset error state
+  
+      try {
+        // Attempt fetch by Unique ID
+        const uniqueIdResponse = await getToolByUniqueId(slug);
+  
+        if (uniqueIdResponse.status === 200 && uniqueIdResponse.data) {
+          setTool(uniqueIdResponse.data);
+        } else {
+          // If Unique ID failed (status not 200), attempt fetch by regular ID
+          console.warn(`Unique ID lookup for ${slug} failed with status ${uniqueIdResponse.status || 'N/A'}, trying regular ID.`);
+          const idResponse = await getToolById(slug); // Assuming slug can also be the regular ID
+  
+          if (idResponse.status === 200 && idResponse.data) {
+            setTool(idResponse.data);
+          } else {
+            // Both attempts failed
+            console.error(`Both Unique ID and regular ID lookup failed for ${slug}.`);
+            setIsError(true); // Set error flag if both failed
+        }
+        }
+      } catch (error) {
+        // This catch block would now only catch unexpected errors (e.g., code issues)
+        console.error("Unexpected error during tool fetch process:", error);
+        setIsError(true);
+      } finally {
+        setIsToolLoading(false); // Turn off loading state regardless of success or failure
+      }
+    };
+  
+    if (slug) { // Only fetch if slug is available
+      fetchTool();
+    }
+  
+  }, [slug, router]); // router might not need to be a dependency here unless its path is used in fetch logic
 
   // Effect to show login modal if not authenticated.
   // This effect will run when isAuthenticated changes.
