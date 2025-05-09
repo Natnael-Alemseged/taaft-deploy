@@ -218,21 +218,26 @@ useEffect(() => {
 
 
   // Handle save toggle
-const handleSaveToggle = (toolId: string, savedByUser: boolean) => {
- 
+const handleSaveToggle = () => {
+  if (!isAuthenticated) {
+    showLoginModal(router.asPath, () => {
+      router.push('/')
+    })
+    return
+  }
 
   // Optimistic update
-  queryClient.setQueryData(["tool", toolId], (oldTool: Tool | undefined) => {
+  queryClient.setQueryData(["tool", slug], (oldTool: Tool | undefined) => {
     if (oldTool) {
-      return { ...oldTool, savedByUser: !oldTool.savedByUser };
+      return { ...oldTool, savedByUser: !oldTool.savedByUser }
     }
-    return oldTool;
-  });
+    return oldTool
+  })
 
-  if (savedByUser) {
-    unsaveTool.mutate(toolId)
+  if (safeTool?.savedByUser) {
+    unsaveTool.mutate(safeTool.id) // Use safeTool.id instead of toolId
   } else {
-    saveTool.mutate(toolId)
+    saveTool.mutate(safeTool.id) // Use safeTool.id instead of toolId
   }
 }
 

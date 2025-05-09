@@ -24,7 +24,7 @@ export interface Tool {
   updatedAt: string
   status: "pending" | "approved" | "rejected"
   isFeatured?: boolean
-  savedByUser?: boolean
+  saved_by_user?: boolean
 }
 
 export interface ToolSubmission {

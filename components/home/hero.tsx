@@ -16,6 +16,7 @@ import { keywordSearch } from "@/services/chat-service"
 import { useRouter } from "next/navigation"
 import { robotSvg } from "@/lib/reusable_assets"
 import { SignInModal } from "./sign-in-modal"
+import {getTools} from "@/services/tool-service";
 
 // Types for API integration
 interface Tool {
@@ -131,19 +132,66 @@ export default function Hero() {
   ]
 
   // Function to fetch tools from API
-  const fetchTools = async (query: string) => { // Added authToken parameter
+  // const fetchTools = async (query: string) => { // Added authToken parameter
+  //   setIsLoading(true);
+  //   try {
+  //     // Optional: Add a check to ensure the token exists before making the request
+  //     const data = await keywordSearch([query,],0,5);
+  //
+  //     setTools(data.tools);
+  //   } catch (error) {
+  //     console.error('Error fetching tools:', error);
+  //     setTools([]); // Clear tools on error
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+
+
+  const fetchTools = async (query: string) => {
     setIsLoading(true);
+    setTools([]); // Clear previous results immediately
+
     try {
-      // Optional: Add a check to ensure the token exists before making the request
-      const data = await keywordSearch([query,],0,5);
-      setTools(data.tools);
-    } catch (error) {
-      console.error('Error fetching tools:', error);
-      setTools([]); // Clear tools on error
+      console.log(`Attempting keyword search for: "${query}"`);
+      // Attempt keyword search first
+      const keywordData = await keywordSearch([query], 0, 5); // Assuming this takes an array of keywords
+
+      if (keywordData && keywordData.tools && keywordData.tools.length > 0) {
+        console.log(`Keyword search successful, found ${keywordData.tools.length} tools.`);
+        setTools(keywordData.tools);
+      } else {
+        console.log(`Keyword search found no tools. Falling back to general search for: "${query}"`);
+        // Fallback to general search if keyword search returned no tools or was empty
+        try {
+          const generalData = await getTools({ search: query }); // Use the getTools function with the search parameter
+          console.log(`General search successful, found ${generalData.tools.length} tools.`);
+          setTools(generalData.tools);
+        } catch (generalError) {
+          console.error('General search fallback failed:', generalError);
+          setTools([]); // Clear tools on fallback error
+          // Optionally show a toast error here if both methods failed
+        }
+      }
+    } catch (keywordError) {
+      console.error('Keyword search failed unexpectedly:', keywordError);
+      console.log(`Keyword search failed. Falling back to general search for: "${query}"`);
+      // Fallback to general search if keyword search threw an error
+      try {
+        const generalData = await getTools({ search: query });
+        console.log(`General search successful, found ${generalData.tools.length} tools.`);
+        setTools(generalData.tools);
+      } catch (generalError) {
+        console.error('General search fallback after keyword failure also failed:', generalError);
+        setTools([]); // Clear tools if both fail
+        // Optionally show a toast error here if both methods failed
+      }
     } finally {
       setIsLoading(false);
     }
   };
+
 
   // Debounced search effect
   useEffect(() => {

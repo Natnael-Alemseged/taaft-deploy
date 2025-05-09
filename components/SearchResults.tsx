@@ -590,7 +590,7 @@ export default function SearchResults({ initialQuery, category, source }: Search
                                             } else {
                                                 // Navigate to tool detail page if authenticated
                                                 // This matches the tool-card's behavior for this button click
-                                                 window.location.href = getToolDetailUrl(tool);
+                                                //  window.location.href = getToolDetailUrl(tool.unique_id);
                                                 // OR if the button *should* open the external site directly:
                                                 // if (tool.website) window.open(tool.website, '_blank');
                                                 // Let's stick to the tool-card's apparent logic of navigating to the detail page first
