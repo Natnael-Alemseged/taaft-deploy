@@ -51,36 +51,41 @@ export default function SearchResults({ initialQuery, category, source }: Search
 
     // Handle chat results from sessionStorage if source is 'chat'
     if (urlSource === "chat") {
+      console.log("[Search Page] Source is 'chat'. Attempting to retrieve chat response tools from sessionStorage...");
+    
       try {
-        const chatData = sessionStorage.getItem("chatResponseTools")
+        const chatData = sessionStorage.getItem("chatResponseTools");
+    
         if (chatData) {
-          const parsedData = JSON.parse(chatData)
-          if (parsedData && parsedData.hits && Array.isArray(parsedData.hits)) {
-            // Map chat results to a structure compatible with ToolCard if needed, or use a dedicated card
-            // For now, we'll use a separate state and potentially a different card component
-            setChatResults(parsedData.hits)
-            setTotalResults(parsedData.hits.length)
-            setIsLoading(false) // Stop loading if chat results are found
-            // Clear regular search results if showing chat results
+          console.log("[Search Page] Data found in sessionStorage. Parsing...");
+    
+          const parsedData = JSON.parse(chatData);
+    
+          if (parsedData && parsedData && Array.isArray(parsedData)) {
+            console.log(`[Search Page] Parsed chat data successfully. Found ${parsedData.length} tools.`);
+            setChatResults(parsedData);
+            setTotalResults(parsedData.length);
+            setIsLoading(false); 
             setDisplayedTools([]);
           } else {
-            // If source is chat but no valid data, clear chat results
+            console.warn("[Search Page] Chat data structure is invalid or empty. Expected 'hits' array.");
             setChatResults([]);
-            // Proceed with regular search based on URL query/category
-            setIsLoading(true); // Start loading for regular search
+            setIsLoading(true); 
           }
         } else {
-          // If source is chat but no data in session storage, clear chat results
+          console.warn("[Search Page] No chat data found in sessionStorage. Proceeding with regular search.");
           setChatResults([]);
-          // Proceed with regular search based on URL query/category
-          setIsLoading(true); // Start loading for regular search
+          setIsLoading(true); 
         }
+    
       } catch (error) {
-        console.error("Error parsing chat data:", error)
-        setChatResults([]); // Clear chat results on error
-        setIsLoading(true); // Start loading for regular search
+        console.error("[Search Page] Error parsing chat data from sessionStorage:", error);
+        setChatResults([]);
+        setIsLoading(true);
       }
-    } else {
+    }
+    else {
+      console.log("urlsource is not chat");
       // If source is not chat, clear chat results and proceed with regular search
       setChatResults([]);
       setIsLoading(true); // Start loading for regular search
@@ -253,7 +258,7 @@ export default function SearchResults({ initialQuery, category, source }: Search
   // Function to get the tool detail URL - use slug if available, otherwise name
   const getToolDetailUrl = (tool: Tool | any) => { // Allow any type for chat results
     // Prioritize slug if it exists, otherwise use name
-    const identifier = tool.slug || tool.name || tool.id; // Use id as fallback
+    const identifier = tool.unique_id || tool.slug || tool.name || tool.id; // Use id as fallback
     return `/tools/${encodeURIComponent(identifier)}`;
   }
 

@@ -1,11 +1,13 @@
 import SearchResults from "@/components/SearchResults"
 
-export default function SearchPage({
+export default async function SearchPage({
   searchParams,
-}: { searchParams: { [key: string]: string | string[] | undefined } }) {
-  const query = typeof searchParams.q === "string" ? searchParams.q : ""
-  const category = typeof searchParams.category === "string" ? searchParams.category : ""
-  const source = typeof searchParams.source === "string" ? searchParams.source : ""
+}: {
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
+  const query = typeof (await searchParams.q) === "string" ? await searchParams.q : ""
+  const category = typeof (await searchParams.category) === "string" ? await searchParams.category : ""
+  const source = typeof (await searchParams.source) === "string" ? await searchParams.source : ""
 
   return (
     <div className="container mx-auto px-4 py-8">

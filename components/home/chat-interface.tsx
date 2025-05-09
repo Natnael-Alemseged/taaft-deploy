@@ -91,7 +91,7 @@ export default function ChatInterface({ isOpen, onClose, inputRef, isRelativeToP
   const [streamingMessage, setStreamingMessage] = useState(''); // Message currently being streamed
   const [isLoading, setIsLoading] = useState(false); // To show a loading indicator
   const [conversationalRecommendations, setConversationalRecommendations] = useState<string[]>([]); // New state for conversational recommendations
-
+const [formattedData,setFormattedData]=useState<any[]>([]);
 
 
 
@@ -236,21 +236,10 @@ useEffect(() => {
 
   
 
-  // Handle sending a message
- // Assuming these are defined in your component's state:
- // const [messages, setMessages] = useState<Message[]>([]);
- // const [streamingMessage, setStreamingMessage] = useState('');
- // const [isLoading, setIsLoading] = useState(false);
- // const [input, setInput] = useState("");
- // const [activeChatId, setActiveChatId] = useState<string | null>(null);
- // const [error, setError] = useState<string | null>(null);
- // const [toolRecommendations, setToolRecommendations] = useState<any[]>([]);
- // const createChatSession = useCreateChatSession(); // Assuming this hook provides mutateAsync
- // const refetchSessions = useChatSessions().refetch; // Assuming this hook provides refetch
- // const router = useRouter(); // Assuming you are using Next.js router for navigation
- // const chatEndRef = useRef<HTMLDivElement>(null); // Assuming you have this ref for scrolling
+
 
  async function handleSendMessage(content?: string) {
+  setFormattedData([]);
   // Prevent sending if input is empty or already loading
   if (!input.trim() && !content) return; // Ensure there's content to send
   if (isLoading) return;
@@ -436,13 +425,16 @@ else{
                         
 
             }  else if (eventData.event === 'formatted_data') {
+
               console.log('Formatted data event received:', eventData);
            
               // Check if the data has a 'hits' array (tool recommendations)
-              if (eventData.data && eventData.data.hits && Array.isArray(eventData.data.hits)) {
-              setToolRecommendations(eventData.data.hits);
-                               accumulatedFormattedData = eventData.data; // Store for the final message
-              console.log("Tool recommendations received and stored.");
+              if (eventData.data?.hits && Array.isArray(eventData.data.hits)) {
+                console.log('in formatted data event');
+                console.log(eventData.data);
+            
+                setFormattedData(eventData.data.hits);
+                console.log("Formatted data set successfully.");
               }
             }
             
@@ -502,6 +494,16 @@ else{
     setToolRecommendations([])
     setConversationalRecommendations([]); // Clear conversational recommendations
   }
+
+  useEffect(() => {
+    if (formattedData.length > 0) {
+      const recommendations = formattedData.map((item) => item.name).filter(Boolean); // Ensure `name` is present
+      // set(recommendations);
+      console.log("Tool recommendations updated:", recommendations);
+    }
+  }, [formattedData]);
+  
+  
 
   // Handle creating a new chat
   const handleNewChat = async () => {
@@ -646,100 +648,81 @@ else{
 
           {/* Chat messages */}
           <div className="flex-1 overflow-y-auto p-4 text-sm">
-            {isLoadingMessages ? (
-              <div className="flex justify-center items-center h-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
-              </div>
-            ) : (
-              messages.map((message, index) => (
-                <div key={index} className="mb-4 flex justify-start">
-                  {message.role === "assistant" && index === 0 && (
-                    <div className="mb-1 text-xs text-gray-600 font-medium absolute -top-5 left-0">AI Assistant</div>
-                  )}
-                  <div
-                    className={clsx(
-                      "rounded-lg p-3 max-w-[80%]",
-                      message.role === "user" ? "bg-purple-600 text-white ml-auto" : "bg-gray-100 text-gray-800",
-                      message.role === "assistant" && index === 0 && "relative mt-5",
-                    )}
-                  >
-                    {message.content}
-
-                    {/* Add search results button if this message has search results */}
-                    {message.role === "assistant" && message.hasSearchResults && (
-                      <div className="mt-3 pt-2 border-t border-gray-200">
-                        <button
-                          onClick={() => {
-                            // Store the formatted data in sessionStorage before navigating
-                            if (message.formattedData) {
-                              try {
-                                sessionStorage.setItem("chatResponseTools", JSON.stringify(message.formattedData))
-                                console.log("Data successfully stored in sessionStorage")
-                              } catch (error) {
-                                console.error("Error storing data in sessionStorage:", error)
-                              }
-                            }
-                            router.push("/search?source=chat")
-                          }}
-                          className="text-sm text-purple-600 hover:text-purple-800 font-medium flex items-center"
-                        >
-                          <Search className="h-4 w-4 mr-1" />
-                          View search results
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-
-               {/* --- MOVE THESE BLOCKS INSIDE THIS DIV --- */}
-               {messages.map((message, index) => (
-  <div key={index} className="mb-4 flex justify-start">
-    {message.role === "assistant" && index === 0 && (
-      <div className="mb-1 text-xs text-gray-600 font-medium absolute -top-5 left-0">AI Assistant</div>
-    )}
-    <div
-      className={clsx(
-        "rounded-lg p-3 max-w-[80%]",
-        message.role === "user" ? "bg-purple-600 text-white ml-auto" : "bg-gray-100 text-gray-800",
-        message.role === "assistant" && index === 0 && "relative mt-5",
-      )}
-    >
-      {message.content}
+  {isLoadingMessages ? (
+    <div className="flex justify-center items-center h-full">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
     </div>
-  </div>
-))}
-
-{/* Streaming Message */}
-{isLoading && streamingMessage && (
-  <div className="mb-4 flex justify-start">
-    <div className="rounded-lg p-3 max-w-[80%] bg-gray-100 text-gray-800">
-      {streamingMessage}
-      <span className="cursor">|</span> {/* Optional: add a typing cursor */}
-    </div>
-  </div>
-)}
-
-            {/* --- END OF MOVED BLOCKS --- */}
-
-            {chatCompletion.isPending && (
-              <div className="mr-auto max-w-[80%]">
-                <div className="flex items-center space-x-2 rounded-lg bg-gray-100 p-3 text-gray-800">
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
-                  <div
-                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
-                  <div
-                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                    style={{ animationDelay: "0.4s" }}
-                  ></div>
-                </div>
-              </div>
+  ) : (
+    <>
+      {messages.map((message, index) => (
+        <div key={index} className="mb-4 flex justify-start">
+          {message.role === "assistant" && index === 0 && (
+            <div className="mb-1 text-xs text-gray-600 font-medium absolute -top-5 left-0">AI Assistant</div>
+          )}
+          <div
+            className={clsx(
+              "rounded-lg p-3 max-w-[80%]",
+              message.role === "user" ? "bg-purple-600 text-white ml-auto" : "bg-gray-100 text-gray-800",
+              message.role === "assistant" && index === 0 && "relative mt-5"
             )}
-            <div ref={chatEndRef} />
+          >
+            {message.content}
           </div>
+        </div>
+      ))}
+
+      {/* Show "View search results" button only when formattedData is not empty */}
+      {formattedData.length > 0 && (
+        <div className="mt-3 pt-2 border-t border-gray-200">
+          <button
+            onClick={() => {
+              try {
+                sessionStorage.setItem("chatResponseTools", JSON.stringify(formattedData));
+                console.log("Data successfully stored in sessionStorage");
+              } catch (error) {
+                console.error("Error storing data in sessionStorage:", error);
+              }
+
+              router.push("/search?source=chat");
+            }}
+            className="text-sm text-purple-600 hover:text-purple-800 font-medium flex items-center"
+          >
+            <Search className="h-4 w-4 mr-1" />
+            View search results
+          </button>
+        </div>
+      )}
+    </>
+  )}
+
+  {/* Streaming Message */}
+  {isLoading && streamingMessage && (
+    <div className="mb-4 flex justify-start">
+      <div className="rounded-lg p-3 max-w-[80%] bg-gray-100 text-gray-800">
+        {streamingMessage}
+        <span className="cursor">|</span>
+      </div>
+    </div>
+  )}
+
+  {chatCompletion.isPending && (
+    <div className="mr-auto max-w-[80%]">
+      <div className="flex items-center space-x-2 rounded-lg bg-gray-100 p-3 text-gray-800">
+        <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
+        <div
+          className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+          style={{ animationDelay: "0.2s" }}
+        ></div>
+        <div
+          className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+          style={{ animationDelay: "0.4s" }}
+        ></div>
+      </div>
+    </div>
+  )}
+
+  <div ref={chatEndRef} />
+</div>
 
        
        
