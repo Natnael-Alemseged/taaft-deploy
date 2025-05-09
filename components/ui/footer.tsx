@@ -40,7 +40,7 @@ export default function Footer() {
                 {/*</Link>*/}
               </li>
               <li>
-                <Link href="#" className="text-sm text-gray-600 hover:text-purple-600">
+                <Link href="/article" className="text-sm text-gray-600 hover:text-purple-600">
                   Blog
                 </Link>
               </li>
