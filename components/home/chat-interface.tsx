@@ -416,10 +416,25 @@ else{
                   temp=null;
                 }
 
-                if(temp==null && eventData.content!=="']" && eventData.content !=='``'){
-            
-                receivedMessageContent += eventData.content;
-                setStreamingMessage(receivedMessageContent);
+                // if(temp==null && eventData.content!=="']" && eventData.content !=='``'){
+                //
+                // receivedMessageContent += eventData.content;
+                // setStreamingMessage(receivedMessageContent);
+                // }
+
+                if (temp == null && eventData.content !== "']" && eventData.content !== '``') {
+                  receivedMessageContent += eventData.content;
+
+                  // Apply the regex here to filter out characters that are NOT letters or numbers
+                  const cleanReceivedMessageContent = receivedMessageContent.replace(/[^a-zA-Z0-9 ]/g, '');
+
+                  // Update the state with the cleaned message
+                  setStreamingMessage(cleanReceivedMessageContent);
+
+                  // Note: receivedMessageContent still holds the raw (unfiltered) data here.
+                  // If you only ever need the clean version, you might want to update receivedMessageContent
+                  // with the clean version after filtering, or append the clean chunk initially.
+                  // The current approach keeps the cumulative raw data and cleans it for display.
                 }
               }
                         
@@ -437,32 +452,37 @@ else{
                 console.log("Formatted data set successfully.");
               }
             }
-            
+
             else if (eventData.event === 'end') {
               console.log('End event received:', eventData);
-              // --- Finalize the message when the 'end' event is received ---
-              // Add the complete accumulated message to the main messages list
-              // Use eventData.message_id if available, otherwise generate one
-              // --- Corrected assignment for 'end' event ---
-              setMessages(prevMessages => [...prevMessages, { id: eventData.message_id || 'bot-' + Date.now(), content: receivedMessageContent, role: "assistant" }]);
-              setStreamingMessage(''); // Clear the temporary streaming state
-              setIsLoading(false); // Stop loading
-              messageFinalized = true; // Mark as finalized
 
-              // If the 'end' event guarantees no more data, you can exit the function
-              // immediately here.
-              // return; // Uncomment if 'end' means stop processing stream immediately
+              // Filter the final accumulated message content to allow letters, numbers, and spaces
+              const finalCleanMessageContent = receivedMessageContent.replace(/[^a-zA-Z0-9 ]/g, '');
+
+              // Add the cleaned message to the messages state
+              setMessages(prevMessages => [...prevMessages, {
+                id: eventData.message_id || 'bot-' + Date.now(),
+                content: finalCleanMessageContent, // Use the filtered content here
+                role: "assistant"
+              }]);
+
+              // Clear the temporary streaming state that was showing the partial message
+              setStreamingMessage('');
+
+              // IMPORTANT: Reset the accumulated content variable for the next message
+              receivedMessageContent = ''; // Assuming receivedMessageContent is declared outside this block
+
+              setIsLoading(false); // Stop loading
+
+              // Assuming messageFinalized is a variable managed outside this block
+              messageFinalized = true; // Mark as finalized
 
             }
      
 
           } catch (e) {
             console.error('Failed to parse JSON line:', line, e);
-            // Decide how to handle a parsing error - maybe show an error message
-            // setError("Error processing streamed data.");
-            // setIsLoading(false);
-            // reader.cancel(); // Abort the stream
-            // return; // Exit the async function
+
           }
         } else {
           console.warn('Ignoring unexpected line format:', line);

@@ -165,7 +165,7 @@ export default function Hero() {
         console.log(`Keyword search found no tools. Falling back to general search for: "${query}"`);
         // Fallback to general search if keyword search returned no tools or was empty
         try {
-          const generalData = await getTools({ search: query }); // Use the getTools function with the search parameter
+          const generalData = await getTools({ search: query ,limit: 5}); // Use the getTools function with the search parameter
           console.log(`General search successful, found ${generalData.tools.length} tools.`);
           setTools(generalData.tools);
         } catch (generalError) {
@@ -382,9 +382,9 @@ export default function Hero() {
     onClick={handleChatOpen}
     onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-    className="px-2.5 py-1 text-xs bg-gray-300 hover:bg-gray-200 text-gray-700 rounded-md transition-colors flex items-center gap-1.5"
+    className="relative group rounded-full bg-purple-100 p-2.5 h-10 w-10 flex items-center justify-center cursor-pointer"
   >
-    <MessageSquare className="h-3.5 w-3.5" />
+    <MessageSquare   className="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors"/>
   </button>
 
   {showChatTooltip && (
