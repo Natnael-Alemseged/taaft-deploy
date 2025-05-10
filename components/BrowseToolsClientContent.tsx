@@ -12,7 +12,7 @@ import { useTools } from "@/hooks/use-tools"
 import { useCategories } from "@/hooks/use-categories"
 
 // Import reusable ToolCard component
-import ToolCard from "@/components/tool-card"
+import ToolCard from "@/components/cards/tool-card"
 
 // Import Next.js router and pathname hooks for App Router
 import { useRouter, useSearchParams, usePathname } from "next/navigation"

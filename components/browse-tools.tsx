@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTools } from "@/hooks/use-tools"
 import { useCategories } from "@/hooks/use-categories"
-import ToolCard from "@/components/tool-card"
+import ToolCard from "@/components/cards/tool-card"
 import type { Category } from "@/types/category"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useDebounce } from 'use-debounce'

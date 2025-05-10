@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ChevronRight} from "lucide-react"
 import { useFeaturedTools } from "@/hooks/use-tools"
 
-import ToolCard from "../tool-card"
+import ToolCard from "../cards/tool-card"
 
 type Tool = {
   id: string

@@ -226,7 +226,7 @@ export const getPopularTools = async (limit?: number) => {
       params: { limit, sort: "popular" },
       headers,
     })
-
+console.log("getPopularTools response", JSON.stringify(response.data, null, 2));
     return response.data
   } catch (error) {
     console.error("Error fetching popular tools:", error)

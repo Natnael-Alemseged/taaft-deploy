@@ -20,6 +20,7 @@ import {getTools} from "@/services/tool-service";
 
 // Types for API integration
 interface Tool {
+  unique_id: string
   id: number | string
   name: string
   description: string
@@ -439,59 +440,53 @@ export default function Hero() {
                           </h3>
                         </div>
                         {tools.map((tool) => (
-                          <div
-                            key={tool.id}
-                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                          >
-                          <div className="flex items-center justify-between"> {/* Main row flex */}
-  {/* Left content area: Icon + Name/Desc Block */}
-  {/* Change items-center to items-start to align the icon and the text block to the top */}
-  <div className="flex items-start space-x-3">
-    {/* Icon */}
-    <div className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
-      {tool.image ?? robotSvg}
-    </div>
+                            <div
+                                key={tool.id}
+                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent click from bubbling up
+                                  goToToolDetails(tool.unique_id);
+                                }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-start space-x-3">
+                                  <div className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
+                                    {tool.image ?? robotSvg}
+                                  </div>
 
-    {/* Container for Name/Desc stacked vertically */}
-    {/* Add items-start to align children (h4 and div) to the left */}
-    <div className="flex flex-col items-start">
-      {/* Name */}
-      <h4 className="text-sm font-medium">{tool.name}</h4>
-      {/* Description */}
-      <div className="text-xs text-gray-500">
-        {tool.description?.slice(0, 50)}
-        {tool.description?.length > 70 && '...'}
-      </div>
-    </div>
-  </div>
+                                  <div className="flex flex-col items-start">
+                                    <h4 className="text-sm font-medium">{tool.name}</h4>
+                                    <div className="text-xs text-gray-500">
+                                      {tool.description?.slice(0, 50)}
+                                      {tool.description?.length > 70 && '...'}
+                                    </div>
+                                  </div>
+                                </div>
 
-  {/* Right content area: Category + Link */}
-  {/* This block stays the same as your last snippet */}
-  <div className="flex items-center space-x-2">
-  {tool.categories?.[0]!=null&& 
-    <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
-
-      {tool.categories?.[0]?.name
-        ? tool.categories[0].name.length > 15
-          ? tool.categories[0].name.slice(0, 15) + '...'
-          : tool.categories[0].name
-        : null}
-    </span>}
-    <ExternalLink
-      // Corrected color and size from previous step
-      className="text-gray-400 hover:text-gray-600 w-4 h-4 cursor-pointer"
-      onClick={(e) => { // Add stopPropagation if the parent div is clickable
-        e.stopPropagation(); // Prevent click from bubbling up
-        goToToolDetails(tool.id);
-      }}
-    />
-  </div>
-</div>
-                          </div>
+                                <div className="flex items-center space-x-2">
+                                  {tool.categories?.[0] != null && (
+                                      <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+            {tool.categories[0].name.length > 15
+                ? tool.categories[0].name.slice(0, 15) + '...'
+                : tool.categories[0].name}
+          </span>
+                                  )}
+                                  <ExternalLink
+                                      className="text-gray-400 hover:text-gray-600 w-4 h-4 cursor-pointer"
+                                  />
+                                </div>
+                              </div>
+                            </div>
                         ))}
+
                       </>
                     )}
                   </div>
+
+                  {/* onClick={(e) => { // Add stopPropagation if the parent div is clickable
+        e.stopPropagation(); // Prevent click from bubbling up
+        goToToolDetails(tool.unique_id);
+      }}*/}
 
                   {/* Footer buttons */}
                   <div className="border-t p-3 bg-gray-50 flex justify-end">
