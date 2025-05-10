@@ -25,7 +25,8 @@ export default function SponsoredTools() {
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false)
   const [previousRoute, setPreviousRoute] = useState<string | undefined>()
 
-  const { data, isLoading, isError } = usePopularTools()
+
+  const { data, isLoading, isError,refetch } = usePopularTools()
   const sponsoredTools: Tool[] = data?.tools || []
   const itemsPerPage = 2
   const totalPages = Math.ceil(sponsoredTools.length / itemsPerPage)
@@ -63,18 +64,19 @@ export default function SponsoredTools() {
     setPreviousRoute(undefined)
   }
 
-  const handleSaveToggle = (toolId: string, savedByUser: boolean) => {
+  const handleSaveToggle = (toolId: string, saved_by_user: boolean) => {
     if (!isAuthenticated) {
       setPreviousRoute(pathname)
-      openSignInModal()
+      setIsSignInModalOpen(true)
       return
     }
 
-    if (savedByUser) {
-      unsaveTool.mutate(toolId)
-    } else {
-      saveTool.mutate(toolId)
-    }
+    const mutation = saved_by_user ? unsaveTool : saveTool
+    mutation.mutate(toolId, {
+      onSuccess: () => {
+        refetch()
+      }
+    })
   }
 
   if (isLoading) {
@@ -149,7 +151,7 @@ export default function SponsoredTools() {
                     )}
                   </div>
                   <span className="flex items-center gap-2 pb-3">
-                    {robotSvg}
+                    {tool.image?? robotSvg}
                     <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>
                   </span>
                   <p className="mb-4 text-sm text-gray-600 pt-3">
@@ -167,10 +169,10 @@ export default function SponsoredTools() {
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2">
                       <button
-                        className={`rounded p-1 ${tool.savedByUser ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
-                        onClick={() => handleSaveToggle(tool.unique_id, !!tool.savedByUser)}
+                        className={`rounded p-1 ${tool.saved_by_user ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
+                        onClick={() => handleSaveToggle(tool.unique_id, !!tool.saved_by_user)}
                       >
-                        <Bookmark className="h-4 w-4" fill={tool.savedByUser ? "currentColor" : "none"} />
+                        <Bookmark className="h-4 w-4" fill={tool.saved_by_user ? "currentColor" : "none"} />
                       </button>
                       <ShareButtonWithPopover itemLink={`/tools/${tool.id}`} />
                     </span>
