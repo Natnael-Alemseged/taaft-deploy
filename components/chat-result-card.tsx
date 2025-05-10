@@ -35,7 +35,10 @@ export default function ChatResultCard({ tool, index, viewMode = "grid" }: ChatR
         // const toolUrl = `/tools/${encodeURIComponent(response.id)}`
         console.log("Tool ID:", tool.unique_id);
 
+
+        // let x="korbit"
         router.push(`tools/${tool.unique_id}`);
+        // router.push(`tools/${x}`);
       // } else {
       //   console.warn("Tool ID not found")
       // }

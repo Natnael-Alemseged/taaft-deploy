@@ -167,6 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // The initAuth useEffect will then run on the final page load and fetch user.
       const { url } = await initiateGoogleLogin()
       window.location.href = url
+      window.location.reload();
     } catch (error) {
       console.error("Google login initiation error:", error)
       setIsLoading(false) // Set loading to false if initiation fails
