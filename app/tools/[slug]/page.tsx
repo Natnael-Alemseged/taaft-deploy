@@ -146,39 +146,6 @@ export default function ToolDetail() {
         }
     }
 
-    const getBadgeClass = (label: string) => {
-        switch (label) {
-            case "premium":
-            case "subscription":
-            case "one-time":
-            case "usage-based":
-                return "bg-yellow-100 text-yellow-600"
-            case "free":
-            case "freemium":
-                return "bg-green-100 text-green-600"
-            case "featured":
-                return "bg-purple-600 text-white"
-            default:
-                return "bg-gray-100 text-gray-600"
-        }
-    }
-
-    const formatPricingLabel = (pricing: string): string => {
-        switch (pricing) {
-            case "free":
-                return "Free"
-            case "freemium":
-                return "Freemium"
-            case "subscription":
-                return "Subscription"
-            case "one-time":
-                return "One-time"
-            case "usage-based":
-                return "Usage-based"
-            default:
-                return pricing.charAt(0).toUpperCase() + pricing.slice(1)
-        }
-    }
 
 
     return (
