@@ -70,7 +70,7 @@ export default function Footer() {
                   <li key={category.id || category.slug}>
                     <Link
                       // href={`/categories/${category.slug || category.id}`} // Link to category page (adjust path/slug as needed)
-                      href={`categories`}
+                      href={`/category/${category.slug}`}
                       className="text-sm text-gray-600 hover:text-purple-600 dark:text-gray-300 dark:hover:text-purple-400"
                     >
                       {category.name}
