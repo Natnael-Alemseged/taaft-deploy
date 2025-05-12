@@ -1,11 +1,6 @@
 import apiClient from "@/lib/api-client" // Assuming this is for other endpoints like register/google
 import axios from "axios"
 import { CloudCog } from "lucide-react"
-import {useRouter} from "next/navigation"
-
-
-
-const router = useRouter()
 
 // Types
 interface LoginCredentials {
