@@ -5,14 +5,14 @@ export interface Category {
 
 export interface Tool {
   id: string
-  image:string
+  logo_url:string
   unique_id: string
   name: string
   slug: string
   link: string
   categories: Category[]
   description: string
-  features: string[]
+  feature_list: string[]
   keywords: string[]
   pricing: "free" | "freemium" | "subscription" | "one-time" | "usage-based" | "Premium"
   hasFreeVersion: boolean
@@ -21,7 +21,7 @@ export interface Tool {
   contactName: string
   contactEmail: string
   createdAt: string
-  updatedAt: string
+  updated_at: string
   status: "pending" | "approved" | "rejected"
   isFeatured?: boolean
   saved_by_user?: boolean

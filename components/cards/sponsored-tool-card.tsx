@@ -125,7 +125,13 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
                     )}
                 </div>
                 <span className="flex items-center gap-2 pb-3">
-                    {tool.image ?? robotSvg}
+                   <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
+  {tool.logo_url ? (
+      <img src={tool.logo_url} alt="Tool Logo" className="w-full h-full object-contain"/>
+  ) : (
+      robotSvg
+  )}
+</div>
                     <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>
                   </span>
                 <p className="mb-4 text-sm text-gray-600 pt-3">

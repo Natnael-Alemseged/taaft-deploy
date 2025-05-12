@@ -65,7 +65,7 @@ export const withFallbackTool = (tool: Tool): {
     link: tool.link || "#",
     category: tool.category || "Image Generation", // More specific category
     description: tool.description || "A powerful AI tool for generating images from text descriptions and various styles.", // More specific description
-    features: tool.features || [ // Default features based on screenshot
+    features: tool.feature_list || [ // Default features based on screenshot
       "Text to Image Generation",
       "Multiple Styles",
       "High-Resolution Output",
@@ -82,7 +82,7 @@ export const withFallbackTool = (tool: Tool): {
     contactName: tool.contactName || "Support Team", // Generic contact name
     contactEmail: tool.contactEmail || "support@example.com", // Generic contact email
     createdAt: tool.createdAt || new Date().toISOString(),
-    updatedAt: tool.updatedAt || new Date().toISOString(),
+    updatedAt: tool.updated_at || new Date().toISOString(),
     status: tool.status || "approved",
     isFeatured: tool.isFeatured ?? false,
     savedByUser: tool.savedByUser ?? false,

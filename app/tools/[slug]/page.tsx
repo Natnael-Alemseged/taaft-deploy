@@ -198,13 +198,13 @@ export default function ToolDetail() {
 
 
                         {/* Key Features */}
-                        {safeTool?.features&&
+                        {safeTool?.feature_list && safeTool.feature_list.length!=0 &&
 
 
                             <div className="mb-12">
                             <h2 className="text-xl font-bold text-[#111827] mb-6">Key Features</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {safeTool?.features?.map((feature, index) => (
+                                {safeTool?.feature_list?.map((feature, index) => (
                                     <div key={index} className="border border-[#e5e7eb] rounded-lg p-4">
                                         <div className="flex items-start mb-2">
                                             <div
@@ -348,7 +348,7 @@ export default function ToolDetail() {
 
                             <h3 className="font-semibold text-[#111827] mb-2">Use Cases</h3>
                             <div className="flex flex-wrap gap-2 mb-6">
-                                {safeTool?.features?.slice(0, 5).map((feature, index) => (
+                                {safeTool?.feature_list?.slice(0, 5).map((feature, index) => (
                                     <span key={index}
                                           className="text-sm bg-[#f3f4f6] text-[#6b7280] px-3 py-1 rounded-full">
                     {feature}
@@ -376,7 +376,7 @@ export default function ToolDetail() {
                             <div className="border-t border-[#e5e7eb] pt-4">
                                 <h3 className="font-semibold text-[#111827] mb-2">Last Updated</h3>
                                 <p className="text-sm text-[#6b7280]">
-                                    {safeTool?.updatedAt ? new Date(safeTool.updatedAt).toLocaleDateString() : "N/A"}
+                                    {safeTool?.updated_at ? new Date(safeTool.updated_at).toLocaleDateString() : "N/A"}
                                 </p>
                             </div>
 

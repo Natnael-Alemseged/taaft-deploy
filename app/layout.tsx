@@ -26,7 +26,7 @@ import type React from "react"
          <QueryProvider>
            <AuthProvider>
              <Header />
-+            <main className="flex-grow">{children}</main> {/* Add flex-grow here */}
+         <main className="flex-grow">{children}</main> {/* Add flex-grow here */}
              <Footer />
            </AuthProvider>
          </QueryProvider>
