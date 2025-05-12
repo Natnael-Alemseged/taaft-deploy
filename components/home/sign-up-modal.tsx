@@ -122,6 +122,8 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
       // Call the service function to initiate Google SSO redirect
       // The page will redirect, so the rest of the process happens on the callback page
       await initiateGoogleLogin();
+      router.push("/");
+      router.refresh();
       // No need to set isLoading(false) here if the redirect is successful
     } catch (err: any) {
       console.error("Google signup initiation failed:", err);
