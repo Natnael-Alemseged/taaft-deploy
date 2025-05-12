@@ -119,7 +119,8 @@ export default function ToolDetail() {
 
 
 // Apply fallback data if the fetched tool is incomplete (use `tool` directly here)
-    const safeTool = withFallbackTool(tool ?? {}); // Using 'tool' state directly
+//     const safeTool = withFallbackTool(tool ?? {}); // Using 'tool' state directly
+    const safeTool = tool; // Using 'tool' state directly
 
 
 // Handle save toggle
@@ -163,7 +164,7 @@ export default function ToolDetail() {
                         Tools
                     </Link>
                     <span className="mx-2 text-[#6b7280]">{">"}</span>
-                    <span className="text-[#6b7280]">{safeTool.name}</span>
+                    <span className="text-[#6b7280]">{safeTool.name??''}</span>
                 </div>
 
                 {/* Tool Header */}
@@ -194,8 +195,13 @@ export default function ToolDetail() {
                     <div className="md:col-span-2">
                         <p className="text-[#4b5563] mb-8">{safeTool?.description}</p>
 
+
+
                         {/* Key Features */}
-                        <div className="mb-12">
+                        {safeTool?.features&&
+
+
+                            <div className="mb-12">
                             <h2 className="text-xl font-bold text-[#111827] mb-6">Key Features</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {safeTool?.features?.map((feature, index) => (
@@ -210,7 +216,7 @@ export default function ToolDetail() {
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </div>}
 
                         {/* Screenshot Section */}
                         {safeTool.screenshotUrls && safeTool.screenshotUrls.length > 0 && (

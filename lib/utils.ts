@@ -73,7 +73,7 @@ export const withFallbackTool = (tool: Tool): {
       "Commercial License"
     ],
     keywords: tool.keywords || ["image generation", "AI art", "text to image", "image editor"], // More specific keywords
-    pricing: tool.pricing === 0 ? "free" : "Premium" || "free",
+    pricing:  tool.pricing == "0" || "free" ? "free" : "Premium" || "free",
     hasFreeVersion: tool.hasFreeVersion ?? true, // Default to true based on screenshot
     logoUrl: tool.logoUrl || "/robot.png", // Consider a more specific placeholder
     screenshotUrls: tool.screenshotUrls || [ // Add a placeholder screenshot URL
