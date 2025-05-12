@@ -22,7 +22,8 @@ export default function AuthCallback() {
       try {
         await handleGoogleCallback(code)
         router.push("/")
-        router.replace("/");
+        router.refresh();
+        window.location.reload();
       } catch (err: any) {
         console.error("OAuth callback error:", err)
         setError(err.response?.data?.detail || "Authentication failed. Please try again.")
