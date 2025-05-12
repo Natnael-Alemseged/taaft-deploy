@@ -89,7 +89,10 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp, previousRoute }
       await initiateGoogleLogin();
       // The page will redirect, so loading state management after this depends on your callback page
       router.push("/");
-      router.refresh();
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err: any) {
       console.error("Google login initiation failed:", err);
       const errorMessage = err.message || err.response?.data?.detail || "Failed to initiate Google sign in. Please try again.";

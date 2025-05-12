@@ -243,8 +243,10 @@ export const handleGoogleCallback = async (code: string) => {
     // You might want to redirect the user back to the page they were on
     // or a dashboard after successful login.
     // router.push('/dashboard'); or window.location.href = '/dashboard';
-    router.push('/');
-window.location.reload();
+window.location.href='/';
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
     return { access_token, token_type, refresh_token, user }; // Return tokens and user data
   } catch (error: any) {
     console.error("Google login callback failed:", error);
