@@ -428,64 +428,6 @@ export default function SponsoredTools() {
                 aria-label="Sponsored Tools Carousel"
             >
               {sponsoredTools.map((tool) => (
-                  // <Card
-                  //     key={tool.id}
-                  //     className="min-w-full md:min-w-[calc(50%-12px)] flex-shrink-0 border border-gray-200 shadow-lg scroll-snap-align-start"
-                  //     aria-roledescription="slide"
-                  //     aria-label={tool.name}
-                  // >
-                  //   <CardContent className="p-4">
-                  //     <div className="mb-2 flex items-center gap-4">
-                  //       {tool.categories.length > 0 && (
-                  //           <span className="text-xs font-bold text-purple-500 border border-purple-300 rounded-full px-2 py-1">
-                  //       {tool.categories[0].name}
-                  //     </span>
-                  //       )}
-                  //     </div>
-                  //     <span className="flex items-center gap-2 pb-3">
-                  //   {tool.image ?? robotSvg}
-                  //       <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>
-                  // </span>
-                  //     <p className="mb-4 text-sm text-gray-600 pt-3">
-                  //       {tool.description && tool.description.length > 80
-                  //           ? `${tool.description.substring(0, 80)}...`
-                  //           : tool.description}
-                  //     </p>
-                  //     <div className="mb-4 flex flex-wrap gap-1">
-                  //       {tool.keywords?.slice(0, 5).map((tag: string) => (
-                  //           <span key={tag} className="rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-600">
-                  //       {tag}
-                  //     </span>
-                  //       ))}
-                  //     </div>
-                  //     <div className="flex items-center justify-between">
-                  //   <span className="flex items-center gap-2">
-                  //     <button
-                  //         className={`rounded p-1 ${tool.saved_by_user ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
-                  //         // Pass unique_id and current saved status
-                  //         onClick={() => handleSaveToggle(tool.unique_id, !!tool.saved_by_user)}
-                  //     >
-                  //       <Bookmark className="h-4 w-4" fill={tool.saved_by_user ? "currentColor" : "none"} />
-                  //     </button>
-                  //     <ShareButtonWithPopover itemLink={`/tools/${tool.id}`} />
-                  //   </span>
-                  //       <Button
-                  //           className="bg-purple-600 hover:bg-purple-700 text-white"
-                  //           onClick={() => {
-                  //             if (!isAuthenticated) {
-                  //               setPreviousRoute(pathname)
-                  //               openSignInModal()
-                  //             } else {
-                  //               // Use Next.js router for client-side navigation
-                  //               router.push(`/tools/${tool.id}`);
-                  //             }
-                  //           }}
-                  //       >
-                  //         Try Tool <ExternalLink className="h-4 w-4 ml-1" />
-                  //       </Button>
-                  //     </div>
-                  //   </CardContent>
-                  // </Card>
                   <SponsoredToolCard tool={tool} />
               ))}
             </div>
