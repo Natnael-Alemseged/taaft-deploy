@@ -24,9 +24,7 @@ export default function AuthCallback() {
         router.push("/")
         console.log('In auth callback after google sign in');
 
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+
       } catch (err: any) {
         console.error("OAuth callback error:", err)
         setError(err.response?.data?.detail || "Authentication failed. Please try again.")

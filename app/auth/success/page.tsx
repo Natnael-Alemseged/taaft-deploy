@@ -1,8 +1,8 @@
 // src/app/auth/success/page.tsx
 "use client"; // This is a Client Component
 
-import { useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import {useEffect} from 'react';
+import {useSearchParams, useRouter} from 'next/navigation';
 // We don't need getCurrentUser or useAuth directly in this simplified version
 // import { getCurrentUser } from '@/services/auth-service';
 // import { useAuth } from '@/contexts/auth-context';
@@ -43,6 +43,10 @@ export default function AuthSuccessPage() {
                     console.log("AuthSuccessPage: Tokens stored, redirecting to /");
                     // Use replace to avoid going back to this success page
                     router.replace('/');
+                    console.log("refreshing page after navigating to /;");
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
 
                 } catch (error: any) {
                     console.error("AuthSuccessPage: Caught an error during token storage:", error);
