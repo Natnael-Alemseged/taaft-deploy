@@ -2,7 +2,13 @@ export interface Category {
   id: string; // e.g., "ai-tools"
   name: string; // e.g., "AI Tools"
 }
-
+interface UserReviews {
+  [key: string]: {
+    rating: number;
+    comment: string;
+    user_id: string;
+  };
+}
 export interface Tool {
   id: string
   logo_url:string
@@ -16,8 +22,7 @@ export interface Tool {
   keywords: string[]
   pricing: "free" | "freemium" | "subscription" | "one-time" | "usage-based" | "Premium"
   hasFreeVersion: boolean
-  logoUrl?: string
-  screenshotUrls?: string[]
+  image_url?: string[]
   contactName: string
   contactEmail: string
   createdAt: string
@@ -25,6 +30,9 @@ export interface Tool {
   status: "pending" | "approved" | "rejected"
   isFeatured?: boolean
   saved_by_user?: boolean
+  industry?: string
+  user_reviews?: UserReviews | null;
+
 }
 
 export interface ToolSubmission {

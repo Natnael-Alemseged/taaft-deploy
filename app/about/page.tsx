@@ -8,7 +8,7 @@ export default function About() {
       {/* Header */}
       {/* <header className="flex items-center justify-between px-4 py-3 bg-white md:px-20">
         <Link href="/" className="flex items-center text-lg font-semibold text-[#a855f7]">
-          AI Tool Gateway
+          AI By The Hour
         </Link>
 
         <div className="hidden md:flex items-center space-x-8">
@@ -36,7 +36,7 @@ export default function About() {
       {/* Hero Section */}
       <section className="bg-white py-16 border-b border-[#e5e7eb]">
         <div className="max-w-6xl mx-auto px-4 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-[#111827] mb-4">About AI Tool Gateway</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#111827] mb-4">About AI By The Hour</h1>
           <p className="text-lg text-[#6b7280] max-w-3xl mx-auto">
             Your trusted resource for discovering, comparing, and implementing the best AI tools for your specific
             needs.
@@ -51,7 +51,7 @@ export default function About() {
             <div>
               <h2 className="text-2xl font-bold text-[#111827] mb-4">Our Story</h2>
               <p className="text-[#6b7280] mb-4">
-                AI Tool Gateway was founded in 2023 by a team of AI enthusiasts and industry experts who recognized a
+                AI By The Hour was founded in 2023 by a team of AI enthusiasts and industry experts who recognized a
                 growing challenge: with thousands of AI tools being released every month, how could users find the right
                 solutions for their specific needs?
               </p>
@@ -61,13 +61,13 @@ export default function About() {
                 the rapidly evolving AI landscape.
               </p>
               <p className="text-[#6b7280]">
-                Today, AI Tool Gateway is the leading resource for AI tool discovery, trusted by thousands of users
+                Today, AI By The Hour is the leading resource for AI tool discovery, trusted by thousands of users
                 worldwide to make informed decisions about AI implementation.
               </p>
             </div>
             <div className="bg-[#f5f0ff] rounded-lg p-8 flex items-center justify-center">
               <div className="w-full h-64 bg-[#f5f0ff] rounded-lg flex items-center justify-center">
-                <img src="/ai-collaboration.png" alt="AI Tool Gateway Team" className="rounded-lg max-h-full" />
+                <img src="/ai-collaboration.png" alt="AI By The Hour Team" className="rounded-lg max-h-full" />
               </div>
             </div>
           </div>
@@ -294,7 +294,7 @@ export default function About() {
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold text-[#111827] mb-4">Get in Touch</h2>
           <p className="text-[#6b7280] mb-8">
-            Have questions about AI Tool Gateway? Want to submit a tool or collaborate with us? We'd love to hear from
+            Have questions about AI By The Hour? Want to submit a tool or collaborate with us? We'd love to hear from
             you!
           </p>
           <Button className="bg-[#a855f7] hover:bg-[#9333ea] text-white px-6 py-2 rounded-md flex items-center mx-auto">
@@ -317,7 +317,7 @@ export default function About() {
                   "We have a rigorous vetting process that evaluates tools based on functionality, reliability, user experience, and value. Our team of AI experts tests each tool before adding it to our directory.",
               },
               {
-                question: "Is AI Tool Gateway free to use?",
+                question: "Is AI By The Hour free to use?",
                 answer:
                   "Yes, browsing and accessing basic information about AI tools is completely free. We offer premium features for users who want more detailed insights and personalized recommendations.",
               },

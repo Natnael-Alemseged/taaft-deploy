@@ -219,62 +219,67 @@ export default function ToolDetail() {
                         </div>}
 
                         {/* Screenshot Section */}
-                        {safeTool.screenshotUrls && safeTool.screenshotUrls.length > 0 && (
+                        {safeTool.image_url && (
                             <div className="mb-12">
                                 <h2 className="text-xl font-bold text-[#111827] mb-6">Screenshots</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {safeTool.screenshotUrls.map((screenshot, index) => (
-                                        <div
-                                            key={index}
-                                            className="border border-[#e5e7eb] rounded-lg overflow-hidden"
-                                            style={{
-                                                width: "100%",
-                                                maxWidth: "952px",
-                                                height: "fit-content",
-                                                aspectRatio: "952/643.5",
-                                            }}
-                                        >
-                                            <img
-                                                src={screenshot || "/placeholder.svg"}
-                                                alt={`${safeTool?.name} screenshot ${index + 1}`}
-                                                className="w-full h-auto object-cover"
-                                                style={{
-                                                    maxHeight: "643.5px",
-                                                    width: "100%",
-                                                }}
-                                                loading="lazy"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = "/placeholder.svg";
-                                                    (e.target as HTMLImageElement).className = "w-full h-auto object-contain";
-                                                }}
-                                            />
-                                        </div>
-                                    ))}
+                                <div
+                                    className="border border-[#e5e7eb] rounded-lg overflow-hidden"
+                                    style={{
+                                        width: "100%",
+                                        maxWidth: "952px",
+                                        height: "fit-content",
+                                        aspectRatio: "952/643.5",
+                                    }}
+                                >
+                                    <img
+                                        src={safeTool.image_url || "/placeholder.svg"}
+                                        alt={`${safeTool?.name} screenshot`}
+                                        className="w-full h-auto object-cover"
+                                        style={{
+                                            maxHeight: "643.5px",
+                                            width: "100%",
+                                        }}
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                                            (e.target as HTMLImageElement).className = "w-full h-auto object-contain";
+                                        }}
+                                    />
                                 </div>
                             </div>
                         )}
 
+
                         {/* User Reviews */}
-                        {safeTool?.reviews && safeTool.reviews.length > 0 && (
+                        {safeTool?.user_reviews && Object.keys(safeTool.user_reviews).length > 0 ? (
                             <div className="mb-12">
                                 <h2 className="text-xl font-bold text-[#111827] mb-6">User Reviews</h2>
-                                {safeTool.reviews.map((review) => (
-                                    <div key={review.id} className="border border-[#e5e7eb] rounded-lg p-4 mb-4">
+                                {Object.entries(safeTool.user_reviews).map(([reviewId, review]) => (
+                                    <div key={reviewId} className="border border-[#e5e7eb] rounded-lg p-4 mb-4">
                                         <div className="flex items-center mb-2">
-                                            <h4 className="font-semibold text-[#111827] mr-2">{review.user.name}</h4>
+                                            <h4 className="font-semibold text-[#111827] mr-2">{review.user_id}</h4>
                                             <div className="flex items-center">
-                                                {Array.from({length: 5}, (_, index) => (
+                                                {Array.from({ length: 5 }, (_, index) => (
                                                     <FaStar
                                                         key={index}
-                                                        className={`w-4 h-4 mr-1 ${index + 1 <= review.rating ? "text-yellow-500" : "text-gray-300"}`}
+                                                        className={`w-4 h-4 mr-1 ${
+                                                            index + 1 <= review.rating ? "text-yellow-500" : "text-gray-300"
+                                                        }`}
                                                     />
                                                 ))}
                                             </div>
                                         </div>
-                                        <p className="text-[#4b5563]">{review.content}</p>
-                                        <p className="text-sm text-[#6b7280] mt-2">{new Date(review.createdAt).toLocaleDateString()}</p>
+                                        <p className="text-[#4b5563]">{review.comment}</p>
+                                        <p className="text-sm text-[#6b7280] mt-2">
+                                            {new Date(review.createdAt).toLocaleDateString()}
+                                        </p>
                                     </div>
                                 ))}
+                            </div>
+                        ) : (
+                            <div className="mb-12">
+                                <h2 className="text-xl font-bold text-[#111827] mb-6">User Reviews</h2>
+                                <p className="text-[#6b7280]">No reviews available.</p>
                             </div>
                         )}
 

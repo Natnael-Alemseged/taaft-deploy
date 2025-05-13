@@ -76,7 +76,7 @@ export const withFallbackTool = (tool: Tool): {
     pricing:  tool.pricing == "0" || "free" ? "free" : "Premium" || "free",
     hasFreeVersion: tool.hasFreeVersion ?? true, // Default to true based on screenshot
     logoUrl: tool.logoUrl || "/robot.png", // Consider a more specific placeholder
-    screenshotUrls: tool.screenshotUrls || [ // Add a placeholder screenshot URL
+    screenshotUrls: tool.image_url || [ // Add a placeholder screenshot URL
       "https://images.tech.co/wp-content/uploads/2024/01/15074809/AdobeStock_640654498-1-708x400.jpeg"
     ],
     contactName: tool.contactName || "Support Team", // Generic contact name

@@ -10,7 +10,7 @@ import type React from "react"
  const inter = Inter({ subsets: ["latin"] })
 
  export const metadata: Metadata = {
-   title: "AI Tool Gateway",
+   title: "AI By The Hour",
    description: "Discover the best AI tools for your needs",
    generator: "v0.dev",
  }
