@@ -22,6 +22,8 @@ export default function AuthCallback() {
       try {
         await handleGoogleCallback(code)
         router.push("/")
+        console.log('In auth callback after google sign in');
+
         setTimeout(() => {
           window.location.reload();
         }, 1000);
