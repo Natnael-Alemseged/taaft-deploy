@@ -170,7 +170,7 @@ export default function ToolDetail() {
                 {/* Tool Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-[#111827] mb-2">{safeTool?.name}</h1>
+                        <h1 className="text-3xl font-bold text-[#111827] mb-2">{safeTool?.name??"Unknown name"}</h1>
                         <div className="flex items-center gap-2">
                             <div className="flex flex-wrap gap-2">
                                 {safeTool?.keywords?.map((keyword, index) => (
@@ -233,7 +233,7 @@ export default function ToolDetail() {
                                 >
                                     <img
                                         src={safeTool.image_url || "/placeholder.svg"}
-                                        alt={`${safeTool?.name} screenshot`}
+                                        alt={`${safeTool?.name??""} screenshot`}
                                         className="w-full h-auto object-cover"
                                         style={{
                                             maxHeight: "643.5px",
@@ -341,7 +341,7 @@ export default function ToolDetail() {
                                 <div className="mb-4 flex justify-center">
                                     <img
                                         src={safeTool.logoUrl || "/placeholder.svg"}
-                                        alt={`${safeTool?.name} logo`}
+                                        alt={`${safeTool?.name??''} logo`}
                                         className="h-16 w-16 object-contain"
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = "/placeholder.svg";
