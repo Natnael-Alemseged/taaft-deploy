@@ -31,7 +31,7 @@ export const getTools = async (params?: {
       skip: (params?.page ?? 1 - 1) * (params?.limit ?? 12),
       sort_by: params?.sort_by ?? "created_at",
       sort_order: params?.sort_order ?? "desc",
-      isPublic: params?.isPublic ?? true, // Default to `true`
+      // isPublic: params?.isPublic ?? true, // Default to `true`
     };
 
     // Handle category-specific endpoint

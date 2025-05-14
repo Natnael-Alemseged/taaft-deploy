@@ -9,6 +9,7 @@ import {
   getCurrentUser, // Assume this service uses a stored token
   initiateGoogleLogin,
   register,
+  refreshUser,  // Add this line
   // Assume loginService now returns { access_token, refresh_token, user? }
 } from "@/services/auth-service"
 
@@ -28,6 +29,7 @@ interface AuthContextType {
   register: (data: { full_name: string; email: string; password: string; subscribeToNewsletter:boolean }) => Promise<void>
   logout: () => void // Modified to clear tokens
   loginWithGoogle: () => Promise<void>
+  refreshUser: (updatedUser: User) => void  // Add this line
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -156,6 +158,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+
+
   // loginWithGoogle function (likely handled via redirect, initAuth will pick up tokens)
   const loginWithGoogle = async () => {
     setIsLoading(true)
@@ -177,6 +181,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // If initiation fails before redirect, the catch block handles setting isLoading to false.
   }
 
+  const refreshUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
+
   return (
       <AuthContext.Provider
           value={{
@@ -187,6 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             register, // Make sure register's login call is updated if register flow changes
             logout,
             loginWithGoogle,
+            refreshUser,  // Add this line
           }}
       >
         {children}

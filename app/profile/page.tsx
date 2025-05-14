@@ -17,7 +17,7 @@ import UserProfileCard from "@/components/cards/user_profile_card"; // Import us
 
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading,refreshUser } = useAuth()
   const router = useRouter()
   const [profile_image , setprofile_image ] = useState<File | null>(null);
   const [tab, setTab] = useState<"profile" | "saved">("profile")
@@ -25,6 +25,9 @@ export default function ProfilePage() {
   const [full_name, setfull_name] = useState("")
   const [bio, setBio] = useState("")
   // Removed local savedTools state
+
+  const [displayUser, setDisplayUser] = useState(user);
+
 
   const [isSaving, setIsSaving] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
@@ -44,6 +47,14 @@ export default function ProfilePage() {
   }, [isAuthenticated, isLoading, router, user])
 
 
+  useEffect(() => {
+    if (user) {
+      setDisplayUser(user);
+      setfull_name(user.full_name || "");
+      setBio(user.bio || "");
+    }
+  }, [user]);
+
   const handleSave = async () => {
     setIsSaving(true);
     setSuccessMessage("");
@@ -57,7 +68,10 @@ export default function ProfilePage() {
     }
 
     try {
-      await changeUserData(formData);
+      const { data: updatedUser } = await changeUserData(formData);
+
+      // Update user in auth context
+      refreshUser(updatedUser);
       setSuccessMessage("Profile updated successfully.");
     } catch (error) {
       console.error(error);
@@ -67,19 +81,7 @@ export default function ProfilePage() {
     }
   };
 
-  // const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0];
-  //   if (file) {
-  //     // Example: Convert to a base64 string
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       const base64String = reader.result as string;
-  //       console.log("Image Base64:", base64String);
-  //       // Update user profile_image  or send to server
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
+
 
   const handleImageUpload = (file: File) => {
     setprofile_image (file);
@@ -114,8 +116,30 @@ export default function ProfilePage() {
         <main className="max-w-7xl mx-auto px-4 py-12">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Sidebar */}
-            <UserProfileCard user={user} bio={bio} onImageUpload={handleImageUpload} />
+            {/*if profile update is required_*/}
+            {/*<UserProfileCard user={user} bio={bio} onImageUpload={handleImageUpload} />*/}
+            <div className="w-full md:w-1/4 space-y-6">
+              <div className="bg-white p-6 rounded-lg shadow">
+                <div className="flex flex-col items-center">
+                  <div className="relative h-16 w-16 bg-[#f3e8ff] text-[#7c3aed] rounded-full flex items-center justify-center text-xl font-medium mb-4 overflow-hidden">
+                    {user?.profile_image  ? (
+                        <img
+                            src={user?.profile_image }
+                            alt="User profile_image"
+                            className="h-full w-full object-cover rounded-full"
+                        />
+                    ) : (
+                        <span>{user?.full_name?.[0]?.toUpperCase() || "U"}</span>
+                    )}
 
+
+                  </div>
+                  <h2 className="text-lg font-semibold">{user?.full_name || "Full Name"}</h2>
+                  <p className="text-sm text-gray-500">{user?.email}</p>
+                  <p className="mt-2 text-sm text-gray-500 text-center">{bio || ""}</p>
+                </div>
+              </div>
+            </div>
 
             {/* Main Content */}
             <div className="w-full md:w-3/4 space-y-6">

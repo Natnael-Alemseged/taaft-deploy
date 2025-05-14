@@ -25,6 +25,7 @@ import {useRouter} from "next/navigation"
 import {robotSvg} from "@/lib/reusable_assets"
 import {SignInModal} from "./sign-in-modal"
 import {getTools} from "@/services/tool-service";
+import {LogoAvatar} from "@/components/LogoAvatar";
 
 // Types for API integration
 interface Tool {
@@ -35,6 +36,7 @@ interface Tool {
     categories: Category[] | null;
     icon?: string
     image?: string
+    logo_url?: string
 }
 
 interface Category {
@@ -480,13 +482,9 @@ export default function Hero() {
                                                                             className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
                                                                             <div
                                                                                 className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
-                                                                                {tool.logo_url ? (
-                                                                                    <img src={tool.logo_url}
-                                                                                         alt="Tool Logo"
-                                                                                         className="w-full h-full object-contain"/>
-                                                                                ) : (
-                                                                                    robotSvg
-                                                                                )}
+
+                                                                                <LogoAvatar logoUrl={tool.logo_url} name={tool.name} />
+
                                                                             </div>
                                                                         </div>
 

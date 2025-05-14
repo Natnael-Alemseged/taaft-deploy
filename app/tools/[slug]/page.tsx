@@ -76,15 +76,7 @@ export default function ToolDetail() {
                     return;
                 }
 
-                // If not found, attempt with ID
-                response = await getToolById(slug);
 
-                if (response.status === 200 && response.data) {
-                    console.log('sucessful id');
-                    setTool(response.data);
-                } else {
-                    setIsError(true);
-                }
 
             } catch (error) {
                 console.error('Error fetching tool:', error);
@@ -97,7 +89,7 @@ export default function ToolDetail() {
         if (slug) fetchTool();
     }, [slug]);
 
-// Effect to show login modal if not authenticated.
+
 
     useEffect(() => {
 
@@ -141,12 +133,12 @@ export default function ToolDetail() {
         // Optimistic update
         queryClient.setQueryData(["tool", slug], (oldTool: Tool | undefined) => {
             if (oldTool) {
-                return {...oldTool, savedByUser: !oldTool.saved_by_user}
+                return {...oldTool, saved_by_user: !oldTool.saved_by_user}
             }
             return oldTool
         })
 
-        if (safeTool?.savedByUser) {
+        if (safeTool?.saved_by_user) {
             unsaveTool.mutate(safeTool.id) // Use safeTool.id instead of toolId
         } else {
             saveTool.mutate(safeTool.id) // Use safeTool.id instead of toolId
