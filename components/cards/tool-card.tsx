@@ -49,7 +49,7 @@ const getBadgeClass = (label: string) => {
     }
 }
 
-export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCardProps,    ) {
+export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCardProps,) {
 
     const {isAuthenticated} = useAuth()
     const router = useRouter()
@@ -142,15 +142,15 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
 
     const handleGoToToolDetails = () => {
 
-            if (!isAuthenticated) {
-                // Use the shared showLoginModal function
-                showLoginModal(pathname, () => {
-                    router.push('/')
-                })
-            } else {
-                // Navigate to tool detail page if authenticated
-                window.location.href = `/tools/${tool.unique_id}`
-            }
+        if (!isAuthenticated) {
+            // Use the shared showLoginModal function
+            showLoginModal(pathname, () => {
+                router.push('/')
+            })
+        } else {
+            // Navigate to tool detail page if authenticated
+            window.location.href = `/tools/${tool.unique_id}`
+        }
 
     }
 
@@ -162,6 +162,24 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
 
     // Determine pricing badge text
     const pricingText = tool.pricing ? tool.pricing.charAt(0).toUpperCase() + tool.pricing.slice(1) : "Unknown"
+
+    const handleStopPropagation = (e: React.MouseEvent) => {
+        e.stopPropagation();
+    };
+
+
+    const handleOpenTool = (link: string): void => {
+        if (link) {
+
+            window.open(link, '_blank');
+        } else {
+
+            console.warn("Attempted to open a tool with an empty link.");
+
+
+        }
+    };
+
 
     return (
         <>
@@ -238,28 +256,37 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
                         {/* The div below will now stick to the bottom */}
                         <div className="flex items-center justify-between mt-auto"> {/* Added mt-auto */}
                             <div className="flex items-center gap-2">
-                                {!hideFavoriteButton&&
-                                <button
-                                    className={`rounded p-1 ${
-                                        tool.saved_by_user
-                                            ? "text-purple-600 hover:text-purple-700"
-                                            : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"
-                                    } transition-colors duration-200`}
-                                    onClick={handleSaveToggle} // Call the refactored handler
-                                    aria-label={tool.saved_by_user ? "Unsave tool" : "Save tool"}
-                                    // disabled={isSaving} // Optional: Disable button while saving/unsaving
-                                >
-                                    <Bookmark
-                                        className="h-4 w-4"
-                                        fill={tool.saved_by_user ? "currentColor" : "none"}
-                                        stroke={tool.saved_by_user ? "currentColor" : "#9CA3AF"} // Gray-400
-                                    />
-                                </button>}
-                                <ShareButtonWithPopover itemLink={`/tools/${tool.id}`}/>
+                                {!hideFavoriteButton &&
+                                    <button
+                                        className={`rounded p-1 ${
+                                            tool.saved_by_user
+                                                ? "text-purple-600 hover:text-purple-700"
+                                                : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+                                        } transition-colors duration-200`}
+                                        onClick={(e) => {
+                                            handleStopPropagation(e);
+                                            handleSaveToggle();
+                                        }}
+                                        aria-label={tool.saved_by_user ? "Unsave tool" : "Save tool"}
+                                        // disabled={isSaving} // Optional: Disable button while saving/unsaving
+                                    >
+                                        <Bookmark
+                                            className="h-4 w-4"
+                                            fill={tool.saved_by_user ? "currentColor" : "none"}
+                                            stroke={tool.saved_by_user ? "currentColor" : "#9CA3AF"} // Gray-400
+                                        />
+                                    </button>}
+                                <div onClick={handleStopPropagation}>
+                                    <ShareButtonWithPopover itemLink={`/tools/${tool.id}`}/>
+                                </div>
                             </div>
                             <Button
                                 className="bg-purple-600 text-white hover:bg-purple-700"
-                                onClick={handleGoToToolDetails}
+                                onClick={(e) => {
+                                    handleStopPropagation(e);
+                                    handleOpenTool(tool.link);
+                                    // handleGoToToolDetails();
+                                }}
                             >
                                 Try Tool <ExternalLink className="h-4 w-4 ml-1"/>
                             </Button>

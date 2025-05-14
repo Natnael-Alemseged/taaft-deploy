@@ -55,6 +55,7 @@ export default function Hero() {
     const [isSearchOpen, setIsSearchOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [tools, setTools] = useState<Tool[]>([])
+    const [moreTools, setMoreTools] = useState<Tool[]>([])
     const inputRef = useRef<HTMLInputElement>(null)
     const chatInputRef = useRef<HTMLInputElement>(null)
     const searchContainerRef = useRef<HTMLDivElement>(null)
@@ -72,6 +73,7 @@ export default function Hero() {
         setIsSignUpModalOpen(true)
         setIsMobileMenuOpen(false)
     }
+
     const [formattedData, setFormattedData] = useState<any[]>([]);
 
     const [previousRoute, setPreviousRoute] = useState<string | undefined>()
@@ -103,70 +105,61 @@ export default function Hero() {
 
     const exampleTags = [
         "Image generation tools",
-        "AI writing assistants",
-        "Video creation tools",
-        "E-commerce AI tools",
-        "AI voice assistants",
-    ]
-
-    // Sample AI tools data - replace with actual data from your API
-    const sampleTools = [
-        {
-            id: 1,
-            name: "Midjourney",
-            description: "AI image generation tool for creative visuals",
-            category: "Image Generation",
-            icon: "🎨"
-        },
-        {
-            id: 2,
-            name: "ChatGPT",
-            description: "Conversational AI assistant by OpenAI",
-            category: "Chatbots",
-            icon: "💬"
-        },
-        {
-            id: 3,
-            name: "Jasper",
-            description: "AI writing assistant for marketing content",
-            category: "Writing",
-            icon: "✍️"
-        },
-        {
-            id: 4,
-            name: "Runway",
-            description: "AI-powered video editing and generation",
-            category: "Video Creation",
-            icon: "🎥"
-        }
+        "Content Creation",
+        "Video creation",
+        "Business Tools",
+        "SEO Tools",
     ]
 
 
-    const fetchTools = async (query: string, setLimit: boolean = true) => {
+    const fetchTools = async (query: string, setLimit: boolean = true,
+                              limitWhenTrue: number = 5,
+                              limitWhenFalse: number = 20) => {
         setIsLoading(true);
-        setTools([]); // Clear previous results immediately
+        console.log(`set limit is: ${setLimit}`);
+
+        if (setLimit) {
+            setTools([]);
+        } else {
+            setMoreTools([]);
+        }
+        let limit = setLimit ? limitWhenTrue : limitWhenFalse;
+        console.log(`limit is: ${limit}`)
+
 
         try {
             console.log(`Attempting keyword search for: "${query}"`);
+
             // Attempt keyword search first
-            const keywordData = await keywordSearch([query], 0, ...(setLimit ? { limit: 5 } : {}));
+            const keywordData = await keywordSearch([query], 0, limit);
 
             if (keywordData && keywordData.tools && keywordData.tools.length > 0) {
                 console.log(`Keyword search successful, found ${keywordData.tools.length} tools.`);
-                setTools(keywordData.tools);
+                if (setLimit) {
+                    setTools(keywordData.tools);
+                } else {
+                    setMoreTools(keywordData.tools);
+                }
             } else {
                 console.log(`Keyword search found no tools. Falling back to general search for: "${query}"`);
                 // Fallback to general search if keyword search returned no tools or was empty
                 try {
                     const generalData = await getTools({
-                        search: query,
-                        ...(setLimit ? { limit: 5 } : {})
-                    });
+                            search: query,
+                            limit: limit
+                        }
+                    );
                     console.log(`General search successful, found ${generalData.tools.length} tools.`);
-                    setTools(generalData.tools);
+                    if (setLimit) {
+                        setTools(generalData.tools);
+                    } else {
+                        setMoreTools(generalData.tools);
+                    }
+
                 } catch (generalError) {
                     console.error('General search fallback failed:', generalError);
                     setTools([]); // Clear tools on fallback error
+                    setMoreTools([]);
                     // Optionally show a toast error here if both methods failed
                 }
             }
@@ -177,13 +170,18 @@ export default function Hero() {
             try {
                 const generalData = await getTools({
                     search: query,
-                    ...(setLimit ? { limit: 5 } : {})
+                    limit: limit,
                 });
                 console.log(`General search successful, found ${generalData.tools.length} tools.`);
-                setTools(generalData.tools);
+                if (setLimit) {
+                    setTools(generalData.tools);
+                } else {
+                    setMoreTools(generalData.tools);
+                }
             } catch (generalError) {
                 console.error('General search fallback after keyword failure also failed:', generalError);
                 setTools([]); // Clear tools if both fail
+                setMoreTools([]);
                 // Optionally show a toast error here if both methods failed
             }
         } finally {
@@ -192,7 +190,7 @@ export default function Hero() {
     };
 
 
-    // Debounced search effect
+// Debounced search effect
     useEffect(() => {
 
 
@@ -202,7 +200,7 @@ export default function Hero() {
             } else {
                 setTools([]) // Clear tools when search query is empty
             }
-        }, 300) // 300ms debounce
+        }, 150) // 300ms debounce
 
         return () => clearTimeout(timer)
     }, [searchQuery])
@@ -268,23 +266,35 @@ export default function Hero() {
     }
 
     const handleSearchNavigation = async () => {
-        if (searchQuery) {
-            await fetchTools(searchQuery, false)
+        console.log(`more tools length is: ${moreTools.length}`);
+        if (!searchQuery) return;
 
-            setFormattedData(tools);
-            sessionStorage.setItem("searchTools", JSON.stringify(tools));
+        try {
+            await fetchTools(searchQuery, false);
 
 
-            router.push("/search?source=direct");
+        } catch (error) {
+            console.error("Search failed:", error);
         }
-    }
+    };
 
-    // Close chat if user logs out while it's open
+
+// Close chat if user logs out while it's open
     useEffect(() => {
         if (!isAuthenticated && isChatOpen) {
             setIsChatOpen(false)
         }
     }, [isAuthenticated, isChatOpen])
+
+    useEffect(() => {
+        console.log(`more tools length after update is: ${moreTools.length}`);
+        if (moreTools.length > 0) {
+            setFormattedData(moreTools);
+            sessionStorage.setItem("searchTools", JSON.stringify(moreTools));
+            router.push(`/search?q=${encodeURIComponent(searchQuery)}&source=direct`);
+        }
+    }, [moreTools]);
+
 
 
     return (<>

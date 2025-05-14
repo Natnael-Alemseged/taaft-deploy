@@ -18,6 +18,7 @@ export interface Tool {
   name: string
   slug: string
   link: string
+  generated_description:string
   categories: Category[]
   description: string
   feature_list: string[]

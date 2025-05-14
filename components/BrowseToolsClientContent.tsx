@@ -231,7 +231,7 @@ export default function BrowseToolsClientContent({
                 {/* Breadcrumb - Back to Home or Category Page */}
                 <div className="mb-6">
                     <Link
-                        href={isFromCategoryPage ? "/" : '/categories'}
+                        href={isFromCategoryPage ? "/categories" : '/'}
                         className="inline-flex items-center text-[#a855f7] dark:text-purple-400 hover:text-[#9333ea] dark:hover:text-purple-300"
                     >
                         <ArrowLeft className="mr-2 h-5 w-5"/>

@@ -1,8 +1,8 @@
 "use client" // Keep this as it's a Client Component
 import {FaStar} from "react-icons/fa"
-import {type SetStateAction, useEffect, useState} from "react"
+import React, {type SetStateAction, useEffect, useState} from "react"
 import Link from "next/link"
-import {Bookmark, Share2, ExternalLink, Check} from "lucide-react"
+import {Bookmark, Share2, ExternalLink, Check, ChevronRight} from "lucide-react"
 import {Button} from "@/components/ui/button"
 import {useTool} from "@/hooks/use-tools" // Assuming this hook exists and works
 import {useSaveTool, useUnsaveTool} from "@/hooks/use-tools" // Assuming these hooks exist and works
@@ -21,11 +21,10 @@ import {showLoginModal} from "@/lib/auth-events"
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover"
 import {getToolById, getToolByUniqueId, getTools} from "@/services/tool-service"
 import {Category, Tool} from "@/types/tool"
-
+import {robotSvg} from "@/lib/reusable_assets";
 
 
 // Keep Schema interface as is, not used in the render logic directly, but good for reference
-
 
 
 export default function ToolDetail() {
@@ -41,10 +40,14 @@ export default function ToolDetail() {
     const {isAuthenticated, isLoading: isAuthLoading} = useAuth()
 
 
-
     const saveTool = useSaveTool()
     const unsaveTool = useUnsaveTool()
+    const [showAllFeatures, setShowAllFeatures] = useState(false);
 
+    // Function to toggle showing all features
+    const handleShowMoreFeatures = () => {
+        setShowAllFeatures(true);
+    };
     const [selectedPlan, setSelectedPlan] = useState<SetStateAction<null> | null>(null) // State to manage the selected plan
 
 // Handle Plan Click (toggle selection)
@@ -118,8 +121,6 @@ export default function ToolDetail() {
     }
 
 
-
-
 // Apply fallback data if the fetched tool is incomplete (use `tool` directly here)
 //     const safeTool = withFallbackTool(tool ?? {}); // Using 'tool' state directly
     const safeTool = tool; // Using 'tool' state directly
@@ -151,7 +152,8 @@ export default function ToolDetail() {
 
     if (!safeTool) {
         return (
-            <div className="flex flex-col items-center justify-center p-8  rounded-lg shadow-lg max-w-md mx-auto mt-16 text-center">
+            <div
+                className="flex flex-col items-center justify-center p-8  rounded-lg shadow-lg max-w-md mx-auto mt-16 text-center">
                 <h2 className="text-2xl font-semibold text-red-600 mb-4">Tool Not Found</h2>
                 <p className="text-gray-600 mb-6">
                     The tool you are looking for does not exist or was removed.
@@ -166,7 +168,6 @@ export default function ToolDetail() {
             </div>
         );
     }
-
 
 
     return (
@@ -184,13 +185,30 @@ export default function ToolDetail() {
                         Tools
                     </Link>
                     <span className="mx-2 text-[#6b7280]">{">"}</span>
-                    <span className="text-[#6b7280]">{safeTool.name??''}</span>
+                    <span className="text-[#6b7280]">{safeTool.name ?? ''}</span>
                 </div>
 
                 {/* Tool Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-[#111827] mb-2">{safeTool?.name??"Unknown name"}</h1>
+                        <div className="flex items-center gap-3 pb-5">
+                            <div className="w-9 h-9 flex-shrink-0 rounded-full bg-gray-100 overflow-hidden">
+                                {tool.logo_url ? (
+                                    <img
+                                        src={tool.logo_url}
+                                        alt={`${safeTool?.name || 'Tool'} logo`}
+                                        className="w-full h-full object-contain"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        {robotSvg}
+                                    </div>
+                                )}
+                            </div>
+                            <h1 className="text-3xl font-bold text-[#111827]">
+                                {safeTool?.name || "Unknown name"}
+                            </h1>
+                        </div>
                         <div className="flex items-center gap-2">
                             <div className="flex flex-wrap gap-2">
                                 {safeTool?.keywords?.map((keyword, index) => (
@@ -213,30 +231,56 @@ export default function ToolDetail() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Left Column - Description and Features */}
                     <div className="md:col-span-2">
+
                         <p className="text-[#4b5563] mb-8">{safeTool?.description}</p>
+                        <p className="text-[#4b5563] mb-8">{safeTool.generated_description}</p>
 
 
-
-                        {/* Key Features */}
-                        {safeTool?.feature_list && safeTool.feature_list.length!=0 &&
-
-
+                        {/* Key Features Section */}
+                        {safeTool?.feature_list && safeTool.feature_list.length > 0 && (
                             <div className="mb-12">
-                            <h2 className="text-xl font-bold text-[#111827] mb-6">Key Features</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {safeTool?.feature_list?.map((feature, index) => (
-                                    <div key={index} className="border border-[#e5e7eb] rounded-lg p-4">
-                                        <div className="flex items-start mb-2">
-                                            <div
-                                                className="w-5 h-5 rounded-full bg-[#f5f0ff] flex items-center justify-center mr-2 mt-1">
-                                                <Check className="w-3 h-3 text-[#a855f7]"/>
+                                <h2 className="text-xl font-bold text-[#111827] mb-6">Key Features</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Conditionally slice the feature list */}
+                                    {safeTool.feature_list
+                                        .slice(0, showAllFeatures ? safeTool.feature_list.length : 6) // Slice based on showAllFeatures state
+                                        .map((feature, index) => (
+                                            <div key={index} className="border border-[#e5e7eb] rounded-lg p-4">
+                                                <div className="flex items-start mb-2">
+                                                    <div
+                                                        className="w-5 h-5 rounded-full bg-[#f5f0ff] flex items-center justify-center mr-2 mt-1">
+                                                        <Check className="w-3 h-3 text-[#a855f7]"/>
+                                                    </div>
+                                                    {/* You can add the character truncation logic here if needed,
+                                            but the request was specifically for the feature list display */}
+                                                    <h3 className="font-semibold text-[#111827]">{feature}</h3>
+                                                </div>
                                             </div>
-                                            <h3 className="font-semibold text-[#111827]">{feature}</h3>
-                                        </div>
+                                        ))}
+                                </div>
+
+                                {/* Show "Show More" button only if there are more than 6 features
+                        and showAllFeatures is false */}
+                                {safeTool.feature_list.length > 6 && !showAllFeatures && (
+                                    <div className="mt-6 text-center">
+                                        <Button variant="link" onClick={handleShowMoreFeatures} className="text-[#a855f7]">
+                                            Show More Features ({safeTool.feature_list.length - 6} more)
+                                            <ChevronRight className="ml-1 w-4 h-4"/>
+                                        </Button>
                                     </div>
-                                ))}
+                                )}
+
+                                {/* Optionally show a "Show Less" button if needed */}
+                                {/* {safeTool.feature_list.length > 6 && showAllFeatures && (
+                        <div className="mt-6 text-center">
+                            <Button variant="link" onClick={() => setShowAllFeatures(false)} className="text-[#a855f9]">
+                                Show Less Features
+                                <ChevronUp className="ml-1 w-4 h-4"/> // You'd need to import ChevronUp
+                            </Button>
+                        </div>
+                    )} */}
                             </div>
-                        </div>}
+                        )}
 
                         {/* Screenshot Section */}
                         {safeTool.image_url && (
@@ -253,7 +297,7 @@ export default function ToolDetail() {
                                 >
                                     <img
                                         src={safeTool.image_url || "/placeholder.svg"}
-                                        alt={`${safeTool?.name??""} screenshot`}
+                                        alt={`${safeTool?.name ?? ""} screenshot`}
                                         className="w-full h-auto object-cover"
                                         style={{
                                             maxHeight: "643.5px",
@@ -275,12 +319,14 @@ export default function ToolDetail() {
                             <div className="mb-12">
                                 <h2 className="text-xl font-bold text-[#111827] mb-6 dark:text-white">User Reviews</h2>
                                 {Object.entries(safeTool.user_reviews).map(([reviewId, review]) => (
-                                    <div key={reviewId} className="border border-[#e5e7eb] rounded-lg p-4 mb-4 dark:border-gray-700 dark:bg-gray-800">
+                                    <div key={reviewId}
+                                         className="border border-[#e5e7eb] rounded-lg p-4 mb-4 dark:border-gray-700 dark:bg-gray-800">
 
                                         {/* Flex container for the top part: Image + (Name & Rating) */}
                                         {/* Only show this flex if EITHER image OR name OR rating exists */}
                                         {(review.user_profile_image_url?.trim() || review.user_name?.trim() || (typeof review.rating === 'number' && review.rating >= 0)) && (
-                                            <div className="flex items-start mb-2"> {/* Use items-start to align items at the top */}
+                                            <div
+                                                className="flex items-start mb-2"> {/* Use items-start to align items at the top */}
                                                 {/* Optional: User Image */}
                                                 {review.user_profile_image_url?.trim() && (
                                                     <img
@@ -293,7 +339,8 @@ export default function ToolDetail() {
                                                 {/* Optional: User Name and Rating (grouped) */}
                                                 {/* This block should render if name OR rating exists, regardless of image */}
                                                 {(review.user_name?.trim() || (typeof review.rating === 'number' && review.rating >= 0)) && (
-                                                    <div className="flex flex-col flex-grow"> {/* Use flex-col for Name above Rating, flex-grow to take space */}
+                                                    <div
+                                                        className="flex flex-col flex-grow"> {/* Use flex-col for Name above Rating, flex-grow to take space */}
                                                         {/* Optional: User Name */}
                                                         {review.user_name?.trim() && (
                                                             <h4 className=" pt-2 font-semibold text-[#111827] dark:text-white">{review.user_name}</h4>
@@ -301,11 +348,12 @@ export default function ToolDetail() {
 
                                                         {/* Optional: Rating Stars */}
                                                         {typeof review.rating === 'number' && review.rating >= 0 && (
-                                                            <div className="flex items-center mt-1"> {/* Added margin-top to put rating under name */}
-                                                                {Array.from({ length: 5 }, (_, index) => (
+                                                            <div
+                                                                className="flex items-center mt-1"> {/* Added margin-top to put rating under name */}
+                                                                {Array.from({length: 5}, (_, index) => (
                                                                     <FaStar
                                                                         key={index}
-                                                                        className={`w-4 h-4 mr-1 ${ index < review.rating ? "text-yellow-500" : "text-gray-300" }`}
+                                                                        className={`w-4 h-4 mr-1 ${index < review.rating ? "text-yellow-500" : "text-gray-300"}`}
                                                                     />
                                                                 ))}
                                                             </div>
@@ -330,7 +378,7 @@ export default function ToolDetail() {
 
                                         {/* Divider - Condition updated to use created_at */}
                                         {(review.user_profile_image_url?.trim() || review.user_name?.trim() || (typeof review.rating === 'number' && review.rating >= 0) || review.comment?.trim() || review.created_at) && (
-                                            <hr className="mt-4 border-gray-200 dark:border-gray-700" />
+                                            <hr className="mt-4 border-gray-200 dark:border-gray-700"/>
                                         )}
                                     </div>
                                 ))}
@@ -357,7 +405,10 @@ export default function ToolDetail() {
                           {similarTool.category}
                         </span>
                                             </div>
+                                            Tool Description
                                             <p className="text-xs text-[#6b7280] mb-4">{similarTool.description}</p>
+                                            generated_description
+                                            <p className="text-xs text-[#6b7280] mb-4">{similarTool.generated_description}</p>
                                             <div className="flex justify-between items-center">
                                                 <div className="flex space-x-2">
                                                     <button className="p-1 border border-[#e5e7eb] rounded">
@@ -402,7 +453,7 @@ export default function ToolDetail() {
                                 <div className="mb-4 flex justify-center">
                                     <img
                                         src={safeTool.logoUrl || "/placeholder.svg"}
-                                        alt={`${safeTool?.name??''} logo`}
+                                        alt={`${safeTool?.name ?? ''} logo`}
                                         className="h-16 w-16 object-contain"
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = "/placeholder.svg";
@@ -414,10 +465,10 @@ export default function ToolDetail() {
 
                             <h3 className="font-semibold text-[#111827] mb-2">Use Cases</h3>
                             <div className="flex flex-wrap gap-2 mb-6">
-                                {safeTool?.feature_list?.slice(0, 5).map((feature, index) => (
+                                {safeTool?.feature_list?.slice(0, 4).map((feature, index) => (
                                     <span key={index}
                                           className="text-sm bg-[#f3f4f6] text-[#6b7280] px-3 py-1 rounded-full">
-                    {feature}
+                   {feature.length > 15 ? `${feature.substring(0, 15)}...` : feature}
                   </span>
                                 ))}
                             </div>
