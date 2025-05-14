@@ -38,8 +38,8 @@ export default function SearchResults({ initialQuery, category, source }: Search
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [chatResults, setChatResults] = useState<any[]>([]) // State for chat results
-    const router = useRouter();
-    const pathname = usePathname();
+  const router = useRouter();
+   const pathname = usePathname();
 
 
 

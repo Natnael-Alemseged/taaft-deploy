@@ -1,4 +1,5 @@
 import SearchResults from "@/components/SearchResults"
+import SearchResultDirect from "@/components/search-results-direct";
 
 export default async function SearchPage({
   searchParams,
@@ -12,7 +13,10 @@ const source = typeof ( searchParams.source) === "string" ? searchParams.source 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Search Results</h1>
+        {(source=="chat")?
       <SearchResults initialQuery={query} category={category} source={source} />
+            :
+            <SearchResultDirect initialQuery={query} category={category} source={source} />}
     </div>
   )
 }

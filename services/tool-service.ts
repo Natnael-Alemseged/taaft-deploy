@@ -237,7 +237,7 @@ export const unsaveTool = async (toolId: string) => {
 }
 
 // Get user's saved tools
-export const getSavedTools = async (): Promise<Tool[]> => {
+export const getSavedTools = async (): Promise<T> => {
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
 
@@ -249,11 +249,11 @@ export const getSavedTools = async (): Promise<Tool[]> => {
     const response = await apiClient.get<{ tools: Tool[] }>("/favorites/tools", { headers });
     console.log(`get saved tools response ${JSON.stringify(response.data, null, 2)}`);
 
-    if (!response.data?.tools) {
+    if (!response.data) {
       console.warn("Unexpected response structure. Returning empty tools array.");
       return [];
     }
-    return response.data.tools;
+    return response.data;
   } catch (error) {
     console.error("Error fetching saved tools:", error);
     return [];
