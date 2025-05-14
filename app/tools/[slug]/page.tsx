@@ -64,6 +64,8 @@ export default function ToolDetail() {
 
                 if (response.status === 200 && response.data) {
                     console.log('sucessful unique id');
+                    console.log(response.data);
+
                     setTool(response.data);
                     return;
                 }
@@ -145,6 +147,24 @@ export default function ToolDetail() {
         } else {
             saveTool.mutate(safeTool.id) // Use safeTool.id instead of toolId
         }
+    }
+
+    if (!safeTool) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8  rounded-lg shadow-lg max-w-md mx-auto mt-16 text-center">
+                <h2 className="text-2xl font-semibold text-red-600 mb-4">Tool Not Found</h2>
+                <p className="text-gray-600 mb-6">
+                    The tool you are looking for does not exist or was removed.
+                    Please check the address or navigate from the main tools page.
+                </p>
+                <a
+                    href="/"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                    Go to Tools
+                </a>
+            </div>
+        );
     }
 
 
@@ -253,35 +273,76 @@ export default function ToolDetail() {
                         {/* User Reviews */}
                         {safeTool?.user_reviews && Object.keys(safeTool.user_reviews).length > 0 ? (
                             <div className="mb-12">
-                                <h2 className="text-xl font-bold text-[#111827] mb-6">User Reviews</h2>
+                                <h2 className="text-xl font-bold text-[#111827] mb-6 dark:text-white">User Reviews</h2>
                                 {Object.entries(safeTool.user_reviews).map(([reviewId, review]) => (
-                                    <div key={reviewId} className="border border-[#e5e7eb] rounded-lg p-4 mb-4">
-                                        <div className="flex items-center mb-2">
-                                            <h4 className="font-semibold text-[#111827] mr-2">{review.user_id}</h4>
-                                            <div className="flex items-center">
-                                                {Array.from({ length: 5 }, (_, index) => (
-                                                    <FaStar
-                                                        key={index}
-                                                        className={`w-4 h-4 mr-1 ${
-                                                            index + 1 <= review.rating ? "text-yellow-500" : "text-gray-300"
-                                                        }`}
+                                    <div key={reviewId} className="border border-[#e5e7eb] rounded-lg p-4 mb-4 dark:border-gray-700 dark:bg-gray-800">
+
+                                        {/* Flex container for the top part: Image + (Name & Rating) */}
+                                        {/* Only show this flex if EITHER image OR name OR rating exists */}
+                                        {(review.user_profile_image_url?.trim() || review.user_name?.trim() || (typeof review.rating === 'number' && review.rating >= 0)) && (
+                                            <div className="flex items-start mb-2"> {/* Use items-start to align items at the top */}
+                                                {/* Optional: User Image */}
+                                                {review.user_profile_image_url?.trim() && (
+                                                    <img
+                                                        src={review.user_profile_image_url}
+                                                        alt={`${review.user_name || 'User'} profile picture`}
+                                                        className="w-10 h-10 rounded-full mr-4 flex-shrink-0" // Add flex-shrink-0 to prevent image from shrinking
                                                     />
-                                                ))}
+                                                )}
+
+                                                {/* Optional: User Name and Rating (grouped) */}
+                                                {/* This block should render if name OR rating exists, regardless of image */}
+                                                {(review.user_name?.trim() || (typeof review.rating === 'number' && review.rating >= 0)) && (
+                                                    <div className="flex flex-col flex-grow"> {/* Use flex-col for Name above Rating, flex-grow to take space */}
+                                                        {/* Optional: User Name */}
+                                                        {review.user_name?.trim() && (
+                                                            <h4 className=" pt-2 font-semibold text-[#111827] dark:text-white">{review.user_name}</h4>
+                                                        )}
+
+                                                        {/* Optional: Rating Stars */}
+                                                        {typeof review.rating === 'number' && review.rating >= 0 && (
+                                                            <div className="flex items-center mt-1"> {/* Added margin-top to put rating under name */}
+                                                                {Array.from({ length: 5 }, (_, index) => (
+                                                                    <FaStar
+                                                                        key={index}
+                                                                        className={`w-4 h-4 mr-1 ${ index < review.rating ? "text-yellow-500" : "text-gray-300" }`}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
-                                        <p className="text-[#4b5563]">{review.comment}</p>
-                                        <p className="text-sm text-[#6b7280] mt-2">
-                                            {new Date(review.createdAt).toLocaleDateString()}
-                                        </p>
+                                        )}
+
+
+                                        {/* Optional: Comment */}
+                                        {review.comment?.trim() && (
+                                            <p className="text-[#4b5563] dark:text-gray-300 mb-2">{review.comment}</p>
+                                        )}
+
+                                        {/* Optional: Date - Using created_at from your latest code */}
+                                        {review.created_at && new Date(review.created_at).toString() !== 'Invalid Date' && (
+                                            <p className="text-sm text-[#6b7280] dark:text-gray-400 mt-2">
+                                                {new Date(review.created_at).toLocaleDateString()}
+                                            </p>
+                                        )}
+
+                                        {/* Divider - Condition updated to use created_at */}
+                                        {(review.user_profile_image_url?.trim() || review.user_name?.trim() || (typeof review.rating === 'number' && review.rating >= 0) || review.comment?.trim() || review.created_at) && (
+                                            <hr className="mt-4 border-gray-200 dark:border-gray-700" />
+                                        )}
                                     </div>
                                 ))}
                             </div>
                         ) : (
+                            // This is the correct else block for 'No reviews'
                             <div className="mb-12">
-                                <h2 className="text-xl font-bold text-[#111827] mb-6">User Reviews</h2>
-                                <p className="text-[#6b7280]">No reviews available.</p>
+                                <h2 className="text-xl font-bold text-[#111827] mb-6 dark:text-white">User Reviews</h2>
+                                <p className="text-[#6b7280] dark:text-gray-400">No reviews available.</p>
                             </div>
                         )}
+
 
                         {/* Related Tools */}
                         {safeTool?.relatedTools && safeTool.relatedTools.length > 0 && (

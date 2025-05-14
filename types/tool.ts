@@ -6,7 +6,9 @@ interface UserReviews {
   [key: string]: {
     rating: number;
     comment: string;
-    user_id: string;
+    user_name: string;
+    user_profile_image_url: string;
+    created_at: string;
   };
 }
 export interface Tool {

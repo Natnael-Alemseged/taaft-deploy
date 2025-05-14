@@ -44,9 +44,11 @@ export default function AuthSuccessPage() {
                     // Use replace to avoid going back to this success page
                     router.replace('/');
                     console.log("refreshing page after navigating to /;");
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
+                    // setTimeout(() => {
+                    //     window.location.reload();
+                    // }, 1000);
+                    window.location.reload();
+
 
                 } catch (error: any) {
                     console.error("AuthSuccessPage: Caught an error during token storage:", error);

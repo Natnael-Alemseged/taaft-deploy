@@ -1,126 +1,81 @@
 import apiClient from "@/lib/api-client"
 import type { Tool, ToolSubmission } from "@/types/tool"
 
-// Get all tools with optional filtering, searching, and pagination
+
 export const getTools = async (params?: {
-  category?: string
-  search?: string
-  page?: number
-  limit?: number
-  featured?: boolean
-  sort_by?: string
-  sort_order?: 'asc' | 'desc'
+  category?: string;
+  isPublic?: boolean;
+  search?: string;
+  page?: number;
+  limit?: number;
+  featured?: boolean;
+  sort_by?: string;
+  sort_order?: 'asc' | 'desc';
 }): Promise<{ tools: Tool[]; total: number }> => {
   try {
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    const token =
+        typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+
     const headers: Record<string, string> = {
       Accept: "application/json",
+    };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
     }
-    let endpoint = "/public/tools"
-    const apiParams: Record<string, any> = {}
+
+    let endpoint ="/public/tools";
+        // params?.isPublic ? "/public/tools" : "/tools";
+    const apiParams: Record<string, any> = {
+      limit: params?.limit ?? 12,
+      skip: (params?.page ?? 1 - 1) * (params?.limit ?? 12),
+      sort_by: params?.sort_by ?? "created_at",
+      sort_order: params?.sort_order ?? "desc",
+      isPublic: params?.isPublic ?? true, // Default to `true`
+    };
 
     // Handle category-specific endpoint
     if (params?.category && params.category !== "all-categories") {
-      endpoint = `/tools/category/${params.category}`
-      console.log("endpoint for category is", endpoint)
+      endpoint = `/tools/category/${params.category}`;
     } else if (params?.featured) {
-      if(params?.search){
+      endpoint = params.search
+          ? "/public/tools/featured/search"
+          : "/public/tools/featured";
+      if (params.search) {
         apiParams.q = params.search;
-        endpoint = "/public/tools/featured/search"
-      }else{
-        endpoint = "/public/tools/featured"
       }
-    }
-
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`
-    }
-
-    if (params?.search && !params?.featured && !params?.category) {
+    } else if (params?.search && !params?.featured && !params?.category) {
+      endpoint = "/tools/search";
       apiParams.q = params.search;
-      endpoint = "/tools/search" // Use /tools/search if a search term is provided
     }
 
-    const limit = params?.limit ?? 12
-    apiParams.limit = limit
-
-    const page = params?.page ?? 1
-    apiParams.skip = (page - 1) * limit
-
-    // Add sort parameters if needed
-    if (params?.sort_by) {
-      apiParams.sort_by = params.sort_by
-    }
-    if (params?.sort_order) {
-      apiParams.sort_order = params.sort_order
+    // Ensure the correct endpoint for private tools
+    if (!params?.isPublic && endpoint === "/public/tools") {
+      endpoint = "/tools";
     }
 
-    console.log("apiParams", JSON.stringify(apiParams, null, 2))
+    console.log(`Final endpoint: ${endpoint}`);
+    console.log("apiParams:", JSON.stringify(apiParams, null, 2));
 
-    const response = await apiClient.get<{ tools: Tool[]; total: number }>(endpoint, {
-      params: apiParams,
-      headers,
-    })
+    const response = await apiClient.get<{ tools: Tool[]; total: number }>(
+        endpoint,
+        {
+          params: apiParams,
+          headers,
+        }
+    );
 
-    console.log(`Fetched tools from ${endpoint}:`,  JSON.stringify(response.data, null, 2))
-    return response.data
+    console.log(`Fetched tools from ${endpoint}:`, JSON.stringify(response.data, null, 2));
+    return response.data;
 
   } catch (error) {
-    console.error("Error fetching tools:", error)
-    return { tools: [], total: 0 }
+    console.error("Error fetching tools:", error);
+    return { tools: [], total: 0 };
   }
-}
+};
 
-// Get a single tool by ID
-// export const getToolById = async (id: string): Promise<Tool> => {
-//   try {
-//     // Get token from localStorage for authorization
-//     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+///fetch saved tools
 
-//     // Set up headers with authorization if token exists
-//     const headers: Record<string, string> = {
-//       Accept: "application/json",
-//     }
-
-//     if (token) {
-//       headers["Authorization"] = `Bearer ${token}`
-//     }
-
-//     // Make the API call with authorization headers
-//     const response = await apiClient.get<Tool>(`/tools/${id}`, { headers })
-
-//     // Return the response data
-//     return response.data
-//   } catch (error) {
-//     console.error(`Error fetching tool with ID ${id}:`, error)
-//     throw error // Re-throw the error to be handled by the caller
-//   }
-// }
-
-// export const getToolByUniqueId = async (unique_id: string): Promise<Tool> => {
-//   try {
-//     // Get token from localStorage for authorization
-//     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
-
-//     // Set up headers with authorization if token exists
-//     const headers: Record<string, string> = {
-//       Accept: "application/json",
-//     }
-
-//     if (token) {
-//       headers["Authorization"] = `Bearer ${token}`
-//     }
-
-//     // Make the API call with authorization headers
-//     const response = await apiClient.get<Tool>(`/tools/unique/${unique_id}`, { headers })
-
-//     // Return the response data
-//     return response.data
-//   } catch (error) {
-//     console.error(`Error fetching tool with unique ID ${unique_id}:`, error)
-//     throw error // Re-throw the error to be handled by the caller
-//   }
-// }
 
 
 
@@ -160,18 +115,18 @@ export const getToolByUniqueId = async (unique_id: string): Promise<{ status: nu
 }
   
   export const getToolById = async (id: string): Promise<{ status: number; data?: Tool }> => {
-    try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}`, Accept: "application/json" } : { Accept: "application/json" };
+   try {
+   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+   const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}`, Accept: "application/json" } : { Accept: "application/json" };
   
-      const response = await apiClient.get<Tool>(`/tools/${id}`, { headers });
+   const response = await apiClient.get<Tool>(`/tools/${id}`, { headers });
   
-      return { status: response.status, data: response.data };
+   return { status: response.status, data: response.data };
   
-    } catch (error: any) {
-      console.error(`Error fetching tool with ID ${id}:`, error);
-      return { status: error.response?.status || 500 };
-    }
+   } catch (error: any) {
+    console.error(`Error fetching tool with ID ${id}:`, error);
+    return { status: error.response?.status || 500 };
+   }
   }
 
 // Get featured tools - No static data fallback, only return what API provides
@@ -282,25 +237,29 @@ export const unsaveTool = async (toolId: string) => {
 }
 
 // Get user's saved tools
-export const getSavedTools = async () => {
+export const getSavedTools = async (): Promise<Tool[]> => {
   try {
-    // Assuming getting saved tools requires authentication, add token handling here
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
 
     if (!token) {
-      throw new Error("Authentication required to get saved tools")
+      throw new Error("Authentication required to get saved tools");
     }
 
-    const headers: Record<string, string> = { Authorization: `Bearer ${token}` }
-    const response = await apiClient.get<{ tools: Tool[] }>("/tools/saved", { headers })
-    return response.data
-  } catch (error) {
-    console.error("Error fetching saved tools:", error)
+    const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+    const response = await apiClient.get<{ tools: Tool[] }>("/favorites/tools", { headers });
+    console.log(`get saved tools response ${JSON.stringify(response.data, null, 2)}`);
 
-    // Return empty array for saved tools if there's an error
-    return { tools: [] }
+    if (!response.data?.tools) {
+      console.warn("Unexpected response structure. Returning empty tools array.");
+      return [];
+    }
+    return response.data.tools;
+  } catch (error) {
+    console.error("Error fetching saved tools:", error);
+    return [];
   }
-}
+};
+
 
 // Upload tool logo
 export const uploadToolLogo = async (id: string, file: File) => {

@@ -12,13 +12,14 @@ import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover"
 import {useSaveTool, useUnsaveTool} from "@/hooks/use-tools"
 import {robotSvg} from "@/lib/reusable_assets"
 import {SignInModal} from "@/components/home/sign-in-modal"
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import {showLoginModal} from "@/lib/auth-events"
 import {useQueryClient} from "@tanstack/react-query" // Assuming React Query is used
 import apiClient from "@/lib/api-client"
 
 interface ToolCardProps {
     tool: Tool
+    hideFavoriteButton?: boolean;
     // You might add props for handling save/share clicks if needed
     // onSaveToggle?: (toolId: string, savedByUser: boolean) => void;
     // onShare?: (tool: Tool) => void;
@@ -48,7 +49,8 @@ const getBadgeClass = (label: string) => {
     }
 }
 
-export default function ToolCard({tool: initialTool}: ToolCardProps) {
+export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCardProps,    ) {
+
     const {isAuthenticated} = useAuth()
     const router = useRouter()
     const pathname = usePathname()
@@ -60,6 +62,8 @@ export default function ToolCard({tool: initialTool}: ToolCardProps) {
     const [isSaved, setIsSaved] = useState(false);
     const saveToolMutation = useSaveTool() // Renamed to avoid conflict with direct saveTool
     const unsaveToolMutation = useUnsaveTool() // Renamed
+// ... inside your component function
+    const [logoError, setLogoError] = useState(false);
 
     const handleToolClick = (e: React.MouseEvent) => {
         if (!isAuthenticated) {
@@ -135,6 +139,12 @@ export default function ToolCard({tool: initialTool}: ToolCardProps) {
         }
     };
 
+
+    // Add an effect to reset the error state if the logo URL changes
+    useEffect(() => {
+        setLogoError(false); // Reset error state whenever the logo_url prop changes
+    }, [tool.logo_url]); // Depend on the logo_url prop
+
     // Determine pricing badge text
     const pricingText = tool.pricing ? tool.pricing.charAt(0).toUpperCase() + tool.pricing.slice(1) : "Unknown"
 
@@ -159,12 +169,19 @@ export default function ToolCard({tool: initialTool}: ToolCardProps) {
                         </div>
                         <span className="flex items-center py-3">
 
-                         <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
-  {tool.logo_url ? (
-      <img src={tool.logo_url} alt="Tool Logo" className="w-full h-full object-contain" />
-  ) : (
-      robotSvg
-  )}
+<div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
+    {/* Check if URL exists AND no logo error has occurred */}
+    {(tool.logo_url && !logoError) ? (
+        <img
+            src={tool.logo_url}
+            alt={`${tool.name || 'Tool'} logo`} // Good practice: add alt text
+            className="w-full h-full object-contain"
+            onError={() => setLogoError(true)} // Set error state to true if the image fails to load
+        />
+    ) : (
+        // Show the fallback SVG if URL is missing OR an error occurred
+        robotSvg
+    )}
 </div>
 
 
@@ -205,6 +222,7 @@ export default function ToolCard({tool: initialTool}: ToolCardProps) {
                         {/* The div below will now stick to the bottom */}
                         <div className="flex items-center justify-between mt-auto"> {/* Added mt-auto */}
                             <div className="flex items-center gap-2">
+                                {!hideFavoriteButton&&
                                 <button
                                     className={`rounded p-1 ${
                                         tool.saved_by_user
@@ -220,7 +238,7 @@ export default function ToolCard({tool: initialTool}: ToolCardProps) {
                                         fill={tool.saved_by_user ? "currentColor" : "none"}
                                         stroke={tool.saved_by_user ? "currentColor" : "#9CA3AF"} // Gray-400
                                     />
-                                </button>
+                                </button>}
                                 <ShareButtonWithPopover itemLink={`/tools/${tool.id}`}/>
                             </div>
                             <Button
