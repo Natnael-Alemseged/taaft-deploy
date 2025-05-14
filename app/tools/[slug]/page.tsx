@@ -2,7 +2,7 @@
 import {FaStar} from "react-icons/fa"
 import React, {type SetStateAction, useEffect, useState} from "react"
 import Link from "next/link"
-import {Bookmark, Share2, ExternalLink, Check, ChevronRight} from "lucide-react"
+import {Bookmark, Share2, ExternalLink, Check, ChevronRight, ChevronUp} from "lucide-react"
 import {Button} from "@/components/ui/button"
 import {useTool} from "@/hooks/use-tools" // Assuming this hook exists and works
 import {useSaveTool, useUnsaveTool} from "@/hooks/use-tools" // Assuming these hooks exist and works
@@ -22,6 +22,7 @@ import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover"
 import {getToolById, getToolByUniqueId, getTools} from "@/services/tool-service"
 import {Category, Tool} from "@/types/tool"
 import {robotSvg} from "@/lib/reusable_assets";
+import {LogoAvatar} from "@/components/LogoAvatar";
 
 
 // Keep Schema interface as is, not used in the render logic directly, but good for reference
@@ -47,6 +48,8 @@ export default function ToolDetail() {
     // Function to toggle showing all features
     const handleShowMoreFeatures = () => {
         setShowAllFeatures(true);
+    };   const handleShowLessFeatures = () => {
+        setShowAllFeatures(false);
     };
     const [selectedPlan, setSelectedPlan] = useState<SetStateAction<null> | null>(null) // State to manage the selected plan
 
@@ -193,17 +196,7 @@ export default function ToolDetail() {
                     <div>
                         <div className="flex items-center gap-3 pb-5">
                             <div className="w-9 h-9 flex-shrink-0 rounded-full bg-gray-100 overflow-hidden">
-                                {tool.logo_url ? (
-                                    <img
-                                        src={tool.logo_url}
-                                        alt={`${safeTool?.name || 'Tool'} logo`}
-                                        className="w-full h-full object-contain"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        {robotSvg}
-                                    </div>
-                                )}
+                                <LogoAvatar logoUrl={tool.logo_url} name={tool.name} />
                             </div>
                             <h1 className="text-3xl font-bold text-[#111827]">
                                 {safeTool?.name || "Unknown name"}
@@ -271,14 +264,14 @@ export default function ToolDetail() {
                                 )}
 
                                 {/* Optionally show a "Show Less" button if needed */}
-                                {/* {safeTool.feature_list.length > 6 && showAllFeatures && (
-                        <div className="mt-6 text-center">
-                            <Button variant="link" onClick={() => setShowAllFeatures(false)} className="text-[#a855f9]">
-                                Show Less Features
-                                <ChevronUp className="ml-1 w-4 h-4"/> // You'd need to import ChevronUp
-                            </Button>
-                        </div>
-                    )} */}
+                                {safeTool.feature_list.length > 6 && showAllFeatures && (
+                                    <div className="mt-6 text-center">
+                                        <Button variant="link" onClick={handleShowLessFeatures} className="text-[#a855f7]"> {/* Changed color to match Show More */}
+                                            Show Less Features
+                                            <ChevronUp className="ml-1 w-4 h-4"/>
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         )}
 

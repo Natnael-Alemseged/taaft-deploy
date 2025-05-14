@@ -16,6 +16,7 @@ import {useEffect, useState} from "react"
 import {showLoginModal} from "@/lib/auth-events"
 import {useQueryClient} from "@tanstack/react-query" // Assuming React Query is used
 import apiClient from "@/lib/api-client"
+import {LogoAvatar} from "@/components/LogoAvatar";
 
 interface ToolCardProps {
     tool: Tool
@@ -205,17 +206,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
 
 <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
     {/* Check if URL exists AND no logo error has occurred */}
-    {(tool.logo_url && !logoError) ? (
-        <img
-            src={tool.logo_url}
-            alt={`${tool.name || 'Tool'} logo`} // Good practice: add alt text
-            className="w-full h-full object-contain"
-            onError={() => setLogoError(true)} // Set error state to true if the image fails to load
-        />
-    ) : (
-        // Show the fallback SVG if URL is missing OR an error occurred
-        robotSvg
-    )}
+    <LogoAvatar logoUrl={tool.logo_url} name={tool.name} />
 </div>
 
 
