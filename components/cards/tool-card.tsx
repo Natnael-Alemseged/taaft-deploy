@@ -140,6 +140,21 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
     };
 
 
+    const handleGoToToolDetails = () => {
+
+            if (!isAuthenticated) {
+                // Use the shared showLoginModal function
+                showLoginModal(pathname, () => {
+                    router.push('/')
+                })
+            } else {
+                // Navigate to tool detail page if authenticated
+                window.location.href = `/tools/${tool.unique_id}`
+            }
+
+    }
+
+
     // Add an effect to reset the error state if the logo URL changes
     useEffect(() => {
         setLogoError(false); // Reset error state whenever the logo_url prop changes
@@ -151,6 +166,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
     return (
         <>
             <Card
+                onClick={handleGoToToolDetails}
                 key={tool.id}
                 className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 shadow-lg w-full mx-auto flex flex-col" // Added flex flex-col
             >
@@ -243,17 +259,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
                             </div>
                             <Button
                                 className="bg-purple-600 text-white hover:bg-purple-700"
-                                onClick={() => {
-                                    if (!isAuthenticated) {
-                                        // Use the shared showLoginModal function
-                                        showLoginModal(pathname, () => {
-                                            router.push('/')
-                                        })
-                                    } else {
-                                        // Navigate to tool detail page if authenticated
-                                        window.location.href = `/tools/${tool.unique_id}`
-                                    }
-                                }}
+                                onClick={handleGoToToolDetails}
                             >
                                 Try Tool <ExternalLink className="h-4 w-4 ml-1"/>
                             </Button>

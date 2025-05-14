@@ -36,10 +36,12 @@ interface BrowseToolsClientContentProps {
     categorySlug?: string,
     isCategoryPage?: boolean,
     isFromBrowsePage?: boolean
+    isFromCategoryPage?: boolean
 }
 
 export default function BrowseToolsClientContent({
                                                      isFromBrowsePage = false,
+                                                     isFromCategoryPage = false,
                                                      initialToolsData,
                                                      isErrorInitial,
                                                      isFeaturedPage = false,
@@ -52,7 +54,7 @@ export default function BrowseToolsClientContent({
     const searchParams = useSearchParams()
     const pathname = usePathname()
 
-    const { user, logout, isAuthenticated } = useAuth()
+    const {user, logout, isAuthenticated} = useAuth()
 
     // --- State Management ---
     const [searchQuery, setSearchQuery] = useState("")
@@ -226,14 +228,14 @@ export default function BrowseToolsClientContent({
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950">
             <main className="max-w-6xl mx-auto px-4 py-8">
-                {/* Breadcrumb - Back to Home */}
+                {/* Breadcrumb - Back to Home or Category Page */}
                 <div className="mb-6">
                     <Link
-                        href="/"
+                        href={isFromCategoryPage ? "/" : '/categories'}
                         className="inline-flex items-center text-[#a855f7] dark:text-purple-400 hover:text-[#9333ea] dark:hover:text-purple-300"
                     >
                         <ArrowLeft className="mr-2 h-5 w-5"/>
-                        Back to Home
+                        {isFromCategoryPage ? "Back To Categories" : "Back to Home"}
                     </Link>
                 </div>
 
@@ -305,14 +307,18 @@ export default function BrowseToolsClientContent({
                                                 <button
                                                     key={category.slug}
                                                     onClick={() => handleCategorySelect(category)}
-                                                    className={`flex items-center justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                                        selectedCategory === category.slug ? "font-medium bg-gray-50 dark:bg-gray-700" : ""
-                                                    }`}
+                                                    className={`
+      flex items-center justify-between w-full px-4 py-2 text-sm text-left 
+      text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700
+      ${selectedCategory === category.slug ? "font-medium bg-gray-50 dark:bg-gray-700" : ""}
+    `}
                                                 >
-                                                    <span>{category.name}</span>
+                                                    <span className="truncate flex-1 min-w-0">{category.name}</span>
                                                     {typeof category.count === "number" && (
                                                         <span
-                                                            className="text-xs text-gray-500 dark:text-gray-400 ml-2">{category.count}</span>
+                                                            className="text-xs text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">
+        {category.count}
+      </span>
                                                     )}
                                                 </button>
                                             ))

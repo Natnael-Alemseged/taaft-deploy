@@ -113,6 +113,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
 
             {/* Render the Client Component */}
             <BrowseToolsClientContent
+                isFromCategoryPage={true}
                 initialToolsData={initialToolsData}
                 isErrorInitial={isError}
                 categoryName={categoryName}
