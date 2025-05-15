@@ -86,7 +86,7 @@ export default async function BrowsePage() {
     let isError = false;
 
     try {
-        const initialToolsData =
+        initialToolsData =
 
 
             await getTools({isPublic: true});
@@ -110,7 +110,7 @@ export default async function BrowsePage() {
 
             {/* Render the Client Component */}
             <BrowseToolsClientContent
-                isFromBrowsePage={true}
+                // isFromBrowsePage={true}
                 initialToolsData={initialToolsData}
                 isErrorInitial={isError}
             />

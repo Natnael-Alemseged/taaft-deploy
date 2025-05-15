@@ -119,7 +119,7 @@ export default function BrowseToolsClientContent({
         isLoading: isLoadingTools,
         isError: isErrorTools,
     } = useTools({
-        isPublic: !isAuthenticated,
+        isPublic: false,
         category: isCategoryPage ? categorySlug : selectedCategory !== "all-categories" ? selectedCategory : undefined,
         search: debouncedQuery || undefined,
         page,
