@@ -249,7 +249,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
                                         />
                                     </button>}
                                 <div onClick={handleStopPropagation}>
-                                    <ShareButtonWithPopover itemLink={`/tools/${tool.id}`}/>
+                                    <ShareButtonWithPopover itemLink={`/tools/${tool.unique_id}`}/>
                                 </div>
                             </div>
                             <Button

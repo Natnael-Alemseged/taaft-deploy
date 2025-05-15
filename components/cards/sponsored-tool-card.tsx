@@ -183,7 +183,7 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
                         <Bookmark className="h-4 w-4" fill={tool.saved_by_user ? "currentColor" : "none"}/>
                       </button>
                        <div onClick={handleStopPropagation}>
-                                    <ShareButtonWithPopover itemLink={`/tools/${tool.id}`}/>
+                                 <ShareButtonWithPopover itemLink={`/tools/${tool.unique_id}`}/>
                                 </div>
                     </span>
                     <Button
