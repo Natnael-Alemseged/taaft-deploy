@@ -858,7 +858,7 @@ export default function Hero() {
             } else {
                 setTools([]); // Clear tools when search query is empty
             }
-        }, 150); // 150ms debounce
+        }, 700); // 150ms debounce
 
         return () => clearTimeout(timer); // Cleanup debounce timer
     }, [searchQuery]);

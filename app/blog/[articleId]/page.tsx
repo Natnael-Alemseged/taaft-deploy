@@ -389,150 +389,95 @@ const BlogDetailPage: React.FC = () => {
     }, [articleId]); // Re-fetch if the articleId changes
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto py-8">
+                   <div className="w-full lg:w-11/12 xl:w-9/12 mx-auto"> {/* Example: Increased inner width */}
+
             {/* Back Button */}
-            <div className="mb-6">
-                <Link href="/article" className="inline-flex items-center text-[#a855f7] dark:text-purple-400 hover:text-[#9333ea] dark:hover:text-purple-300">
-                    <ArrowLeft className="mr-2 h-5 w-5" />
-                    Back to Articles
-                </Link>
-            </div>
-
-            {isLoading && (
-                <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600 dark:border-purple-400"></div>
+                <div className="mb-6">
+                    <Link href="/article" className="inline-flex items-center text-[#a855f7] dark:text-purple-400 hover:text-[#9333ea] dark:hover:text-purple-300">
+                        <ArrowLeft className="mr-2 h-5 w-5" />
+                        Back to Articles
+                    </Link>
                 </div>
-            )}
 
-            {error && (
-                <div className="text-center text-red-600 dark:text-red-400 py-8">
-                    <p>{error}</p>
-                    <p>Could not load the article.</p>
-                </div>
-            )}
+                {isLoading && (
+                    <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600 dark:border-purple-400"></div>
+                    </div>
+                )}
 
-            {!isLoading && !error && !article && (
-                 <div className="text-center text-gray-600 dark:text-gray-400 py-8">
-                     <p>Article not found.</p>
-                 </div>
-            )}
+                {error && (
+                    <div className="text-center text-red-600 dark:text-red-400 py-8">
+                        <p>{error}</p>
+                        <p>Could not load the article.</p>
+                    </div>
+                )}
 
-            {/* Article Content and Sidebar Layout */}
-            {!isLoading && !error && article && (
-                <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Main Article Content Area */}
-                    <div className="lg:w-2/3">
-                        {/* Article Header */}
-                        <div className="mb-6">
-                            {/* Optional: Date and Category/Source if available */}
-                             <div className="text-sm text-gray-500 dark:text-gray-500 mb-2">
-                                 {article.publishedDate ? new Date(article.publishedDate).toLocaleDateString() : ''}
-                             </div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                                {article.title}
-                            </h1>
-                            {/* Optional: Author */}
-                             {article.author && (
-                                <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm mb-4">
-                                     {/* Placeholder for author image/avatar if available */}
-                                     {/* <div className="w-8 h-8 rounded-full bg-gray-300 mr-2"></div> */}
-                                    <span>By {article.author}</span>
+                {!isLoading && !error && !article && (
+                    <div className="text-center text-gray-600 dark:text-gray-400 py-8">
+                        <p>Article not found.</p>
+                    </div>
+                )}
+
+                {/* Article Content and Sidebar Layout */}
+                {!isLoading && !error && article && (
+                    <div className="flex flex-col lg:flex-row gap-8">
+                        {/* Main Article Content Area */}
+                        <div className="lg:w-2/3">
+                            <div className="mb-6">
+                                <div className="text-sm text-gray-500 dark:text-gray-500 mb-2">
+                                    {article.publishedDate ? new Date(article.publishedDate).toLocaleDateString() : ''}
                                 </div>
-                             )}
-                             {/* Share/Copy Link Buttons - Placed near header as in UI image */}
-                             <div className="flex items-center gap-4 text-gray-600 dark:text-gray-400 text-sm mb-6">
-                                 {/* Assuming ShareButtonWithPopover handles the UI for sharing */}
-                                 {/*<ShareButtonWithPopover itemLink={window.location.href} /> /!* Share the current page URL *!/*/}
-                                  {/* You might need a separate "Copy Link" button if ShareButtonWithPopover doesn't include it */}
-                                  {/* Example Copy Link Button (requires implementation) */}
-                                  {/* <button className="flex items-center hover:text-gray-900 dark:hover:text-white">
-                                      <Copy className="h-4 w-4 mr-1"/> Copy Link
-                                  </button> */}
-                             </div>
-                             {/* Optional: Main Article Image */}
-                             {article.images && article.images.length > 0 && (
-                                  <img
-                                      src={article.images[0]} // Use the first image URL
-                                      alt={article.title}
-                                      className="w-full h-auto object-cover rounded-lg mb-6"
-                                  />
-                             )}
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                                    {article.title}
+                                </h1>
+                                {article.author && (
+                                    <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm mb-4">
+                                        <span>By {article.author}</span>
+                                    </div>
+                                )}
+                                {article.images && article.images.length > 0 && (
+                                    <img
+                                        src={article.images[0]}
+                                        alt={article.title}
+                                        className="w-full h-auto object-cover rounded-lg mb-6"
+                                    />
+                                )}
+                            </div>
+
+                            <div
+                                className="prose dark:prose-invert max-w-none prose-img:rounded-lg prose-img:w-full prose-a:text-purple-600 dark:prose-a:text-purple-400 "
+                                dangerouslySetInnerHTML={{ __html: article.body }}
+                            />
+
+                            {article.url && (
+                                <div className="mt-8 text-sm text-gray-600 dark:text-gray-400">
+                                    Read the original article here:
+                                    <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-[#a855f7] dark:text-purple-400 hover:underline">
+                                        {article.url}
+                                    </a>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Article Body - Render HTML */}
-                        {/* Use dangerouslySetInnerHTML to render HTML from the API. Be cautious with untrusted sources. */}
-                        <div
-                            className="prose dark:prose-invert max-w-none" // Use prose classes for basic typography styling
-                            dangerouslySetInnerHTML={{ __html: article.body }}
-                        />
-
-                        {/* Optional: Original Source Link */}
-                        {article.url && (
-                            <div className="mt-8 text-sm text-gray-600 dark:text-gray-400">
-                                Read the original article here:{" "}
-                                <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-[#a855f7] dark:text-purple-400 hover:underline">
-                                    {article.url}
-                                </a>
-                            </div>
-                        )}
+                        <div className="lg:w-1/3 flex flex-col gap-6">
+                            {article.author && (
+                                <Card className="rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
+                                    <CardContent className="p-4">
+                                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">About the Author</h3>
+                                        <p className="text-gray-600 dark:text-gray-400 text-sm text-center">
+                                            {article.author || "Author details not available."}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
                     </div>
-
-                    {/* Sidebar Area */}
-                    <div className="lg:w-1/3 flex flex-col gap-6">
-                        {/* About the Author Card */}
-                        {/* This section is based on the UI image, assuming author details might exist or be added */}
-                        {   article.author&&       <Card className="rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
-                            <CardContent className="p-4">
-                                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">About the Author</h3>
-                                {/* Placeholder for author image/avatar */}
-                                {/* <div className="w-16 h-16 rounded-full bg-gray-300 mx-auto mb-3"></div> */}
-                                <p className="text-gray-600 dark:text-gray-400 text-sm text-center">
-                                    {/* Display author name if available, otherwise a default */}
-                                    {article.author || "Author details not available."}
-                                </p>
-                                {/* Optional: Add more author bio/details here if available */}
-                                {/* <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
-                                     [Author Bio Snippet]
-                                </p> */}
-                            </CardContent>
-                        </Card>}
-
-                        {/* Related Articles Card */}
-                        {/* This section is based on the UI image. The API has related_glossary_terms/details */}
-                        {/* You would likely fetch actual related articles based on categories, tags, etc. */}
-                        {/*{article.related_glossary_terms &&   <Card className="rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">*/}
-                        {/*     <CardContent className="p-4">*/}
-                        {/*        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">Related Content</h3>*/}
-                        {/*         /!* Display related glossary terms if available *!/*/}
-                        {/*         {article.related_glossary_terms && article.related_glossary_terms.length > 0 ? (*/}
-                        {/*             <div className="flex flex-col gap-2">*/}
-                        {/*                 {article.related_glossary_terms.map((term, index) => (*/}
-                        {/*                     // Link to a glossary page or filter articles by this term*/}
-                        {/*                     <Link href={`/glossary?term=${encodeURIComponent(term)}`} key={index} className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#a855f7] dark:hover:text-purple-400 transition-colors">*/}
-                        {/*                         {term}*/}
-                        {/*                     </Link>*/}
-                        {/*                 ))}*/}
-                        {/*             </div>*/}
-                        {/*         ) : (*/}
-                        {/*             <p className="text-sm text-gray-600 dark:text-gray-400">No related content found.</p>*/}
-                        {/*         )}*/}
-                        {/*         /!* You would add logic here to fetch and display actual related *articles* *!/*/}
-                        {/*         /!* Example Placeholder for Related Articles List *!/*/}
-                        {/*         /!* <div className="flex flex-col gap-2 mt-4">*/}
-                        {/*              <Link href="#" className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#a855f7] dark:hover:text-purple-400 transition-colors">*/}
-                        {/*                  Another Related Article Title*/}
-                        {/*              </Link>*/}
-                        {/*               <Link href="#" className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#a855f7] dark:hover:text-purple-400 transition-colors">*/}
-                        {/*                  Yet Another Article*/}
-                        {/*              </Link>*/}
-                        {/*         </div> *!/*/}
-                        {/*     </CardContent>*/}
-                        {/*</Card>}*/}
-                    </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
+
 };
 
 export default BlogDetailPage;
