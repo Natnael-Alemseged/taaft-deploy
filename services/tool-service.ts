@@ -29,7 +29,7 @@ export const getTools = async (params?: {
         params?.isPublic ? "/public/tools" : "/tools";
     const apiParams: Record<string, any> = {
       limit: params?.limit ?? 12,
-      skip: (params?.page ?? 1 - 1) * (params?.limit ?? 12),
+      skip: params?.search ? 0 : ((params?.page ?? 1) - 1) * (params?.limit ?? 12),
       sort_by: params?.sort_by ?? "created_at",
       sort_order: params?.sort_order ?? "desc",
       // isPublic: params?.isPublic ?? true, // Default to `true`

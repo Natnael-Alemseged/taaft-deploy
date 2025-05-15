@@ -61,7 +61,7 @@ export default function BrowseToolsClientContent({
     const [selectedCategory, setSelectedCategory] = useState<string>("all-categories")
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
     const [page, setPage] = useState(1)
-    const limit = 12 // Items per page
+    let limit:number = 12 // Items per page
     const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
 
     // --- Effect for Search Query Debounce and URL Update ---
@@ -233,6 +233,7 @@ export default function BrowseToolsClientContent({
     // --- Calculate pagination details ---
     const totalTools = toolsData?.total || 0
     const displayedToolsCount = toolsData?.tools?.length || 0
+    // limit=displayedToolsCount
     const totalPages = Math.ceil(totalTools / limit)
     const showPagination = totalTools > limit
 
