@@ -47,9 +47,12 @@ export default function Header() {
   }
 
   const handleLogout = () => {
-    logout()
+    console.log('handle logout')
+
+    logout();
     setIsUserMenuOpen(false)
     setIsMobileMenuOpen(false); // Close mobile menu on logout
+
   }
 
   // Effect to add and remove scroll event listener

@@ -27,9 +27,10 @@ export function useTools(params?: {
   sort_by?: string
   sort_order?: 'asc' | 'desc'
 }) {
-  console.log('Calling gettools from useTools hook');
+  console.log(`isPublic value is:${params?.isPublic}`);
+
   return useQuery({
-    queryKey: ["tools", params?.category, params?.search, params?.page, params?.limit, params?.featured, params?.sort_by, params?.sort_order],
+    queryKey: ["tools", params?.category,params?.isPublic, params?.search, params?.page, params?.limit, params?.featured, params?.sort_by, params?.sort_order],
     queryFn: () => getTools(params),
     placeholderData: (previousData) => previousData,  // Prevent flickering on pagination
     staleTime: 1000 * 10,           // Consider data fresh for 10 seconds

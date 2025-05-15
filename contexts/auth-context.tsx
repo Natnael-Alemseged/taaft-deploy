@@ -159,6 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem("refresh_token")
       localStorage.removeItem("user")
       setUser(null) // Clear user state
+      window.location.reload(); // Ensure a full reload
     }
   }
 

@@ -148,8 +148,8 @@ export default function BrowseToolsClientContent({
         category: isCategoryPage ? categorySlug : selectedCategory !== "all-categories" ? selectedCategory : undefined,
         search: debouncedQuery || undefined,
         page,
-        limit
-        ,
+        limit,
+
         featured: isFeaturedPage ? true : undefined,
         sort_by: isCategoryPage ? 'name' : undefined,
         sort_order: isCategoryPage ? 'asc' : undefined,

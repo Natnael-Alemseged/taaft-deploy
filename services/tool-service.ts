@@ -24,8 +24,9 @@ export const getTools = async (params?: {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    let endpoint ="/tools/";
-        // params?.isPublic ? "/public/tools" : "/tools";
+    let endpoint =
+        // "/tools/";
+        params?.isPublic ? "/public/tools" : "/tools";
     const apiParams: Record<string, any> = {
       limit: params?.limit ?? 12,
       skip: (params?.page ?? 1 - 1) * (params?.limit ?? 12),
