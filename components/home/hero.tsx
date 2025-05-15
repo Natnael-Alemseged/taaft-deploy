@@ -703,6 +703,7 @@ export default function Hero() {
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isButtonLoading, setIsButtonLoading] = useState(false);
     const [tools, setTools] = useState<Tool[]>([]);
     const [moreTools, setMoreTools] = useState<Tool[]>([]);
 
@@ -776,6 +777,7 @@ export default function Hero() {
             setTools([]);
         } else {
             setMoreTools([]);
+            setIsButtonLoading(true);
         }
         let limit = setLimit ? limitWhenTrue : limitWhenFalse;
         console.log(`limit is: ${limit}`);
@@ -794,6 +796,7 @@ export default function Hero() {
                     setTools(keywordData.tools);
                 } else {
                     setMoreTools(keywordData.tools);
+
                 }
             } else {
                 console.log(
@@ -850,6 +853,7 @@ export default function Hero() {
             }
         } finally {
             setIsLoading(false);
+
         }
     };
 
@@ -1057,8 +1061,10 @@ export default function Hero() {
         if (moreTools.length > 0) {
             // Store in session storage for the search results page to access
             sessionStorage.setItem("searchTools", JSON.stringify(moreTools));
+
             // Navigate to the search page
             router.push(`/search?q=${encodeURIComponent(searchQuery)}&source=direct`);
+            setIsButtonLoading(false);
             // Clear moreTools after navigation is initiated, assuming the target page will fetch its own data or use session storage
             setMoreTools([]);
         }
@@ -1192,13 +1198,24 @@ export default function Hero() {
                                             {/*</div>*/}
 
                                             {/* Search button (purple) */}
-                                            <button
-                                                onClick={handleSearchNavigation}
-                                                className="px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors flex items-center gap-1.5"
-                                            >
-                                                <Search className="h-4 w-4" />
-                                                <span>Search</span>
-                                            </button>
+                                            {isButtonLoading ? (
+                                                <button
+                                                    onClick={handleSearchNavigation}
+                                                    className="px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors flex items-center gap-1.5"
+                                                    disabled={isButtonLoading} // Good practice to disable button while loading
+                                                >
+                                                    {/* You can replace "Loading..." with a spinner component */}
+                                                    <span>Loading...</span>
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={handleSearchNavigation}
+                                                    className="px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors flex items-center gap-1.5"
+                                                >
+                                                    <Search className="h-4 w-4" />
+                                                    <span>Search</span>
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 

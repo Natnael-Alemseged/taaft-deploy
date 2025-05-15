@@ -26,7 +26,7 @@ export const getTools = async (params?: {
 
     let endpoint =
         // "/tools/";
-        params?.isPublic ? "/public/tools" : "/tools";
+        params?.isPublic ? "/public/tools/" : "/tools/";
     const apiParams: Record<string, any> = {
       limit: params?.limit ?? 12,
       skip: params?.search ? 0 : ((params?.page ?? 1) - 1) * (params?.limit ?? 12),
