@@ -26,8 +26,13 @@ export default function AuthSuccessPage() {
             if (accessToken) {
                 console.log("AuthSuccessPage: Received access token. Attempting to store tokens...");
                 try {
-                    // 1. Store the tokens
+                    // 1. Store the tokens in local storage
                     localStorage.setItem('access_token', accessToken);
+                    // 1.1 store in cookies
+                    const expirationDate = new Date();
+                    expirationDate.setDate(expirationDate.getDate() + 60);
+                    document.cookie = `access_token=${accessToken}; path=/; secure; SameSite=Strict; expires=${expirationDate.toUTCString()}`;
+
                     if (refreshToken) {
                         localStorage.setItem('refresh_token', refreshToken);
                     }

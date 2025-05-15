@@ -48,6 +48,10 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
     const { access_token, token_type, refresh_token } = response.data;
 
     localStorage.setItem("access_token", access_token);
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 60);
+    document.cookie = `access_token=${access_token}; path=/; secure; SameSite=Strict; expires=${expirationDate.toUTCString()}`;
+
     if (refresh_token) {
       localStorage.setItem("refresh_token", refresh_token);
     }
@@ -231,6 +235,10 @@ export const handleGoogleCallback = async (code: string) => {
 
     // Store tokens
     localStorage.setItem("access_token", access_token);
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 60);
+    document.cookie = `access_token=${access_token}; path=/; secure; SameSite=Strict; expires=${expirationDate.toUTCString()}`;
+
     if (refresh_token) {
       localStorage.setItem("refresh_token", refresh_token);
     }
@@ -269,6 +277,10 @@ export const handleGitHubCallback = async (code: string) => {
 
     // Store tokens
     localStorage.setItem("access_token", access_token);
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 60);
+    document.cookie = `access_token=${access_token}; path=/; secure; SameSite=Strict; expires=${expirationDate.toUTCString()}`;
+
     if (refresh_token) {
       localStorage.setItem("refresh_token", refresh_token);
     }

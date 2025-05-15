@@ -95,6 +95,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // --- Store the tokens ---
       if (response.access_token) {
         localStorage.setItem("access_token", response.access_token)
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() + 60);
+        document.cookie = `access_token=${response.access_token}; path=/; secure; SameSite=Strict; expires=${expirationDate.toUTCString()}`;
+
       }
       if (response.refresh_token) {
         localStorage.setItem("refresh_token", response.refresh_token)

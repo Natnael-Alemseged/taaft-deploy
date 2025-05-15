@@ -267,6 +267,7 @@ export default function Hero() {
         }
     }
 
+
     const handleSearchNavigation = async () => {
         console.log(`more tools length is: ${moreTools.length}`);
         if (!searchQuery) return;
@@ -280,6 +281,24 @@ export default function Hero() {
         }
     };
 
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+        console.log(`search query length is ${value}`);
+
+        if (value.trim().length > 0) {
+            setIsSearchOpen(true);
+            // handleSearchFocus();
+            fetchTools(value);
+        } else {
+            console.log("Input is empty. Setting isSearchOpen to false.");
+            handleClose();
+
+            setIsSearchOpen(false);
+            setTools([]);
+        }
+    };
 
 // Close chat if user logs out while it's open
     useEffect(() => {
@@ -347,8 +366,9 @@ export default function Hero() {
                                 placeholder="What AI tool are you looking for? E.g., 'Image generator for mark..'"
                                 className="h-14 rounded-full border-gray-200 pl-12 pr-32 shadow-md"
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onFocus={handleSearchFocus}
+                                onChange={(searchQuery)=>handleInputChange(searchQuery)}
+                                // onChange={(e) => setSearchQuery(e.target.value)}
+                                // onFocus={handleSearchFocus}
                             />
                             <div className="absolute left-4 top-4 flex items-center gap-2">
                                 <Search className="h-5 w-5 text-gray-400"/>
@@ -440,82 +460,85 @@ export default function Hero() {
                                     {/* Content */}
                                     <div className="divide-y">
                                         {isLoading ? (
-                                            <div className="flex items-center justify-center py-8">
-                                                <div
-                                                    className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-                                            </div>
-
-
-                                        ) : searchQuery.length === 0 ? (
-                                                <div className="py-6 text-center text-sm text-gray-500">
-                                                    Start Typing to search
+                                                <div className="flex items-center justify-center py-8">
+                                                    <div
+                                                        className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
                                                 </div>
-                                            ) :
 
 
-                                            tools.length === 0 ? (
-                                                <div className="py-6 text-center text-sm text-gray-500">
-                                                    No results found.
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <div className="px-4 py-2 bg-gray-50">
-                                                        <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            AI Tools
-                                                        </h3>
+                                            )
+                                            :
+
+                                            searchQuery.length === 0 ? (
+                                                    <div className="py-6 text-center text-sm text-gray-500">
+                                                        Start Typing to search
                                                     </div>
-                                                    {tools.map((tool) => (
-                                                        <div
-                                                            key={tool.id}
-                                                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation(); // Prevent click from bubbling up
-                                                                goToToolDetails(tool.unique_id);
-                                                            }}
-                                                        >
-                                                            <div className="flex items-center justify-between">
-                                                                <div className="flex items-start space-x-3">
-                                                                    <div
-                                                                        className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
+                                                ) :
+
+
+                                                tools.length === 0 ? (
+                                                    <div className="py-6 text-center text-sm text-gray-500">
+                                                        No results found.
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <div className="px-4 py-2 bg-gray-50">
+                                                            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                AI Tools
+                                                            </h3>
+                                                        </div>
+                                                        {tools.map((tool) => (
+                                                            <div
+                                                                key={tool.id}
+                                                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation(); // Prevent click from bubbling up
+                                                                    goToToolDetails(tool.unique_id);
+                                                                }}
+                                                            >
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="flex items-start space-x-3">
                                                                         <div
-                                                                            className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
+                                                                            className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
+                                                                            <div
+                                                                                className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
 
-                                                                            <LogoAvatar logoUrl={tool.logo_url}
-                                                                                        name={tool.name}/>
+                                                                                <LogoAvatar logoUrl={tool.logo_url}
+                                                                                            name={tool.name}/>
 
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="flex flex-col items-start">
+                                                                            <h4 className="text-sm font-medium">{tool.name}</h4>
+                                                                            <div className="text-xs text-gray-500">
+                                                                                {tool.description?.slice(0, 50)}
+                                                                                {tool.description?.length > 70 && '...'}
+                                                                            </div>
                                                                         </div>
                                                                     </div>
 
-                                                                    <div className="flex flex-col items-start">
-                                                                        <h4 className="text-sm font-medium">{tool.name}</h4>
-                                                                        <div className="text-xs text-gray-500">
-                                                                            {tool.description?.slice(0, 50)}
-                                                                            {tool.description?.length > 70 && '...'}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="flex items-center space-x-2">
+                                                                    <div className="flex items-center space-x-2">
 
 
-                                                                    {tool.categories?.[0] != null && (
-                                                                        <span
+                                                                        {tool.categories?.[0] != null && (
+                                                                            <span
 
-                                                                            className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                                                                                className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
                                                                                 {setDisplayCategories(tool.categories)}
 
           </span>
-                                                                    )}
-                                                                    <ExternalLink
-                                                                        className="text-gray-400 hover:text-gray-600 w-4 h-4 cursor-pointer"
-                                                                    />
+                                                                        )}
+                                                                        <ExternalLink
+                                                                            className="text-gray-400 hover:text-gray-600 w-4 h-4 cursor-pointer"
+                                                                        />
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    ))}
+                                                        ))}
 
-                                                </>
-                                            )}
+                                                    </>
+                                                )}
                                     </div>
 
 
