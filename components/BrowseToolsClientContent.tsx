@@ -65,30 +65,55 @@ export default function BrowseToolsClientContent({
     const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
 
     // --- Effect for Search Query Debounce and URL Update ---
+    // useEffect(() => {
+    //     const handler = setTimeout(() => {
+    //         setDebouncedQuery(searchQuery)
+    //
+    //         // Update URL with search query and reset page
+    //         const current = new URLSearchParams(Array.from(searchParams.entries()))
+    //         if (searchQuery) {
+    //             current.set("q", searchQuery)
+    //         } else {
+    //             current.delete("q")
+    //         }
+    //
+    //         // When search changes, we always reset to page 1.
+    //         current.delete("page")
+    //
+    //         const search = current.toString()
+    //         const query = search ? `?${search}` : ""
+    //         router.replace(`${pathname}${query}`)
+    //     }, 50)
+    //
+    //     return () => {
+    //         clearTimeout(handler)
+    //     }
+    // }, [searchQuery, searchParams, pathname, router])
+
+
     useEffect(() => {
         const handler = setTimeout(() => {
-            setDebouncedQuery(searchQuery)
+            // Only proceed if searchQuery hasn't changed since we started the timeout
+            if (searchQuery === debouncedQuery) return;
 
-            // Update URL with search query and reset page
-            const current = new URLSearchParams(Array.from(searchParams.entries()))
+            const newParams = new URLSearchParams(Array.from(searchParams.entries()));
+
             if (searchQuery) {
-                current.set("q", searchQuery)
+                newParams.set("q", searchQuery);
             } else {
-                current.delete("q")
+                newParams.delete("q");
             }
 
-            // When search changes, we always reset to page 1.
-            current.delete("page")
+            newParams.delete("page");
 
-            const search = current.toString()
-            const query = search ? `?${search}` : ""
-            router.replace(`${pathname}${query}`)
-        }, 100)
+            const queryString = newParams.toString();
+            const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
-        return () => {
-            clearTimeout(handler)
-        }
-    }, [searchQuery, searchParams, pathname, router])
+            router.replace(newUrl, undefined, { shallow: true });
+        }, 500); // 500ms debounce (adjust as needed)
+
+        return () => clearTimeout(handler);
+    }, [searchQuery, debouncedQuery, searchParams, pathname, router]);
 
     // --- Sync state with URL query parameter on mount and URL changes ---
     useEffect(() => {
@@ -119,7 +144,7 @@ export default function BrowseToolsClientContent({
         isLoading: isLoadingTools,
         isError: isErrorTools,
     } = useTools({
-        isPublic: false,
+        isPublic: !isAuthenticated,
         category: isCategoryPage ? categorySlug : selectedCategory !== "all-categories" ? selectedCategory : undefined,
         search: debouncedQuery || undefined,
         page,

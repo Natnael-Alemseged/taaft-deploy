@@ -521,14 +521,14 @@ export default function Hero() {
                                                                     <div className="flex items-center space-x-2">
 
 
-                                                                        {tool.categories?.[0] != null && (
+
                                                                             <span
 
                                                                                 className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
                                                                                 {setDisplayCategories(tool.categories)}
 
           </span>
-                                                                        )}
+
                                                                         <ExternalLink
                                                                             className="text-gray-400 hover:text-gray-600 w-4 h-4 cursor-pointer"
                                                                         />

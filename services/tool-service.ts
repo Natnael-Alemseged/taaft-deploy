@@ -24,7 +24,7 @@ export const getTools = async (params?: {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    let endpoint ="/public/tools";
+    let endpoint ="/tools/";
         // params?.isPublic ? "/public/tools" : "/tools";
     const apiParams: Record<string, any> = {
       limit: params?.limit ?? 12,
@@ -51,7 +51,7 @@ export const getTools = async (params?: {
 
     // Ensure the correct endpoint for private tools
     if (!params?.isPublic && endpoint === "/public/tools") {
-      endpoint = "/tools";
+      endpoint = "/tools/";
     }
 
     console.log(`Final endpoint: ${endpoint}`);

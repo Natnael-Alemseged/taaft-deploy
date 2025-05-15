@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   ).join(' ');
 
   return {
-    title: `${categoryName} AI Tools | TAAFT`,
+        title: `${categoryName} AI Tools | TAAFT`,
     description: `Discover and explore the best ${categoryName} AI tools. Find curated ${categoryName} tools for your projects.`,
   };
 }
