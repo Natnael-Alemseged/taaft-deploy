@@ -671,6 +671,8 @@ import { robotSvg, setDisplayCategories } from "@/lib/reusable_assets";
 import { SignInModal } from "./sign-in-modal";
 import { getTools } from "@/services/tool-service";
 import { LogoAvatar } from "@/components/LogoAvatar";
+import {useDebounce} from "use-debounce";
+import {useCustomDebounce} from "@/lib/reusable-methods";
 
 // Types for API integration
 interface Tool {
@@ -851,18 +853,52 @@ export default function Hero() {
         }
     };
 
-    // Debounced search effect for live results in the intermediate UI
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchQuery) {
-                fetchTools(searchQuery); // Fetches limited tools for immediate display
-            } else {
-                setTools([]); // Clear tools when search query is empty
-            }
-        }, 700); // 150ms debounce
+    const debouncedSearchQuery = useCustomDebounce(searchQuery, 700);
 
-        return () => clearTimeout(timer); // Cleanup debounce timer
-    }, [searchQuery]);
+    // const timer = setTimeout(() => {
+    //     if (searchQuery) {
+    //         fetchTools(searchQuery); // Fetches limited tools for immediate display
+    //     } else {
+    //         setTools([]); // Clear tools when search query is empty
+    //     }
+    // }, 700); // 150ms debounce
+    //
+    // return () => clearTimeout(timer); // Cleanup debounce timer
+
+
+    // Debounced search effect for live results in the intermediate UI
+    // useEffect(() => {
+    //
+    //
+    //     if (searchQuery) {
+    //         // const  debouncedSearchTerm = useCustomDebounce(searchQuery, 500);
+    //         // fetchTools(debouncedSearchTerm); // Fetches limited tools for immediate display
+    //     }
+    //     else {
+    //         setTools([]); // Clear tools when search query is empty
+    //     }
+    //
+    // }, [searchQuery]);
+
+
+    useEffect(() => {
+        // This effect will only run AFTER debouncedSearchQuery updates,
+        // which happens after the debounce delay within useCustomDebounce.
+        if (debouncedSearchQuery) {
+            console.log("Fetching tools for:", debouncedSearchQuery); // Example: See when it runs
+
+            // --- Add this line to clear previous results immediately ---
+            setTools([]);
+            // --------------------------------------------------------
+
+            // Now, fetch the new tools
+            fetchTools(debouncedSearchQuery);
+        } else {
+            // Clear tools when the search query is empty
+            setTools([]);
+        }
+
+    }, [debouncedSearchQuery]); // <--- Dependency is the debounced value!
 
     // Effect to focus the intermediate input when search is open
     useEffect(() => {
@@ -990,7 +1026,7 @@ export default function Hero() {
                 setIsSearchOpen(true);
             }
             // Fetch tools for the intermediate UI
-            fetchTools(value);
+            // fetchTools(value);
         } else {
             // If input is empty, close the search UI
             console.log("Input is empty. Closing search.");
@@ -1006,7 +1042,7 @@ export default function Hero() {
 
         // Fetch tools for the intermediate UI
         if (value.trim().length > 0) {
-            fetchTools(value);
+            // fetchTools(value);
         } else {
             setTools([]); // Clear results if intermediate input becomes empty
             // Decide if you want to completely close the intermediate UI here
@@ -1090,20 +1126,21 @@ export default function Hero() {
                                         <Search className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <div className="absolute right-2 top-2 flex items-center gap-1">
-                                        <div
-                                            className="relative group rounded-full bg-purple-100 p-2.5 h-10 w-10 flex items-center justify-center cursor-pointer"
-                                            onClick={handleChatOpen}
-                                            aria-label="Try chat mode"
-                                        >
-                                            <MessageSquare
-                                                className="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors"
-                                                // onClick is moved to the parent div
-                                            />
-                                            {/* Tooltip */}
-                                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                                                Try chat mode for interactive conversation
-                                            </div>
-                                        </div>
+                                        {/*fix me chat hidden*/}
+                                        {/*<div*/}
+                                        {/*    className="relative group rounded-full bg-purple-100 p-2.5 h-10 w-10 flex items-center justify-center cursor-pointer"*/}
+                                        {/*    onClick={handleChatOpen}*/}
+                                        {/*    aria-label="Try chat mode"*/}
+                                        {/*>*/}
+                                        {/*    <MessageSquare*/}
+                                        {/*        className="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors"*/}
+                                        {/*        // onClick is moved to the parent div*/}
+                                        {/*    />*/}
+                                        {/*    /!* Tooltip *!/*/}
+                                        {/*    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">*/}
+                                        {/*        Try chat mode for interactive conversation*/}
+                                        {/*    </div>*/}
+                                        {/*</div>*/}
 
                                         <Button
                                             className="h-10 rounded-full bg-purple-600 px-6 text-sm hover:bg-purple-700"
@@ -1131,27 +1168,28 @@ export default function Hero() {
                                         />
                                         <div className="flex gap-2">
                                             {/* Chat button (gray, smaller) */}
-                                            <div className="relative">
-                                                <button
-                                                    onClick={handleChatOpen}
-                                                    onMouseEnter={() => setIsHovered(true)}
-                                                    onMouseLeave={() => setIsHovered(false)}
-                                                    className="relative group rounded-full bg-purple-100 p-2.5 h-10 w-10 flex items-center justify-center cursor-pointer"
-                                                >
-                                                    <MessageSquare className="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
-                                                </button>
+                                            {/*fix me chat hidden*/}
+                                            {/*<div className="relative">*/}
+                                            {/*    <button*/}
+                                            {/*        onClick={handleChatOpen}*/}
+                                            {/*        onMouseEnter={() => setIsHovered(true)}*/}
+                                            {/*        onMouseLeave={() => setIsHovered(false)}*/}
+                                            {/*        className="relative group rounded-full bg-purple-100 p-2.5 h-10 w-10 flex items-center justify-center cursor-pointer"*/}
+                                            {/*    >*/}
+                                            {/*        <MessageSquare className="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors" />*/}
+                                            {/*    </button>*/}
 
-                                                {showChatTooltip && (
-                                                    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-10">
-                                                        {/* Arrow */}
-                                                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-black"></div>
-                                                        {/* Tooltip */}
-                                                        <div className="px-2 py-1 text-xs text-white bg-black rounded shadow">
-                                                            Try chat mode for interactive conversation
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
+                                            {/*    {showChatTooltip && (*/}
+                                            {/*        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-10">*/}
+                                            {/*            /!* Arrow *!/*/}
+                                            {/*            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-black"></div>*/}
+                                            {/*            /!* Tooltip *!/*/}
+                                            {/*            <div className="px-2 py-1 text-xs text-white bg-black rounded shadow">*/}
+                                            {/*                Try chat mode for interactive conversation*/}
+                                            {/*            </div>*/}
+                                            {/*        </div>*/}
+                                            {/*    )}*/}
+                                            {/*</div>*/}
 
                                             {/* Search button (purple) */}
                                             <button
