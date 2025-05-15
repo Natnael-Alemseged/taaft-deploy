@@ -10,6 +10,8 @@ import {robotSvg} from "@/lib/reusable_assets";
 import {Bookmark, ExternalLink} from "lucide-react";
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover";
 import {Button} from "@/components/ui/button";
+import {Avatar} from "@/components/ui/avatar";
+import {LogoAvatar} from "@/components/LogoAvatar";
 
 interface SponsoredToolCardProps {
     tool: Tool
@@ -116,22 +118,18 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
             aria-label={tool.name}
         >
             <CardContent className="p-4">
-                <div className="mb-2 flex items-center gap-4">
-                    {tool.categories.length > 0 && (
-                        <span
-                            className="text-xs font-bold text-purple-500 border border-purple-300 rounded-full px-2 py-1">
+                {tool.categories != null &&
+                    <div className="mb-2 flex items-center gap-4">
+                        {tool.categories.length > 0 && (
+                            <span
+                                className="text-xs font-bold text-purple-500 border border-purple-300 rounded-full px-2 py-1">
                         {tool.categories[0].name}
                       </span>
-                    )}
-                </div>
+                        )}
+                    </div>
+                }
                 <span className="flex items-center gap-2 pb-3">
-                   <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
-  {tool.logo_url ? (
-      <img src={tool.logo_url} alt="Tool Logo" className="w-full h-full object-contain"/>
-  ) : (
-      robotSvg
-  )}
-</div>
+<LogoAvatar logoUrl={tool.logo_url} name={tool.name}/>
                     <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>
                   </span>
                 <p className="mb-4 text-sm text-gray-600 pt-3">

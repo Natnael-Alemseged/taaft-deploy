@@ -428,8 +428,9 @@ export default function SponsoredTools() {
                 aria-label="Sponsored Tools Carousel"
             >
               {sponsoredTools.map((tool) => (
-                  <SponsoredToolCard tool={tool} />
+                  <SponsoredToolCard key={tool.unique_id} tool={tool} />
               ))}
+
             </div>
 
             {/* Pagination Indicators */}

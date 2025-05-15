@@ -168,7 +168,7 @@ export const getFeaturedTools = async (limit?: number) => {
 export const getPopularTools = async (limit?: number) => {
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
-
+    let endpoint = "/public/tools/sponsored"
     const headers: Record<string, string> = {
       Accept: "application/json",
     }
@@ -177,7 +177,13 @@ export const getPopularTools = async (limit?: number) => {
       headers["Authorization"] = `Bearer ${token}`
     }
 
-    const response = await apiClient.get<{ tools: Tool[] }>("/public/tools/sponsored/", {
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}` // Add Authorization header if token exists
+      console.log("token", token);
+      endpoint = "tools/sponsored/"
+    }
+
+    const response = await apiClient.get<{ tools: Tool[] }>(endpoint, {
       params: { limit, sort: "popular" },
       headers,
     })
