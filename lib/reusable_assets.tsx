@@ -28,3 +28,34 @@ export const setDisplayCategories = (
 
     return categoryName ? (categoryName.length > limit ? categoryName.slice(0, limit) + '...' : categoryName) : "AI Tools";
 };
+
+
+
+
+// lib/reusable_assets.ts or wherever you keep utility functions
+
+export const formatDescription = (
+    generatedDescription?: string | null | undefined,
+    description?: string | null | undefined,
+    sliceLength: number, // The maximum number of characters to display
+    ellipsisLength: number, // The original length threshold to add "..."
+): string => {
+    // Prioritize generatedDescription if it exists, otherwise use description
+    const sourceDescription = generatedDescription || description;
+
+    // If no description source is available, return an empty string
+    if (!sourceDescription) {
+        return '';
+    }
+
+    // Apply slicing
+    const slicedDescription = sourceDescription.substring(0, sliceLength);
+
+    // Determine if ellipsis is needed based on the original source length
+    const needsEllipsis = sourceDescription.length > ellipsisLength;
+
+    // Return the sliced description with ellipsis if necessary
+    return slicedDescription + (needsEllipsis ? '...' : '');
+};
+
+// You can then use this function in your components like setDisplayCategories

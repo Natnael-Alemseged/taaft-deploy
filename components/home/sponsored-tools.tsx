@@ -455,8 +455,10 @@ export default function SponsoredTools() {
         />
         <section className="py-8 bg-white">
           <div className="container mx-auto px-4">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-purple-700">Sponsored</h2>
+            <div className="mb-6 flex items-center justify-start md:justify-between">
+              <h2 className="text-2xl font-bold text-purple-700">Sponsored</h2>  <div className="block lg:hidden">
+              {/*"right" "left"*/}
+            </div>
               {totalPages > 1 && (
                   <div className="flex space-x-2">
                     <button

@@ -10,7 +10,7 @@ import {useAuth} from "@/contexts/auth-context"
 import {useRouter, usePathname} from "next/navigation"
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover"
 import {useSavedTools, useSaveTool, useUnsaveTool} from "@/hooks/use-tools"
-import {robotSvg, setDisplayCategories} from "@/lib/reusable_assets"
+import {formatDescription, robotSvg, setDisplayCategories} from "@/lib/reusable_assets"
 import {SignInModal} from "@/components/home/sign-in-modal"
 import {useEffect, useState} from "react"
 import {showLoginModal} from "@/lib/auth-events"
@@ -208,7 +208,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
          {setDisplayCategories(tool.categories)}
             </span>
                         <p className="mb-4 text-sm text-gray-600 pt-3">
-                            {tool.description ? (tool.description.length > 50 ? `${tool.description.substring(0, 50)}...` : tool.description) : "No Description"}
+                            {formatDescription(tool.generated_description, tool.description, 80, 80)} {/* Adjust lengths as needed for cards */}
                         </p>
                         <div className="mb-4 flex flex-wrap gap-2">
                             {(tool.keywords || []).slice(0, 3).map((feature, index) => {
