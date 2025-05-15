@@ -155,7 +155,7 @@ export default function ToolDetail() {
                     Please check the address or navigate from the main tools page.
                 </p>
                 <a
-                    href="/"
+                    href="/browse"
                     className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
                 >
                     Go to Tools
