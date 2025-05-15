@@ -853,6 +853,9 @@ export default function Hero() {
             }
         } finally {
             setIsLoading(false);
+            //simulate random delay befor changing button state
+            await new Promise(resolve => setTimeout(resolve,  Math.max(1000 - elapsedTime, 0)));
+            setIsButtonLoading(false);
 
         }
     };
@@ -979,7 +982,7 @@ export default function Hero() {
         }
     };
 
-    const smallPlaceholder = "What AI tool are you looking for?";
+    const smallPlaceholder = "Search AI Tools";
     const largePlaceholder = "What AI tool are you looking for? E.g., 'Image generator for mark..'";
     const [placeholderText, setPlaceholderText] = useState(smallPlaceholder); // Initialize with the small one
     // Effect to check screen size and update placeholder
@@ -1058,7 +1061,9 @@ export default function Hero() {
     // Effect to navigate to search results page when moreTools is populated
     useEffect(() => {
         console.log(`more tools length after update is: ${moreTools.length}`);
-        if (moreTools.length > 0) {
+
+        //fix me removed check as per request to go to search result page
+        // if (moreTools.length > 0) {
             // Store in session storage for the search results page to access
             sessionStorage.setItem("searchTools", JSON.stringify(moreTools));
 
@@ -1067,7 +1072,7 @@ export default function Hero() {
             setIsButtonLoading(false);
             // Clear moreTools after navigation is initiated, assuming the target page will fetch its own data or use session storage
             setMoreTools([]);
-        }
+        // }
     }, [moreTools, router, searchQuery]); // Added router and searchQuery to dependencies
 
 
@@ -1121,7 +1126,7 @@ export default function Hero() {
                                             ref={inputRef}
                                             type="text"
                                             placeholder={placeholderText} // Uses responsive placeholder state
-                                            className="h-14 rounded-full border-gray-200 pl-12 pr-32 shadow-md text-xs w-full max-w-screen-md" // Added responsive width for centering
+                                            className="h-14 rounded-full border-gray-200 pl-12 pr-32 shadow-md text-s w-full max-w-screen-md" // Added responsive width for centering
                                             value={searchQuery}
                                             // Use the specific handler for the initial input
                                             onChange={handleInitialInputChange}
