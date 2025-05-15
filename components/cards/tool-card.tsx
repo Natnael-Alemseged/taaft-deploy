@@ -10,7 +10,7 @@ import {useAuth} from "@/contexts/auth-context"
 import {useRouter, usePathname} from "next/navigation"
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover"
 import {useSaveTool, useUnsaveTool} from "@/hooks/use-tools"
-import {robotSvg} from "@/lib/reusable_assets"
+import {robotSvg, setDisplayCategories} from "@/lib/reusable_assets"
 import {SignInModal} from "@/components/home/sign-in-modal"
 import {useEffect, useState} from "react"
 import {showLoginModal} from "@/lib/auth-events"
@@ -217,12 +217,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
             </span>
                         <span
                             className="rounded-full bg-purple-100 px-2 py-0.5 w-fit text-xs font-medium text-purple-600">
-              {tool.categories && tool.categories.length !== 0
-                  ? (() => {
-                      const categoryText = tool.categories[0].name;
-                      return categoryText.length > 15 ? `${categoryText.slice(0, 15)}...` : categoryText;
-                  })()
-                  : null}
+         {setDisplayCategories(tool.categories)}
             </span>
                         <p className="mb-4 text-sm text-gray-600 pt-3">
                             {tool.description && tool.description.length > 50 // Adjust 120 to your desired length

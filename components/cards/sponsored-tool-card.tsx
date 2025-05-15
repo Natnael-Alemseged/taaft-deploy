@@ -6,7 +6,7 @@ import {useRef, useState} from "react";
 import {showLoginModal} from "@/lib/auth-events";
 import type {Tool} from "@/types/tool";
 import {Card, CardContent} from "@/components/ui/card";
-import {robotSvg} from "@/lib/reusable_assets";
+import {robotSvg, setDisplayCategories} from "@/lib/reusable_assets";
 import {Bookmark, ExternalLink} from "lucide-react";
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover";
 import {Button} from "@/components/ui/button";
@@ -123,7 +123,7 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
                         {tool.categories.length > 0 && (
                             <span
                                 className="text-xs font-bold text-purple-500 border border-purple-300 rounded-full px-2 py-1">
-                        {tool.categories[0].name}
+                      {setDisplayCategories(tool.categories)}
                       </span>
                         )}
                     </div>
