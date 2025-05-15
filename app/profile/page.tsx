@@ -35,7 +35,7 @@ export default function ProfilePage() {
   // const { data: savedTools, isLoading: isToolLoading, isError: isToolError } = useSavedTools();
 
   // Use react-query for fetching saved tools
-  const { data: savedTools, isLoading: isToolLoading, isError: isToolError, refetch: refetchSavedTools } = useSavedTools();
+  const { data: savedTools, isLoading: isToolLoading, isError: isToolError, refetch: refetchSavedTools, isFetching: isRefetching , } = useSavedTools();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -107,6 +107,9 @@ export default function ProfilePage() {
         </div>
     );
   }
+
+
+
 
 
   return (
@@ -224,25 +227,40 @@ export default function ProfilePage() {
                     </CardContent>
                   </Card>
               ) : (
+
                   // Saved Tools Tab Content
                   <Card>
-                    <CardHeader>
+                    <CardHeader className="relative">
                       <CardTitle>Saved Tools</CardTitle>
+                      {isRefetching && (
+                          <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 animate-[pulse_1.5s_ease-in-out_infinite]"></div>
+                      )}
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {/* Conditional rendering based on data and error */}
-
-                      {!isToolLoading && !isToolError && (savedTools?.length === 0 ? (
-                          <p className="text-sm text-gray-500">No saved tools found.</p>
-                      ) : (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {savedTools?.map((tool: any) => (
-                                <ToolCard key={tool.id} tool={tool} />
-                            ))}
+                      {isToolLoading ? (
+                          <div className="flex flex-col items-center justify-center gap-3">
+                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 border-r-2 border-r-transparent"></div>
+                            <p className="text-purple-500 text-sm">Loading your tools...</p>
                           </div>
-                      ))}
+                      ) : isToolError ? (
+                          <p className="text-sm text-red-500">Failed to load saved tools.</p>
+                      ) : (
+                          <>
+                            {savedTools?.length === 0 ? (
+                                <p className="text-sm text-gray-500">No saved tools found.</p>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  {savedTools?.map((tool: any) => (
+                                      <ToolCard key={tool.id} tool={tool} />
+                                  ))}
+                                </div>
+                            )}
+                          </>
+                      )}
                     </CardContent>
                   </Card>
+
+
 
               )}
             </div>

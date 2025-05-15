@@ -21,7 +21,9 @@ export const robotSvg = <svg width="35" height="36" viewBox="0 0 35 36" fill="no
 export const setDisplayCategories = (
     categories?: any,
 ) => {
-    const categoryName = categories != null ? (categories[0]?.name === "AI Tools" ? categories[1]?.name : categories[0]?.name) : "AI Tools";
+    const categoryName = categories && categories.length > 0
+        ? (categories[0]?.name === "AI Tools" ? categories[1]?.name : categories[0]?.name)
+        : "AI Tools";
 
-    return categoryName.length > 15 ? categoryName.slice(0, 15) + '...' : categoryName;
+    return categoryName ? (categoryName.length > 15 ? categoryName.slice(0, 15) + '...' : categoryName) : "AI Tools";
 };

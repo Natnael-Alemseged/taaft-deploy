@@ -9,7 +9,7 @@ import type {Tool} from "@/types/tool" // Import the updated Tool type
 import {useAuth} from "@/contexts/auth-context"
 import {useRouter, usePathname} from "next/navigation"
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover"
-import {useSaveTool, useUnsaveTool} from "@/hooks/use-tools"
+import {useSavedTools, useSaveTool, useUnsaveTool} from "@/hooks/use-tools"
 import {robotSvg, setDisplayCategories} from "@/lib/reusable_assets"
 import {SignInModal} from "@/components/home/sign-in-modal"
 import {useEffect, useState} from "react"
@@ -18,6 +18,7 @@ import {useQueryClient} from "@tanstack/react-query" // Assuming React Query is 
 import apiClient from "@/lib/api-client"
 import {LogoAvatar} from "@/components/LogoAvatar";
 import {handleOpenTool} from "@/lib/reusable-methods";
+import {fallbackModeToFallbackField} from "next/dist/lib/fallback";
 
 interface ToolCardProps {
     tool: Tool
@@ -66,7 +67,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
     const unsaveToolMutation = useUnsaveTool() // Renamed
 // ... inside your component function
     const [logoError, setLogoError] = useState(false);
-
+    const { data: savedTools, isLoading: isToolLoading, isError: isToolError, refetch: refetchSavedTools, isFetching: isRefetching , } = useSavedTools();
     const handleToolClick = (e: React.MouseEvent) => {
         if (!isAuthenticated) {
             e.preventDefault()
@@ -88,10 +89,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
         const toolId = tool.unique_id; // Use unique_id for the API calls as per your service
         const currentlySaved = !!tool.saved_by_user; // Get current status from component state
 
-        // Store current state for potential rollback (both React Query cache and local component state)
-        // Targeting a specific tool entry in cache might be tricky if it's part of a list query ("tools")
-        // A more robust approach with react-query is to update the specific tool item in the list query cache.
-        // However, given the component receives a single tool prop, let's update a potential cache entry for the single tool:
+
         const toolDetailCacheKey = ["tool", tool.id]; // Use tool.id for detail cache if that's the convention
         const previousToolCacheState = queryClient.getQueryData<Tool>(toolDetailCacheKey);
         const previousLocalState = tool; // Store current local state
@@ -120,7 +118,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
             } else {
                 await saveToolMutation.mutateAsync(toolId); // Use unique_id for save
             }
-
+            refetchSavedTools();
             // If the mutation is successful, React Query might automatically refetch
             // relevant queries (depending on configuration/onSettled callbacks in hooks).
             // You might manually trigger a refetch of the tools list query here if needed:
@@ -171,8 +169,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
 
 
 
-
-
+// const safeTool=fallbackModeToFallbackField()
     return (
         <>
             <Card
@@ -197,13 +194,13 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
 
 <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
     {/* Check if URL exists AND no logo error has occurred */}
-    <LogoAvatar logoUrl={tool.logo_url} name={tool.name}/>
+    <LogoAvatar logoUrl={tool.logo_url} name={tool.name??''}/>
 </div>
 
 
 
                             <h3 className="mb-1 text-lg font-semibold text-gray-900 pl-2">
-                {tool.name.length > 30 ? `${tool.name.slice(0, 20)}...` : tool.name}
+                  {tool.name ? (tool.name.length > 30 ? `${tool.name.slice(0, 20)}...` : tool.name) : "No Name"}
               </h3>
             </span>
                         <span
@@ -211,9 +208,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
          {setDisplayCategories(tool.categories)}
             </span>
                         <p className="mb-4 text-sm text-gray-600 pt-3">
-                            {tool.description && tool.description.length > 50 // Adjust 120 to your desired length
-                                ? `${tool.description.substring(0, 50)}...`
-                                : tool.description}
+                            {tool.description ? (tool.description.length > 50 ? `${tool.description.substring(0, 50)}...` : tool.description) : "No Description"}
                         </p>
                         <div className="mb-4 flex flex-wrap gap-2">
                             {(tool.keywords || []).slice(0, 3).map((feature, index) => {
@@ -223,7 +218,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
                                         className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-600 cursor-help"
                                         title={feature} // <-- Added this line >
                                     >
-                    {feature.length > 15 ? `${feature.slice(0, 10)}...` : feature
+                    { feature!=null? feature.length > 15 ? `${feature.slice(0, 10)}...` : feature:''
                         // feature
                     }
                   </span>
