@@ -206,7 +206,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
 
 <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
     {/* Check if URL exists AND no logo error has occurred */}
-    <LogoAvatar logoUrl={tool.logo_url} name={tool.name} />
+    <LogoAvatar logoUrl={tool.logo_url} name={tool.name}/>
 </div>
 
 

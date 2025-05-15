@@ -46,6 +46,27 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
         setPreviousRoute(undefined)
     }
 
+
+    const handleGoToToolDetails = () => {
+
+        if (!isAuthenticated) {
+            // Use the shared showLoginModal function
+            showLoginModal(pathname, () => {
+                router.push('/')
+            })
+        } else {
+            // Navigate to tool detail page if authenticated
+            window.location.href = `/tools/${tool.unique_id}`
+        }
+
+    }
+
+    const handleStopPropagation = (e: React.MouseEvent) => {
+        e.stopPropagation();
+    };
+
+
+
     const handleSaveToggle = async () => { // No need to pass args, use state/prop
         if (!isAuthenticated) {
             showLoginModal(pathname, () => {
@@ -116,6 +137,7 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
             className="min-w-full md:min-w-[calc(50%-12px)] flex-shrink-0 border border-gray-200 shadow-lg scroll-snap-align-start"
             aria-roledescription="slide"
             aria-label={tool.name}
+            onClick={handleGoToToolDetails}
         >
             <CardContent className="p-4">
                 {tool.categories != null &&
@@ -149,15 +171,20 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
                       <button
                           className={`rounded p-1 ${tool.saved_by_user ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
                           // Pass unique_id and current saved status
-                          onClick={() => handleSaveToggle()}
-                      >
+                          onClick={(e) => {
+                              handleStopPropagation(e);
+                              handleSaveToggle();
+                          }}>
                         <Bookmark className="h-4 w-4" fill={tool.saved_by_user ? "currentColor" : "none"}/>
                       </button>
-                      <ShareButtonWithPopover itemLink={`/tools/${tool.id}`}/>
+                       <div onClick={handleStopPropagation}>
+                                    <ShareButtonWithPopover itemLink={`/tools/${tool.id}`}/>
+                                </div>
                     </span>
                     <Button
                         className="bg-purple-600 hover:bg-purple-700 text-white"
-                        onClick={() => {
+                        onClick={(e) => {
+                            handleStopPropagation(e);
                             if (!isAuthenticated) {
                                 setPreviousRoute(pathname)
                                 openSignInModal()
