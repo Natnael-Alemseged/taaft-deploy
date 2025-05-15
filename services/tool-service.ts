@@ -180,7 +180,8 @@ export const getPopularTools = async (limit?: number) => {
     if (token) {
       headers["Authorization"] = `Bearer ${token}` // Add Authorization header if token exists
       console.log("token", token);
-      endpoint = "tools/sponsored/"
+      //todo change to private endpoint
+      endpoint = "/public/tools/sponsored"
     }
 
     const response = await apiClient.get<{ tools: Tool[] }>(endpoint, {
