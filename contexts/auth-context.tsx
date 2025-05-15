@@ -9,6 +9,7 @@ import {
   getCurrentUser, // Assume this service uses a stored token
   initiateGoogleLogin,
   register,
+  refreshUser,  // Add this line
   // Assume loginService now returns { access_token, refresh_token, user? }
 } from "@/services/auth-service"
 
@@ -28,6 +29,7 @@ interface AuthContextType {
   register: (data: { full_name: string; email: string; password: string; subscribeToNewsletter:boolean }) => Promise<void>
   logout: () => void // Modified to clear tokens
   loginWithGoogle: () => Promise<void>
+  refreshUser: (updatedUser: User) => void  // Add this line
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -93,6 +95,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // --- Store the tokens ---
       if (response.access_token) {
         localStorage.setItem("access_token", response.access_token)
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() + 60);
+        document.cookie = `access_token=${response.access_token}; path=/; secure; SameSite=Strict; expires=${expirationDate.toUTCString()}`;
+
       }
       if (response.refresh_token) {
         localStorage.setItem("refresh_token", response.refresh_token)
@@ -156,6 +162,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+
+
   // loginWithGoogle function (likely handled via redirect, initAuth will pick up tokens)
   const loginWithGoogle = async () => {
     setIsLoading(true)
@@ -167,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // The initAuth useEffect will then run on the final page load and fetch user.
       const { url } = await initiateGoogleLogin()
       window.location.href = url
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       console.error("Google login initiation error:", error)
       setIsLoading(false) // Set loading to false if initiation fails
@@ -176,6 +184,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // setIsLoading(false) is NOT in finally here because window.location.href will unload the page.
     // If initiation fails before redirect, the catch block handles setting isLoading to false.
   }
+
+  const refreshUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
 
   return (
       <AuthContext.Provider
@@ -187,6 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             register, // Make sure register's login call is updated if register flow changes
             logout,
             loginWithGoogle,
+            refreshUser,  // Add this line
           }}
       >
         {children}

@@ -96,6 +96,10 @@ async function refreshAccessToken() {
     const newAccessToken = response.data.access_token
 
     localStorage.setItem("access_token", newAccessToken)
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 60);
+    document.cookie = `access_token=${newAccessToken}; path=/; secure; SameSite=Strict; expires=${expirationDate.toUTCString()}`;
+
 
     return newAccessToken
   } catch (err) {

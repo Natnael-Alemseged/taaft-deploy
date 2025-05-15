@@ -10,7 +10,7 @@ import type React from "react"
  const inter = Inter({ subsets: ["latin"] })
 
  export const metadata: Metadata = {
-   title: "AI Tool Gateway",
+   title: "AI By The Hour",
    description: "Discover the best AI tools for your needs",
    generator: "v0.dev",
  }
@@ -26,7 +26,7 @@ import type React from "react"
          <QueryProvider>
            <AuthProvider>
              <Header />
-+            <main className="flex-grow">{children}</main> {/* Add flex-grow here */}
+         <main className="flex-grow">{children}</main> {/* Add flex-grow here */}
              <Footer />
            </AuthProvider>
          </QueryProvider>

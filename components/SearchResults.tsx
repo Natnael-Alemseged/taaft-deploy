@@ -14,6 +14,7 @@ import ChatResultCard from "@/components/chat-result-card" // Assuming this comp
 import { showLoginModal } from "@/lib/auth-events"
 import { ShareButtonWithPopover } from "./ShareButtonWithPopover"
 import { robotSvg } from "@/lib/reusable_assets"
+import ToolCard from "@/components/cards/tool-card";
 
 interface SearchResultsProps {
   initialQuery?: string
@@ -38,8 +39,8 @@ export default function SearchResults({ initialQuery, category, source }: Search
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [chatResults, setChatResults] = useState<any[]>([]) // State for chat results
-    const router = useRouter();
-    const pathname = usePathname();
+  const router = useRouter();
+   const pathname = usePathname();
 
 
 
@@ -457,14 +458,15 @@ export default function SearchResults({ initialQuery, category, source }: Search
                 {toolsToDisplay.map((tool, index) => (
                     // Use ChatResultCard for chat results, and a new custom card for regular tools
                     source === "chat" ? (
-                      <ChatResultCard 
-                      key={tool.id || index} 
-                      tool={tool} 
-                      index={index} 
-                      viewMode={viewMode} 
-                      onSaveToggle={handleSaveToggle} 
-                      isAuthenticated={isAuthenticated} 
-                    />
+                    //   <ChatResultCard
+                    //   key={tool.id || index}
+                    //   tool={tool}
+                    //   index={index}
+                    //   viewMode={viewMode}
+                    //   onSaveToggle={handleSaveToggle}
+                    //   isAuthenticated={isAuthenticated}
+                    // />
+                        <ToolCard tool={tool} key={index} />
                     
                     ) : (
                         // Custom Card for regular search results

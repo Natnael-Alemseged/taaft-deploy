@@ -48,6 +48,10 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
     const { access_token, token_type, refresh_token } = response.data;
 
     localStorage.setItem("access_token", access_token);
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 60);
+    document.cookie = `access_token=${access_token}; path=/; secure; SameSite=Strict; expires=${expirationDate.toUTCString()}`;
+
     if (refresh_token) {
       localStorage.setItem("refresh_token", refresh_token);
     }
@@ -231,6 +235,10 @@ export const handleGoogleCallback = async (code: string) => {
 
     // Store tokens
     localStorage.setItem("access_token", access_token);
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 60);
+    document.cookie = `access_token=${access_token}; path=/; secure; SameSite=Strict; expires=${expirationDate.toUTCString()}`;
+
     if (refresh_token) {
       localStorage.setItem("refresh_token", refresh_token);
     }
@@ -269,6 +277,10 @@ export const handleGitHubCallback = async (code: string) => {
 
     // Store tokens
     localStorage.setItem("access_token", access_token);
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 60);
+    document.cookie = `access_token=${access_token}; path=/; secure; SameSite=Strict; expires=${expirationDate.toUTCString()}`;
+
     if (refresh_token) {
       localStorage.setItem("refresh_token", refresh_token);
     }
@@ -329,16 +341,14 @@ export const verifyEmail = async (token: string) => {
   return response;
 };
 
-export const changeUserData = async (data: any) => {
+export const changeUserData = async (data: FormData) => {
   const token = localStorage.getItem("access_token");
-  const response = await apiClient.post('/auth/change-user-data', data, {
+  const response = await apiClient.post("/auth/update-profile", data, {
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${token}`,
+      // **Do not set 'Content-Type' here; Axios will handle it automatically for FormData**
     },
   });
   console.log("change user data response is:", JSON.stringify(response.data));
   return response;
 };
-
-

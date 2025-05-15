@@ -6,10 +6,13 @@ import {useRef, useState} from "react";
 import {showLoginModal} from "@/lib/auth-events";
 import type {Tool} from "@/types/tool";
 import {Card, CardContent} from "@/components/ui/card";
-import {robotSvg} from "@/lib/reusable_assets";
+import {robotSvg, setDisplayCategories} from "@/lib/reusable_assets";
 import {Bookmark, ExternalLink} from "lucide-react";
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover";
 import {Button} from "@/components/ui/button";
+import {Avatar} from "@/components/ui/avatar";
+import {LogoAvatar} from "@/components/LogoAvatar";
+import {handleOpenTool} from "@/lib/reusable-methods";
 
 interface SponsoredToolCardProps {
     tool: Tool
@@ -43,6 +46,27 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
         setIsSignInModalOpen(false)
         setPreviousRoute(undefined)
     }
+
+
+    const handleGoToToolDetails = () => {
+
+        if (!isAuthenticated) {
+            // Use the shared showLoginModal function
+            showLoginModal(pathname, () => {
+                router.push('/')
+            })
+        } else {
+            // Navigate to tool detail page if authenticated
+            window.location.href = `/tools/${tool.unique_id}`
+        }
+
+    }
+
+    const handleStopPropagation = (e: React.MouseEvent) => {
+        e.stopPropagation();
+    };
+
+
 
     const handleSaveToggle = async () => { // No need to pass args, use state/prop
         if (!isAuthenticated) {
@@ -114,20 +138,27 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
             className="min-w-full md:min-w-[calc(50%-12px)] flex-shrink-0 border border-gray-200 shadow-lg scroll-snap-align-start"
             aria-roledescription="slide"
             aria-label={tool.name}
+            onClick={handleGoToToolDetails}
         >
             <CardContent className="p-4">
-                <div className="mb-2 flex items-center gap-4">
-                    {tool.categories.length > 0 && (
-                        <span
-                            className="text-xs font-bold text-purple-500 border border-purple-300 rounded-full px-2 py-1">
-                        {tool.categories[0].name}
+                {tool.categories != null &&
+                    <div className="mb-2 flex items-center gap-4">
+                        {tool.categories.length > 0 && (
+                            <span
+                                className="text-xs font-bold text-purple-500 border border-purple-300 rounded-full px-2 py-1">
+                      {setDisplayCategories(tool.categories)}
                       </span>
-                    )}
-                </div>
+                        )}
+                    </div>
+                }
                 <span className="flex items-center gap-2 pb-3">
-                    {tool.image ?? robotSvg}
+<LogoAvatar logoUrl={tool.logo_url} name={tool.name}/>
                     <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>
                   </span>
+                <span
+                    className="rounded-full bg-purple-100 px-2 py-0.5 w-fit text-xs font-medium text-purple-600">
+         {setDisplayCategories(tool.categories)}
+            </span>
                 <p className="mb-4 text-sm text-gray-600 pt-3">
                     {tool.description && tool.description.length > 80
                         ? `${tool.description.substring(0, 80)}...`
@@ -145,22 +176,22 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
                       <button
                           className={`rounded p-1 ${tool.saved_by_user ? "text-purple-600" : "text-gray-400 hover:bg-gray-100 hover:text-gray-500"}`}
                           // Pass unique_id and current saved status
-                          onClick={() => handleSaveToggle()}
-                      >
+                          onClick={(e) => {
+                              handleStopPropagation(e);
+                              handleSaveToggle();
+                          }}>
                         <Bookmark className="h-4 w-4" fill={tool.saved_by_user ? "currentColor" : "none"}/>
                       </button>
-                      <ShareButtonWithPopover itemLink={`/tools/${tool.id}`}/>
+                       <div onClick={handleStopPropagation}>
+                                 <ShareButtonWithPopover itemLink={`/tools/${tool.unique_id}`}/>
+                                </div>
                     </span>
                     <Button
-                        className="bg-purple-600 hover:bg-purple-700 text-white"
-                        onClick={() => {
-                            if (!isAuthenticated) {
-                                setPreviousRoute(pathname)
-                                openSignInModal()
-                            } else {
-                                // Use Next.js router for client-side navigation
-                                router.push(`/tools/${tool.id}`);
-                            }
+                        className="bg-purple-600 text-white hover:bg-purple-700"
+                        onClick={(e) => {
+                            handleStopPropagation(e);
+                            handleOpenTool(tool.link);
+                            // handleGoToToolDetails();
                         }}
                     >
                         Try Tool <ExternalLink className="h-4 w-4 ml-1"/>

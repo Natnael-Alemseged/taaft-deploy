@@ -153,7 +153,7 @@ export default function Header() {
         >
           {/* Logo/Brand */}
           <Link href="/" className="flex items-center text-lg font-semibold text-[#a855f7]">
-            AI Tool Gateway
+            AI By The Hour
           </Link>
 
           {/* Desktop Navigation Links */}

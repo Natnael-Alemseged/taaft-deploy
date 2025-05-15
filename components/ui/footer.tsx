@@ -15,7 +15,7 @@ export default function Footer() {
       <div className="container mx-auto px-4">
       <div className="grid gap-8 grid-cols-2 md:grid-cols-4">
           <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase text-black">AI Tool Gateway</h3>
+            <h3 className="mb-4 text-sm font-semibold uppercase text-black">AI By The Hour</h3>
             <p className="text-sm text-gray-600">
               The ultimate directory for finding the best AI tools for your specific needs.
             </p>
@@ -70,7 +70,7 @@ export default function Footer() {
                   <li key={category.id || category.slug}>
                     <Link
                       // href={`/categories/${category.slug || category.id}`} // Link to category page (adjust path/slug as needed)
-                      href={`categories`}
+                      href={`/category/${category.slug}`}
                       className="text-sm text-gray-600 hover:text-purple-600 dark:text-gray-300 dark:hover:text-purple-400"
                     >
                       {category.name}
@@ -112,7 +112,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 border-t border-gray-200 pt-6 text-center">
-          <p className="text-sm text-gray-500">© 2025 AI Tool Gateway. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© 2025 AI By The Hour. All rights reserved.</p>
         </div>
       </div>
     </footer>

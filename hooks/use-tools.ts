@@ -18,6 +18,7 @@ import type { Tool, ToolSubmission } from "@/types/tool"
 
 // Hook for fetching tools with optional filtering
 export function useTools(params?: {
+  isPublic?: boolean
   category?: string
   search?: string
   page?: number
@@ -64,9 +65,10 @@ export function usePopularTools(limit?: number) {
 // Hook for fetching saved tools
 export function useSavedTools() {
   return useQuery({
-    queryKey: ["tools", "saved"],
-    queryFn: () => getSavedTools(),
-  })
+    queryKey: ["savedTools"],
+    queryFn: getSavedTools,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 }
 
 // Hook for saving a tool
