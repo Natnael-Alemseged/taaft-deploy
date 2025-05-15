@@ -51,7 +51,10 @@ export function useFeaturedTools(limit?: number) {
   return useQuery({
     queryKey: ["tools", "featured", limit],
     queryFn: () => getFeaturedTools(limit),
+    staleTime: 0,
+    refetchOnMount: true,
   })
+
 }
 
 // Hook for fetching popular tools

@@ -12,7 +12,6 @@ import type React from "react"
  export const metadata: Metadata = {
    title: "AI By The Hour",
    description: "Discover the best AI tools for your needs",
-   generator: "v0.dev",
  }
 
  export default function RootLayout({

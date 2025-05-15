@@ -267,6 +267,32 @@ export default function Hero() {
         }
     }
 
+    const smallPlaceholder = "What AI tool are you looking for?";
+    const largePlaceholder = "What AI tool are you looking for? E.g., 'Image generator for mark..'";
+    const [placeholderText, setPlaceholderText] = useState(smallPlaceholder); // Initialize with the small one
+    // Effect to check screen size and update placeholder
+    useEffect(() => {
+        const updatePlaceholder = () => {
+            // Define your breakpoint (e.g., 640px for Tailwind's 'sm')
+            if (window.innerWidth >= 640) {
+                setPlaceholderText(largePlaceholder);
+            } else {
+                setPlaceholderText(smallPlaceholder);
+            }
+        };
+
+        // Set placeholder text initially when the component mounts
+        updatePlaceholder();
+
+        // Add event listener for window resize
+        window.addEventListener('resize', updatePlaceholder);
+
+        // Clean up the event listener when the component unmounts
+        return () => {
+            window.removeEventListener('resize', updatePlaceholder);
+        };
+    }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
+
 
     const handleSearchNavigation = async () => {
         console.log(`more tools length is: ${moreTools.length}`);
@@ -363,12 +389,11 @@ export default function Hero() {
                             <Input
                                 ref={inputRef}
                                 type="text"
-                                placeholder="What AI tool are you looking for? E.g., 'Image generator for mark..'"
-                                className="h-14 rounded-full border-gray-200 pl-12 pr-32 shadow-md"
+                                placeholder={placeholderText}
+                                className="h-14 rounded-full border-gray-200 pl-12 pr-32 shadow-md text-xs"
                                 value={searchQuery}
                                 onChange={(searchQuery)=>handleInputChange(searchQuery)}
-                                // onChange={(e) => setSearchQuery(e.target.value)}
-                                // onFocus={handleSearchFocus}
+
                             />
                             <div className="absolute left-4 top-4 flex items-center gap-2">
                                 <Search className="h-5 w-5 text-gray-400"/>

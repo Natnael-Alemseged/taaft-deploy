@@ -148,7 +148,8 @@ export default function BrowseToolsClientContent({
         category: isCategoryPage ? categorySlug : selectedCategory !== "all-categories" ? selectedCategory : undefined,
         search: debouncedQuery || undefined,
         page,
-        limit,
+        limit
+        ,
         featured: isFeaturedPage ? true : undefined,
         sort_by: isCategoryPage ? 'name' : undefined,
         sort_order: isCategoryPage ? 'asc' : undefined,
@@ -268,18 +269,25 @@ export default function BrowseToolsClientContent({
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-[#111827] dark:text-white mb-1">
                         {categoryName
-                            ? `${categoryName} AI Tools`
+                            ? categoryName.toLowerCase().includes("ai tools") ? categoryName : `${categoryName} AI Tools`
                             : isFeaturedPage
                                 ? "Featured AI Tools"
                                 : "Browse AI Tools"
                         }
                     </h1>
                     <p className="text-[#6b7280] dark:text-gray-400">
-                        {categoryName
-                            ? `Discover and explore the best ${categoryName} AI tools`
-                            : isFeaturedPage
-                                ? "Discover and explore our featured AI tools"
-                                : "Discover and compare the best AI tools for your needs"
+                        {categoryName // Check if categoryName exists
+                            ? // If it exists (Category Page)
+                            `Discover and explore the best ${
+                                // Use the same logic as the H1 to get the clean category name
+                                categoryName.toLowerCase().includes("ai tools") ? categoryName : `${categoryName} AI Tools`
+                            }`
+                            : // If it doesn't exist (Browse or Featured Page)
+                            isFeaturedPage // Check if it's the featured page
+                                ? // If true (Featured Page)
+                                "Discover and explore our featured AI tools"
+                                : // If false (Browse Page)
+                                "Discover and compare the best AI tools for your needs"
                         }
                     </p>
                 </div>

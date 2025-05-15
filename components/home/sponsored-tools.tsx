@@ -245,7 +245,8 @@ import { useRouter, usePathname } from "next/navigation"
 
 // Import useQueryClient from the query library you are using (e.g., '@tanstack/react-query')
 import { useQueryClient } from '@tanstack/react-query';
-import SponsoredToolCard from "@/components/cards/sponsored-tool-card"; // Or 'react-query' depending on your version
+import SponsoredToolCard from "@/components/cards/sponsored-tool-card";
+import ToolCard from "@/components/cards/tool-card"; // Or 'react-query' depending on your version
 
 // --- Define the query key used by usePopularTools ---
 // This is crucial for setQueryData. Replace 'yourPopularToolsQueryKey'
@@ -390,7 +391,7 @@ export default function SponsoredTools() {
         <SignInModal
             isOpen={isSignInModalOpen}
             onClose={closeAllModals}
-            onSwitchToSignUp={() => { }}
+            onSwitchToSignUp={() => {}}
             previousRoute={previousRoute}
         />
         <section className="py-8 bg-white">
@@ -428,12 +429,22 @@ export default function SponsoredTools() {
                 aria-label="Sponsored Tools Carousel"
             >
               {sponsoredTools.map((tool) => (
-                  <SponsoredToolCard key={tool.unique_id} tool={tool} />
+                  <div
+                      key={tool.unique_id}
+                      className="w-full lg:w-auto flex-shrink-0 transition-transform duration-300"
+                      style={{ scrollSnapAlign: "center" }}
+                  >
+                    {/* Use ToolCard for mobile and SponsoredToolCard for larger screens */}
+                    <div className="block lg:hidden">
+                      <ToolCard tool={tool} key={tool.unique_id} />
+                    </div>
+                    <div className="hidden lg:block">
+                      <SponsoredToolCard tool={tool} />
+                    </div>
+                  </div>
               ))}
-
             </div>
 
-            {/* Pagination Indicators */}
             {totalPages > 1 && (
                 <div className="mt-6 flex justify-center space-x-2" role="tablist" aria-label="Sponsored Tools Pagination">
                   {Array.from({ length: totalPages }).map((_, i) => (
@@ -449,8 +460,8 @@ export default function SponsoredTools() {
                           tabIndex={currentPage === i ? 0 : -1}
                           onClick={() => {
                             if (scrollRef.current) {
-                              const pageWidth = scrollRef.current.clientWidth
-                              scrollRef.current.scrollTo({ left: i * pageWidth, behavior: "smooth" })
+                              const pageWidth = scrollRef.current.clientWidth;
+                              scrollRef.current.scrollTo({ left: i * pageWidth, behavior: "smooth" });
                             }
                           }}
                           aria-label={`Go to page ${i + 1} of sponsored tools`}
@@ -461,5 +472,6 @@ export default function SponsoredTools() {
           </div>
         </section>
       </>
-  )
+  );
+
 }
