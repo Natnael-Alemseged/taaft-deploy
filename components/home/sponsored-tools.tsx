@@ -372,14 +372,73 @@ export default function SponsoredTools() {
   };
 
 
+
   if (isLoading) {
+    // --- Placeholder Loading State ---
+    // Mimic the section structure and the carousel layout
     return (
         <section className="py-8 bg-white">
-          <div className="container mx-auto px-4 flex justify-center py-12">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600"></div>
+          <div className="container mx-auto px-4">
+            {/* Placeholder for Header (Title and Navigation) */}
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-purple-700">Sponsored</h2>
+              <div className="flex space-x-2">
+                <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div> {/* Left arrow placeholder */}
+                <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div> {/* Right arrow placeholder */}
+              </div>
+            </div>
+
+            {/* Placeholder for Carousel (Horizontal list of skeleton cards) */}
+            <div className="flex gap-6 overflow-x-auto scroll-smooth transition-all duration-300 focus:outline-none scrollbar-hide"
+                 style={{ scrollSnapType: "x mandatory" }}>
+              {/* Render a few skeleton cards */}
+              {[...Array(3)].map((_, index) => ( // Showing 3 placeholders
+                  <Card
+                      key={index}
+                      // Use sizing similar to your actual sponsored cards for layout consistency
+                      className="min-w-full md:min-w-[calc(50%-12px)] lg:min-w-[calc(33.33%-16px)] flex-shrink-0 border border-gray-200 dark:border-gray-700 shadow-lg animate-pulse"
+                      style={{ scrollSnapAlign: "center" }}
+                  >
+                    <CardContent className="p-4">
+                      {/* Skeleton shapes for content within the card */}
+                      <div className="mb-2 flex items-center gap-4">
+                        <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div> {/* Category tag placeholder */}
+                      </div>
+                      <span className="flex items-center gap-2 pb-3">
+                                        <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div> {/* Image/Icon placeholder */}
+                        <div className="h-6 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div> {/* Title placeholder */}
+                                    </span>
+                      <div className="mb-4 text-sm text-gray-600 pt-3">
+                        <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded mb-1"></div> {/* Description line 1 placeholder */}
+                        <div className="h-4 w-5/6 bg-gray-200 dark:bg-gray-700 rounded"></div> {/* Description line 2 placeholder */}
+                      </div>
+                      <div className="mb-4 flex flex-wrap gap-1">
+                        <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div> {/* Tag 1 placeholder */}
+                        <div className="h-5 w-14 bg-gray-200 dark:bg-gray-700 rounded-lg"></div> {/* Tag 2 placeholder */}
+                        <div className="h-5 w-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div> {/* Tag 3 placeholder */}
+                      </div>
+                      <div className="flex items-center justify-between">
+                                        <span className="flex items-center gap-2">
+                                            <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded"></div> {/* Bookmark icon placeholder */}
+                                          <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded"></div> {/* Share icon placeholder */}
+                                        </span>
+                        <div className="h-9 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div> {/* Try Tool button placeholder */}
+                      </div>
+                    </CardContent>
+                  </Card>
+              ))}
+            </div>
+
+            {/* Placeholder for Pagination Indicators */}
+            <div className="mt-6 flex justify-center space-x-2">
+              <div className="h-1.5 w-6 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div> {/* Active dot placeholder */}
+              <div className="h-1.5 w-1.5 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div> {/* Inactive dot placeholder */}
+              <div className="h-1.5 w-1.5 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div> {/* Inactive dot placeholder */}
+            </div>
           </div>
         </section>
-    )
+    );
+    // --- End Placeholder Loading State ---
   }
 
   if (isError || sponsoredTools.length === 0) {
