@@ -426,7 +426,7 @@ const BlogDetailPage: React.FC = () => {
                         <div className="mb-6">
                             {/* Optional: Date and Category/Source if available */}
                              <div className="text-sm text-gray-500 dark:text-gray-500 mb-2">
-                                BLOG | {article.publishedDate ? new Date(article.publishedDate).toLocaleDateString() : 'Date N/A'}
+                                 {article.publishedDate ? new Date(article.publishedDate).toLocaleDateString() : ''}
                              </div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                                 {article.title}
@@ -442,7 +442,7 @@ const BlogDetailPage: React.FC = () => {
                              {/* Share/Copy Link Buttons - Placed near header as in UI image */}
                              <div className="flex items-center gap-4 text-gray-600 dark:text-gray-400 text-sm mb-6">
                                  {/* Assuming ShareButtonWithPopover handles the UI for sharing */}
-                                 <ShareButtonWithPopover itemLink={window.location.href} /> {/* Share the current page URL */}
+                                 {/*<ShareButtonWithPopover itemLink={window.location.href} /> /!* Share the current page URL *!/*/}
                                   {/* You might need a separate "Copy Link" button if ShareButtonWithPopover doesn't include it */}
                                   {/* Example Copy Link Button (requires implementation) */}
                                   {/* <button className="flex items-center hover:text-gray-900 dark:hover:text-white">
@@ -481,7 +481,7 @@ const BlogDetailPage: React.FC = () => {
                     <div className="lg:w-1/3 flex flex-col gap-6">
                         {/* About the Author Card */}
                         {/* This section is based on the UI image, assuming author details might exist or be added */}
-                        <Card className="rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
+                        {   article.author&&       <Card className="rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
                             <CardContent className="p-4">
                                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">About the Author</h3>
                                 {/* Placeholder for author image/avatar */}
@@ -495,39 +495,39 @@ const BlogDetailPage: React.FC = () => {
                                      [Author Bio Snippet]
                                 </p> */}
                             </CardContent>
-                        </Card>
+                        </Card>}
 
                         {/* Related Articles Card */}
                         {/* This section is based on the UI image. The API has related_glossary_terms/details */}
                         {/* You would likely fetch actual related articles based on categories, tags, etc. */}
-                        <Card className="rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
-                             <CardContent className="p-4">
-                                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">Related Content</h3>
-                                 {/* Display related glossary terms if available */}
-                                 {article.related_glossary_terms && article.related_glossary_terms.length > 0 ? (
-                                     <div className="flex flex-col gap-2">
-                                         {article.related_glossary_terms.map((term, index) => (
-                                             // Link to a glossary page or filter articles by this term
-                                             <Link href={`/glossary?term=${encodeURIComponent(term)}`} key={index} className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#a855f7] dark:hover:text-purple-400 transition-colors">
-                                                 {term}
-                                             </Link>
-                                         ))}
-                                     </div>
-                                 ) : (
-                                     <p className="text-sm text-gray-600 dark:text-gray-400">No related content found.</p>
-                                 )}
-                                 {/* You would add logic here to fetch and display actual related *articles* */}
-                                 {/* Example Placeholder for Related Articles List */}
-                                 {/* <div className="flex flex-col gap-2 mt-4">
-                                      <Link href="#" className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#a855f7] dark:hover:text-purple-400 transition-colors">
-                                          Another Related Article Title
-                                      </Link>
-                                       <Link href="#" className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#a855f7] dark:hover:text-purple-400 transition-colors">
-                                          Yet Another Article
-                                      </Link>
-                                 </div> */}
-                             </CardContent>
-                        </Card>
+                        {/*{article.related_glossary_terms &&   <Card className="rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">*/}
+                        {/*     <CardContent className="p-4">*/}
+                        {/*        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">Related Content</h3>*/}
+                        {/*         /!* Display related glossary terms if available *!/*/}
+                        {/*         {article.related_glossary_terms && article.related_glossary_terms.length > 0 ? (*/}
+                        {/*             <div className="flex flex-col gap-2">*/}
+                        {/*                 {article.related_glossary_terms.map((term, index) => (*/}
+                        {/*                     // Link to a glossary page or filter articles by this term*/}
+                        {/*                     <Link href={`/glossary?term=${encodeURIComponent(term)}`} key={index} className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#a855f7] dark:hover:text-purple-400 transition-colors">*/}
+                        {/*                         {term}*/}
+                        {/*                     </Link>*/}
+                        {/*                 ))}*/}
+                        {/*             </div>*/}
+                        {/*         ) : (*/}
+                        {/*             <p className="text-sm text-gray-600 dark:text-gray-400">No related content found.</p>*/}
+                        {/*         )}*/}
+                        {/*         /!* You would add logic here to fetch and display actual related *articles* *!/*/}
+                        {/*         /!* Example Placeholder for Related Articles List *!/*/}
+                        {/*         /!* <div className="flex flex-col gap-2 mt-4">*/}
+                        {/*              <Link href="#" className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#a855f7] dark:hover:text-purple-400 transition-colors">*/}
+                        {/*                  Another Related Article Title*/}
+                        {/*              </Link>*/}
+                        {/*               <Link href="#" className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#a855f7] dark:hover:text-purple-400 transition-colors">*/}
+                        {/*                  Yet Another Article*/}
+                        {/*              </Link>*/}
+                        {/*         </div> *!/*/}
+                        {/*     </CardContent>*/}
+                        {/*</Card>}*/}
                     </div>
                 </div>
             )}
