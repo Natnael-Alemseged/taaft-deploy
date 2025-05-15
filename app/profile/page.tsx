@@ -233,7 +233,8 @@ export default function ProfilePage() {
                     <CardHeader className="relative">
                       <CardTitle>Saved Tools</CardTitle>
                       {isRefetching && (
-                          <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 animate-[pulse_1.5s_ease-in-out_infinite]"></div>
+                          <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 animate-[pulse_1.5s_ease-in-out_infinite]"></div>
+
                       )}
                     </CardHeader>
                     <CardContent className="space-y-4">

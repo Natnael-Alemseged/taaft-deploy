@@ -155,6 +155,10 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
 <LogoAvatar logoUrl={tool.logo_url} name={tool.name}/>
                     <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>
                   </span>
+                <span
+                    className="rounded-full bg-purple-100 px-2 py-0.5 w-fit text-xs font-medium text-purple-600">
+         {setDisplayCategories(tool.categories)}
+            </span>
                 <p className="mb-4 text-sm text-gray-600 pt-3">
                     {tool.description && tool.description.length > 80
                         ? `${tool.description.substring(0, 80)}...`
