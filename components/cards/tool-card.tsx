@@ -17,6 +17,7 @@ import {showLoginModal} from "@/lib/auth-events"
 import {useQueryClient} from "@tanstack/react-query" // Assuming React Query is used
 import apiClient from "@/lib/api-client"
 import {LogoAvatar} from "@/components/LogoAvatar";
+import {handleOpenTool} from "@/lib/reusable-methods";
 
 interface ToolCardProps {
     tool: Tool
@@ -169,17 +170,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
     };
 
 
-    const handleOpenTool = (link: string): void => {
-        if (link) {
 
-            window.open(link, '_blank');
-        } else {
-
-            console.warn("Attempted to open a tool with an empty link.");
-
-
-        }
-    };
 
 
     return (

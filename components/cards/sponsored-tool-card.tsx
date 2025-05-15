@@ -12,6 +12,7 @@ import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover";
 import {Button} from "@/components/ui/button";
 import {Avatar} from "@/components/ui/avatar";
 import {LogoAvatar} from "@/components/LogoAvatar";
+import {handleOpenTool} from "@/lib/reusable-methods";
 
 interface SponsoredToolCardProps {
     tool: Tool
@@ -182,16 +183,11 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
                                 </div>
                     </span>
                     <Button
-                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                        className="bg-purple-600 text-white hover:bg-purple-700"
                         onClick={(e) => {
                             handleStopPropagation(e);
-                            if (!isAuthenticated) {
-                                setPreviousRoute(pathname)
-                                openSignInModal()
-                            } else {
-                                // Use Next.js router for client-side navigation
-                                router.push(`/tools/${tool.id}`);
-                            }
+                            handleOpenTool(tool.link);
+                            // handleGoToToolDetails();
                         }}
                     >
                         Try Tool <ExternalLink className="h-4 w-4 ml-1"/>
