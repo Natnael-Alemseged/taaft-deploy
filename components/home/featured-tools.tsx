@@ -20,6 +20,67 @@ type Tool = {
 export default function FeaturedTools() {
   const { data, isLoading, isError } = useFeaturedTools(4)
 
+
+
+  if (isLoading) {
+    return (
+        <section className="py-12 bg-gray-50 dark:bg-gray-900">
+          <div className="container mx-auto px-4">
+            <div className="mb-8 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Featured AI Tools</h2>
+              {/* Placeholder for the "View all" link */}
+              <div className="w-20 h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {/* Render placeholder cards */}
+              {[...Array(4)].map((_, index) => (
+                  <Card
+                      key={index}
+                      className="max-w-sm overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg w-full mx-auto"
+                  >
+                    <div className="relative">
+                      {/* Pulsing bar at the top of the placeholder card */}
+                      <div className="absolute inset-x-0 top-0 h-1"></div>
+                    </div>
+                    <CardContent className="p-0">
+                      <div className="p-4">
+                        {/* Placeholder shapes mimicking ToolCard content */}
+                        <div className="mb-2 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+                            <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+                          </div>
+                          <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+                        </div>
+
+                        <div className="h-6 w-3/4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
+                        <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-1"></div>
+                        <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-1"></div>
+                        <div className="h-4 w-2/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
+
+                        <div className="mb-4 flex flex-wrap gap-2">
+                          {[...Array(3)].map((_, idx) => (
+                              <div key={idx} className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+                            <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+                          </div>
+                          <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+    );
+  }
+
   // If there's an error or no tools available, don't render the section at all
   const hasTools = Array.isArray(data?.tools) && data?.tools.length > 0
   if (isError || !hasTools) {
