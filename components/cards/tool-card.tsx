@@ -149,7 +149,8 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
             })
         } else {
             // Navigate to tool detail page if authenticated
-            window.location.href = `/tools/${tool.unique_id}`
+            router.push(`/tools/${encodeURIComponent(tool.unique_id)}`);
+            // window.location.href = `/tools/${tool.unique_id}`
         }
 
     }

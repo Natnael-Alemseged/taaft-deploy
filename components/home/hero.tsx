@@ -731,7 +731,8 @@ export default function Hero() {
 
     function goToToolDetails(id: string | number): void {
         console.log("Calling goToToolDetails for ID:", id);
-        router.push(`/tools/${id}`);
+        router.push(`/tools/${encodeURIComponent(id)}`);
+        // router.push(`/tools/${id}`);
     }
 
     // Close search when clicking outside
