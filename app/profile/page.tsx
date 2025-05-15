@@ -22,8 +22,10 @@ export default function ProfilePage() {
   const [profile_image , setprofile_image ] = useState<File | null>(null);
   const [tab, setTab] = useState<"profile" | "saved">("profile")
 
+
   const [full_name, setfull_name] = useState("")
   const [bio, setBio] = useState("")
+  const [tempBio, setTempBio] = useState(bio); // Temporary state for input
   // Removed local savedTools state
 
   const [displayUser, setDisplayUser] = useState(user);
@@ -36,6 +38,12 @@ export default function ProfilePage() {
 
   // Use react-query for fetching saved tools
   const { data: savedTools, isLoading: isToolLoading, isError: isToolError, refetch: refetchSavedTools, isFetching: isRefetching , } = useSavedTools();
+
+  useEffect(() => {
+    if (user) {
+      setTempBio(user.bio || "");
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -62,9 +70,9 @@ export default function ProfilePage() {
 
     const formData = new FormData();
     formData.append("full_name", full_name);
-    formData.append("bio", bio);
-    if (profile_image ) {
-      formData.append("profile_image", profile_image );
+    formData.append("bio", tempBio);
+    if (profile_image) {
+      formData.append("profile_image", profile_image);
     }
 
     try {
@@ -72,6 +80,9 @@ export default function ProfilePage() {
 
       // Update user in auth context
       refreshUser(updatedUser);
+
+      // Update the displayed user bio only after a successful response
+      setDisplayUser(updatedUser);
       setSuccessMessage("Profile updated successfully.");
     } catch (error) {
       console.error(error);
@@ -207,12 +218,13 @@ export default function ProfilePage() {
                         <h3 className="font-medium">Bio</h3>
                         <input
                             type="text"
-                            value={bio}
-                            onChange={(e) => setBio(e.target.value)}
+                            value={tempBio}
+                            onChange={(e) => setTempBio(e.target.value)}
                             className="w-full p-2 border border-gray-200 rounded-md"
                             placeholder="Technology enthusiast and explorer"
                         />
                       </div>
+
 
                       {successMessage && <p className="text-green-600 text-sm">{successMessage}</p>}
                       {errorMessage && <p className="text-red-600 text-sm">{errorMessage}</p>}
