@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react" // Import useEffect
 import type React from "react"
 
-import { X } from "lucide-react" // Import X icon
+import {EyeClosed, EyeIcon, X } from "lucide-react" // Import X icon
 import { Button } from "@/components/ui/button" // Assuming Button component is available
 import Image from "next/image" // Assuming Image component is available
 import { useAuth } from "@/contexts/auth-context" // Assuming this path is correct
@@ -20,6 +20,9 @@ interface SignUpModalProps {
 }
 
 export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [full_name, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -29,7 +32,7 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
   const [isLoading, setIsLoading] = useState(false) // Local loading state for the form submission
   const { register } = useAuth() // Assuming useAuth hook provides the register function
   const router = useRouter()
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
 
 
   // Effect to clear form and errors when modal closes
@@ -241,37 +244,65 @@ export function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalPr
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-md font-medium ">
+            <div className="mb-4">
+              <label htmlFor="password" className="block text-md font-medium mb-2">
                 Password
               </label>
+              <div className="relative">
                 <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7] pr-10"
                     required
-                    minLength={8} // Keep minLength for basic browser validation/hint
+                    minLength={8}
                 />
+                <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                  ) : (
+                      < EyeClosed  className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
               </div>
+            </div>
 
-              <div>
-              <label htmlFor="confirmPassword" className="block text-md font-medium ">
+            <div>
+              <label htmlFor="confirmPassword" className="block text-md font-medium mb-2">
                 Confirm Password
               </label>
+              <div className="relative">
                 <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     id="confirmPassword"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7] pr-10"
                     required
-                    minLength={8} // Keep minLength for basic browser validation/hint
+                    minLength={8}
                 />
+                <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? (
+                      <EyeIcon  className="h-5 w-5 text-gray-400" />
+                  ) : (
+                      <EyeClosed className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
               </div>
+            </div>
 
             {/* Subscribe to Newsletter Checkbox */}
             <div className="flex items-center mt-4">
