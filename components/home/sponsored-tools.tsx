@@ -273,7 +273,7 @@ export default function SponsoredTools() {
 
   const { data, isLoading, isError, refetch } = usePopularTools() // Ensure usePopularTools uses the key defined above
   const sponsoredTools: Tool[] = data?.tools || [] // Assuming data is { tools: Tool[] }
-  const itemsPerPage = 2
+  const itemsPerPage = 4
   const totalPages = Math.ceil(sponsoredTools.length / itemsPerPage)
 
   // Effect to add and clean up scroll listener

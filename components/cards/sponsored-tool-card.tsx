@@ -191,7 +191,14 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
                         className="bg-purple-600 text-white hover:bg-purple-700"
                         onClick={(e) => {
                             handleStopPropagation(e);
-                            handleOpenTool(tool.link);
+                            if(isAuthenticated) {
+                                handleOpenTool(tool.link);
+                            }
+                            else {
+                                showLoginModal(pathname, () => {
+                                    window.location.pathname = pathname; // Or whatever you want to do with the path
+                                });
+                            }
                             // handleGoToToolDetails();
                         }}
                     >

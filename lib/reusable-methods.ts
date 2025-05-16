@@ -1,6 +1,10 @@
 import { useAuth } from "@/contexts/auth-context"
 import {useEffect, useRef, useState} from "react"
+
+
 export const handleOpenTool = (link: string): void => {
+
+
     if (link) {
         window.open(link, '_blank');
     } else {

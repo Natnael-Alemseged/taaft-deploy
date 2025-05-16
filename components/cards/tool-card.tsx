@@ -257,8 +257,15 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
                                 className="bg-purple-600 text-white hover:bg-purple-700"
                                 onClick={(e) => {
                                     handleStopPropagation(e);
-                                    handleOpenTool(tool.link);
-                                    // handleGoToToolDetails();
+                                    if(isAuthenticated) {
+                                        handleOpenTool(tool.link);
+                                    }
+                                    else {
+                                        showLoginModal(pathname, () => {
+                                            window.location.pathname = pathname; // Or whatever you want to do with the path
+                                        });
+                                    }
+
                                 }}
                             >
                                 Try Tool <ExternalLink className="h-4 w-4 ml-1"/>
