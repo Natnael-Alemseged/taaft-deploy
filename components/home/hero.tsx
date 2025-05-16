@@ -21,20 +21,22 @@ import { getTools } from "@/services/tool-service";
 import { LogoAvatar } from "@/components/LogoAvatar";
 
 import {useCustomDebounce} from "@/lib/reusable-methods";
+import {SearchToolListItem} from "@/components/SearchToolList";
+import {Tool} from "@/types/tool";
 
 // Types for API integration
-interface Tool {
-    unique_id: string;
-    id: number | string;
-    name: string;
-    description: string;
-    generated_description: string;
-    categories: Category[] | null;
-    icon?: string;
-    image?: string;
-    logo_url?: string;
-    carriers?: string[];
-}
+// interface Tool {
+//     unique_id: string;
+//     id: number | string;
+//     name: string;
+//     description: string;
+//     generated_description: string;
+//     categories: Category[] | null;
+//     icon?: string;
+//     image?: string;
+//     logo_url?: string;
+//     carriers?: string[];
+// }
 
 interface Category {
     id: string;
@@ -590,64 +592,98 @@ export default function Hero() {
                                                 No results found.
                                             </div>
                                         ) : (
+                                            // <>
+                                            //     <div className="px-4 py-2 bg-gray-50">
+                                            //         <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            //             AI Tools
+                                            //         </h3>
+                                            //     </div>
+                                            //     {tools.map((tool) => {
+                                            //         // Logic to determine and format the description
+                                            //         const sourceDescription = tool.generated_description || tool.description;
+                                            //
+                                            //         // Prepare the description for display (slice and add ellipsis)
+                                            //         let displayDescription = '';
+                                            //         if (sourceDescription) {
+                                            //             const sliced = sourceDescription.slice(0, 50);
+                                            //             // Check if the original source description was long enough to need ellipsis
+                                            //             const needsEllipsis = sourceDescription.length > 70;
+                                            //             displayDescription = sliced + (needsEllipsis ? '...' : '');
+                                            //         }
+                                            //         // If sourceDescription is null/undefined, displayDescription remains an empty string
+                                            //
+                                            //         return (
+                                            //             <div
+                                            //                 key={tool.id}
+                                            //                 className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                                            //                 onClick={(e) => {
+                                            //                     e.stopPropagation(); // Prevent click from bubbling up
+                                            //                     goToToolDetails(tool.unique_id);
+                                            //                 }}
+                                            //             >
+                                            //                 <div className="flex items-center justify-between">
+                                            //                     <div className="flex items-start space-x-3">
+                                            //                         <div className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
+                                            //                             <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
+                                            //                                 <LogoAvatar logoUrl={tool.logo_url} name={tool.name} />
+                                            //                             </div>
+                                            //                         </div>
+                                            //
+                                            //                         <div className="flex flex-col items-start flex-1 min-w-0"> {/* Added flex-1 min-w-0 */}
+                                            //                             <h4 className="text-sm font-medium truncate">{tool.name}</h4> {/* Added truncate */}
+                                            //                             {/* Display the prepared description */}
+                                            //                             <div className="text-xs text-gray-500 text-left">
+                                            //                                 {displayDescription}
+                                            //                             </div>
+                                            //                         </div>
+                                            //                     </div>
+                                            //
+                                            //                     {/* Categories and External Link */}
+                                            //                     {/* Ensure this section wraps or handles overflow gracefully */}
+                                            //                     <div className="flex items-center space-x-2 shrink-0"> {/* Added shrink-0 */}
+                                            //                         <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full whitespace-nowrap"> {/* Added whitespace-nowrap */}
+                                            //                             {setDisplayCategories(tool.categories, 10)}
+                                            //                         </span>
+                                            //                         <ExternalLink className="text-gray-400 hover:text-gray-600 w-4 h-4 cursor-pointer shrink-0" /> {/* Added shrink-0 */}
+                                            //                     </div>
+                                            //                 </div>
+                                            //             </div>
+                                            //         );
+                                            //     })}
+                                            // </>
+
                                             <>
+                                                {/* Carrier Tools Section (only shown if carrierTools exist) */}
+                                                {carrierTools.length > 0 && (
+                                                    <div className="border-t border-gray-200">
+                                                        <div className="px-4 py-2 bg-gray-50">
+                                                            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Jobs
+                                                            </h3>
+                                                        </div>
+                                                        {carrierTools.map((tool:Tool) => (
+                                                            <SearchToolListItem
+                                                                key={tool.id}
+                                                                tool={tool}
+                                                                onClick={() => goToToolDetails(tool.unique_id)}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Regular AI Tools Section */}
                                                 <div className="px-4 py-2 bg-gray-50">
                                                     <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         AI Tools
                                                     </h3>
                                                 </div>
-                                                {tools.map((tool) => {
-                                                    // Logic to determine and format the description
-                                                    const sourceDescription = tool.generated_description || tool.description;
-
-                                                    // Prepare the description for display (slice and add ellipsis)
-                                                    let displayDescription = '';
-                                                    if (sourceDescription) {
-                                                        const sliced = sourceDescription.slice(0, 50);
-                                                        // Check if the original source description was long enough to need ellipsis
-                                                        const needsEllipsis = sourceDescription.length > 70;
-                                                        displayDescription = sliced + (needsEllipsis ? '...' : '');
-                                                    }
-                                                    // If sourceDescription is null/undefined, displayDescription remains an empty string
-
-                                                    return (
-                                                        <div
-                                                            key={tool.id}
-                                                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation(); // Prevent click from bubbling up
-                                                                goToToolDetails(tool.unique_id);
-                                                            }}
-                                                        >
-                                                            <div className="flex items-center justify-between">
-                                                                <div className="flex items-start space-x-3">
-                                                                    <div className="flex items-center justify-center h-10 w-10 rounded-md bg-purple-50 text-purple-600">
-                                                                        <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
-                                                                            <LogoAvatar logoUrl={tool.logo_url} name={tool.name} />
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div className="flex flex-col items-start flex-1 min-w-0"> {/* Added flex-1 min-w-0 */}
-                                                                        <h4 className="text-sm font-medium truncate">{tool.name}</h4> {/* Added truncate */}
-                                                                        {/* Display the prepared description */}
-                                                                        <div className="text-xs text-gray-500 text-left">
-                                                                            {displayDescription}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Categories and External Link */}
-                                                                {/* Ensure this section wraps or handles overflow gracefully */}
-                                                                <div className="flex items-center space-x-2 shrink-0"> {/* Added shrink-0 */}
-                                                                    <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full whitespace-nowrap"> {/* Added whitespace-nowrap */}
-                                                                        {setDisplayCategories(tool.categories, 10)}
-                                                                    </span>
-                                                                    <ExternalLink className="text-gray-400 hover:text-gray-600 w-4 h-4 cursor-pointer shrink-0" /> {/* Added shrink-0 */}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
+                                                {tools.map((tool:Tool) => (
+                                                    <SearchToolListItem
+                                                        key={tool.id}
+                                                        tool={tool}
+                                                        onClick={() => goToToolDetails(tool.unique_id)}
+                                                    />
+                                                ))}
                                             </>
                                         )}
                                     </div>
