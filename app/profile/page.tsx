@@ -256,7 +256,7 @@ export default function ProfilePage() {
                         <input
                             type="text"
                             value={full_name}
-                            onChange={(e) => setFull_name(e.target.value)}
+                            onChange={(e) => setfull_name(e.target.value)}
                             className="w-full p-2 border border-gray-200 rounded-md bg-gray-50"
                             disabled={!isEditing} // Disable input when not editing
                         />
