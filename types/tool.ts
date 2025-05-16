@@ -36,7 +36,6 @@ export interface Tool {
   saved_by_user?: boolean
   industry?: string
   user_reviews?: UserReviews | null;
-
 }
 
 export interface ToolSubmission {

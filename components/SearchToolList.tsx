@@ -5,7 +5,7 @@ import { ExternalLink } from "lucide-react";
 
 import { Tool } from "@/types/tool";
 import {LogoAvatar} from "@/components/LogoAvatar";
-import {setDisplayCategories} from "@/lib/reusable_assets";
+import {setDisplayCarriers, setDisplayCategories} from "@/lib/reusable_assets";
 
 interface SearchToolListItemProps {
     tool: Tool;
@@ -35,7 +35,9 @@ export const SearchToolListItem = ({ tool, onClick }: SearchToolListItemProps) =
                     </div>
 
                     <div className="flex flex-col items-start flex-1 min-w-0">
-                        <h4 className="text-sm font-medium truncate">{tool.name}</h4>
+                        <h4 className="text-sm font-medium truncate">
+                            {tool.name.length > 35 ? `${tool.name.substring(0, 35)}...` : tool.name}
+                        </h4>
                         <div className="text-xs text-gray-500 text-left">
                             {displayDescription}
                         </div>
@@ -44,7 +46,7 @@ export const SearchToolListItem = ({ tool, onClick }: SearchToolListItemProps) =
 
                 <div className="flex items-center space-x-2 shrink-0">
           <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full whitespace-nowrap">
-            {setDisplayCategories(tool.carriers, 10)}
+            {setDisplayCarriers(tool.carriers, 10)}
           </span>
                     <ExternalLink className="text-gray-400 hover:text-gray-600 w-4 h-4 cursor-pointer shrink-0" />
                 </div>

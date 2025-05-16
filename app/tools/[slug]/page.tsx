@@ -222,7 +222,8 @@ export default function ToolDetail() {
 
 
                         {/* Key Features Section */}
-                        {safeTool?.feature_list && safeTool.feature_list.length > 0 && (
+                        {safeTool?.feature_list &&
+                            safeTool.feature_list.filter(feature => feature.trim() !== "").length > 0 && (
                             <div className="mb-12">
                                 <h2 className="text-xl font-bold text-[#111827] mb-6">Key Features</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -450,7 +451,7 @@ export default function ToolDetail() {
 
                             <h3 className="font-semibold text-[#111827] mb-2">Use Cases</h3>
                             <div className="flex flex-wrap gap-2 mb-6">
-                                {safeTool?.feature_list?.slice(0, 4).map((feature, index) => (
+                                {safeTool?.carriers?.slice(0, 4).map((feature, index) => (
                                     <span key={index}
                                           className="text-sm bg-[#f3f4f6] text-[#6b7280] px-3 py-1 rounded-full">
                    {feature.length > 15 ? `${feature.substring(0, 15)}...` : feature}

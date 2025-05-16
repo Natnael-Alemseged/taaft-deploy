@@ -33,6 +33,26 @@ export const setDisplayCategories = (
 };
 
 
+// utils/display.ts
+export const setDisplayCarriers = (
+    carriers: string[] | null | undefined,
+    limit: number = 20
+): string => {
+    // Handle empty/undefined cases
+    if (!carriers || carriers.length === 0) {
+        return "No carrier";
+    }
+
+    // Get the first carrier name
+    const firstCarrier = carriers[0];
+
+    // Apply length limit
+    return firstCarrier.length > limit
+        ? `${firstCarrier.substring(0, limit)}...`
+        : firstCarrier;
+};
+
+
 
 
 // lib/reusable_assets.ts or wherever you keep utility functions
