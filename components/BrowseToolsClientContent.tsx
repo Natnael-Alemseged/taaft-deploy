@@ -348,12 +348,12 @@ export default function BrowseToolsClientContent({
     `}
                                                 >
                                                     <span className="truncate flex-1 min-w-0">{category.name}</span>
-                                                    {typeof category.count === "number" && (
-                                                        <span
-                                                            className="text-xs text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">
-        {category.count}
-      </span>
-                                                    )}
+      {/*                                              {typeof category.count === "number" && (*/}
+      {/*                                                  <span*/}
+      {/*                                                      className="text-xs text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">*/}
+      {/*  {category.count}*/}
+      {/*</span>*/}
+      {/*                                              )}*/}
                                                 </button>
                                             ))
                                         )}
