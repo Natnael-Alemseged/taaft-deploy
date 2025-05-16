@@ -854,13 +854,13 @@ export default function Hero() {
         } finally {
             setIsLoading(false);
             //simulate random delay befor changing button state
-            await new Promise(resolve => setTimeout(resolve,  Math.max(1000 - elapsedTime, 0)));
+            // await new Promise(resolve => setTimeout(resolve,  Math.max(1000 - elapsedTime, 0)));
             setIsButtonLoading(false);
 
         }
     };
 
-    const debouncedSearchQuery = useCustomDebounce(searchQuery, 700);
+    const debouncedSearchQuery = useCustomDebounce(searchQuery, 500);
 
     // const timer = setTimeout(() => {
     //     if (searchQuery) {
@@ -1010,7 +1010,13 @@ export default function Hero() {
 
     const handleSearchNavigation = async () => {
         console.log(`more tools length is: ${moreTools.length}`);
-        if (!searchQuery) return;
+        if (!searchQuery) {
+            console.log(`navigating with empty query`);
+             // sessionStorage.r("searchTools");
+            sessionStorage.removeItem("searchTools");
+            router.push(`/search?q=${encodeURIComponent(searchQuery)}&source=direct`);
+        }
+        // if (!searchQuery) return;
 
         // Fetch the full list of tools for the search results page
         await fetchTools(searchQuery, false);
@@ -1063,7 +1069,7 @@ export default function Hero() {
         console.log(`more tools length after update is: ${moreTools.length}`);
 
         //fix me removed check as per request to go to search result page
-        // if (moreTools.length > 0) {
+        if (moreTools.length > 0) {
             // Store in session storage for the search results page to access
             sessionStorage.setItem("searchTools", JSON.stringify(moreTools));
 
@@ -1072,8 +1078,8 @@ export default function Hero() {
             setIsButtonLoading(false);
             // Clear moreTools after navigation is initiated, assuming the target page will fetch its own data or use session storage
             setMoreTools([]);
-        // }
-    }, [moreTools, router, searchQuery]); // Added router and searchQuery to dependencies
+        }
+    }, [moreTools, searchQuery]); // Added router and searchQuery to dependencies
 
 
     return (
