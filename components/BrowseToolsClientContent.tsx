@@ -61,34 +61,59 @@ export default function BrowseToolsClientContent({
     const [selectedCategory, setSelectedCategory] = useState<string>("all-categories")
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
     const [page, setPage] = useState(1)
-    const limit = 12 // Items per page
+    let limit:number = 12 // Items per page
     const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
 
     // --- Effect for Search Query Debounce and URL Update ---
+    // useEffect(() => {
+    //     const handler = setTimeout(() => {
+    //         setDebouncedQuery(searchQuery)
+    //
+    //         // Update URL with search query and reset page
+    //         const current = new URLSearchParams(Array.from(searchParams.entries()))
+    //         if (searchQuery) {
+    //             current.set("q", searchQuery)
+    //         } else {
+    //             current.delete("q")
+    //         }
+    //
+    //         // When search changes, we always reset to page 1.
+    //         current.delete("page")
+    //
+    //         const search = current.toString()
+    //         const query = search ? `?${search}` : ""
+    //         router.replace(`${pathname}${query}`)
+    //     }, 50)
+    //
+    //     return () => {
+    //         clearTimeout(handler)
+    //     }
+    // }, [searchQuery, searchParams, pathname, router])
+
+
     useEffect(() => {
         const handler = setTimeout(() => {
-            setDebouncedQuery(searchQuery)
+            // Only proceed if searchQuery hasn't changed since we started the timeout
+            if (searchQuery === debouncedQuery) return;
 
-            // Update URL with search query and reset page
-            const current = new URLSearchParams(Array.from(searchParams.entries()))
+            const newParams = new URLSearchParams(Array.from(searchParams.entries()));
+
             if (searchQuery) {
-                current.set("q", searchQuery)
+                newParams.set("q", searchQuery);
             } else {
-                current.delete("q")
+                newParams.delete("q");
             }
 
-            // When search changes, we always reset to page 1.
-            current.delete("page")
+            newParams.delete("page");
 
-            const search = current.toString()
-            const query = search ? `?${search}` : ""
-            router.replace(`${pathname}${query}`)
-        }, 100)
+            const queryString = newParams.toString();
+            const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
-        return () => {
-            clearTimeout(handler)
-        }
-    }, [searchQuery, searchParams, pathname, router])
+            router.replace(newUrl, undefined, { shallow: true });
+        }, 500); // 500ms debounce (adjust as needed)
+
+        return () => clearTimeout(handler);
+    }, [searchQuery, debouncedQuery, searchParams, pathname, router]);
 
     // --- Sync state with URL query parameter on mount and URL changes ---
     useEffect(() => {
@@ -119,11 +144,12 @@ export default function BrowseToolsClientContent({
         isLoading: isLoadingTools,
         isError: isErrorTools,
     } = useTools({
-        isPublic: false,
+        isPublic: !isAuthenticated,
         category: isCategoryPage ? categorySlug : selectedCategory !== "all-categories" ? selectedCategory : undefined,
         search: debouncedQuery || undefined,
         page,
         limit,
+
         featured: isFeaturedPage ? true : undefined,
         sort_by: isCategoryPage ? 'name' : undefined,
         sort_order: isCategoryPage ? 'asc' : undefined,
@@ -207,6 +233,7 @@ export default function BrowseToolsClientContent({
     // --- Calculate pagination details ---
     const totalTools = toolsData?.total || 0
     const displayedToolsCount = toolsData?.tools?.length || 0
+    // limit=displayedToolsCount
     const totalPages = Math.ceil(totalTools / limit)
     const showPagination = totalTools > limit
 
@@ -243,18 +270,25 @@ export default function BrowseToolsClientContent({
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-[#111827] dark:text-white mb-1">
                         {categoryName
-                            ? `${categoryName} AI Tools`
+                            ? categoryName.toLowerCase().includes("ai tools") ? categoryName : `${categoryName} AI Tools`
                             : isFeaturedPage
                                 ? "Featured AI Tools"
                                 : "Browse AI Tools"
                         }
                     </h1>
                     <p className="text-[#6b7280] dark:text-gray-400">
-                        {categoryName
-                            ? `Discover and explore the best ${categoryName} AI tools`
-                            : isFeaturedPage
-                                ? "Discover and explore our featured AI tools"
-                                : "Discover and compare the best AI tools for your needs"
+                        {categoryName // Check if categoryName exists
+                            ? // If it exists (Category Page)
+                            `Discover and explore the best ${
+                                // Use the same logic as the H1 to get the clean category name
+                                categoryName.toLowerCase().includes("ai tools") ? categoryName : `${categoryName} AI Tools`
+                            }`
+                            : // If it doesn't exist (Browse or Featured Page)
+                            isFeaturedPage // Check if it's the featured page
+                                ? // If true (Featured Page)
+                                "Discover and explore our featured AI tools"
+                                : // If false (Browse Page)
+                                "Discover and compare the best AI tools for your needs"
                         }
                     </p>
                 </div>
@@ -314,12 +348,12 @@ export default function BrowseToolsClientContent({
     `}
                                                 >
                                                     <span className="truncate flex-1 min-w-0">{category.name}</span>
-                                                    {typeof category.count === "number" && (
-                                                        <span
-                                                            className="text-xs text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">
-        {category.count}
-      </span>
-                                                    )}
+      {/*                                              {typeof category.count === "number" && (*/}
+      {/*                                                  <span*/}
+      {/*                                                      className="text-xs text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">*/}
+      {/*  {category.count}*/}
+      {/*</span>*/}
+      {/*                                              )}*/}
                                                 </button>
                                             ))
                                         )}

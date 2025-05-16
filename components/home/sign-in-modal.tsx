@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import type React from "react";
 
 // Import icons including Mail for the success state
-import { X, ArrowLeft, Mail } from "lucide-react";
+import {X, ArrowLeft, Mail, EyeIcon, EyeClosed} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image"; // Assuming Image component is available
 // Adjust path if needed
@@ -32,7 +32,7 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp, previousRoute }
   const [resetEmail, setResetEmail] = useState(""); // State for forgot password email input
   const [resetMessage, setResetMessage] = useState(""); // State for success message after reset request (for the success UI)
   const [isResetRequestSuccessful, setIsResetRequestSuccessful] = useState(false); // State to track reset request success for showing the new UI
-
+  const [showPassword, setShowPassword] = useState(false);
 
   // Get isLoading from context if needed for global auth state, but local is fine for form submission state
   // Assuming useAuth hook structure based on your provided code
@@ -329,27 +329,46 @@ export function SignInModal({ isOpen, onClose, onSwitchToSignUp, previousRoute }
                   </div>
 
                   {/* Password input */}
+
                   <div>
                     <div className="flex justify-between mb-2">
                       <label htmlFor="password" className="block text-md font-medium">
                         Password
                       </label>
-                      {/* Forgot password link */}
-                      <button type="button" onClick={() => setShowForgotPassword(true)} className="text-[#a855f7] hover:underline text-sm">
+                      <button
+                          type="button"
+                          onClick={() => setShowForgotPassword(true)}
+                          className="text-[#a855f7] hover:underline text-sm"
+                      >
                         Forgot password?
                       </button>
                     </div>
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
-                        required
-                        disabled={isSubmitting || isAuthLoading}
-                    />
+                    <div className="relative">
+                      <input
+                          type={showPassword ? "text" : "password"}
+                          id="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a855f7] pr-10"
+                          required
+                          disabled={isSubmitting || isAuthLoading}
+                      />
+                      <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 flex items-center pr-3"
+                          onClick={() => setShowPassword(!showPassword)}
+                          disabled={isSubmitting || isAuthLoading}
+                      >
+                        {showPassword ? (
+                            <EyeIcon  className="h-5 w-5 text-gray-400" /> // Icon when password is visible
+                        ) : (
+                            <EyeClosed className="h-5 w-5 text-gray-400" /> // Icon when password is hidden
+                        )}
+                      </button>
+                    </div>
                   </div>
+
 
                   <Button
                       type="submit"

@@ -6,7 +6,7 @@ import {useRef, useState} from "react";
 import {showLoginModal} from "@/lib/auth-events";
 import type {Tool} from "@/types/tool";
 import {Card, CardContent} from "@/components/ui/card";
-import {robotSvg, setDisplayCategories} from "@/lib/reusable_assets";
+import {formatDescription, robotSvg, setDisplayCategories} from "@/lib/reusable_assets";
 import {Bookmark, ExternalLink} from "lucide-react";
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover";
 import {Button} from "@/components/ui/button";
@@ -158,11 +158,12 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
                 <span
                     className="rounded-full bg-purple-100 px-2 py-0.5 w-fit text-xs font-medium text-purple-600">
          {setDisplayCategories(tool.categories)}
+
+
             </span>
                 <p className="mb-4 text-sm text-gray-600 pt-3">
-                    {tool.description && tool.description.length > 80
-                        ? `${tool.description.substring(0, 80)}...`
-                        : tool.description}
+                    {formatDescription(tool.generated_description, tool.description, 80, 80)} {/* Adjust lengths as needed for cards */}
+
                 </p>
                 <div className="mb-4 flex flex-wrap gap-1">
                     {tool.keywords?.slice(0, 5).map((tag: string) => (
@@ -190,7 +191,14 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
                         className="bg-purple-600 text-white hover:bg-purple-700"
                         onClick={(e) => {
                             handleStopPropagation(e);
-                            handleOpenTool(tool.link);
+                            if(isAuthenticated) {
+                                handleOpenTool(tool.link);
+                            }
+                            else {
+                                showLoginModal(pathname, () => {
+                                    window.location.pathname = pathname; // Or whatever you want to do with the path
+                                });
+                            }
                             // handleGoToToolDetails();
                         }}
                     >

@@ -86,10 +86,9 @@ export default async function BrowsePage() {
     let isError = false;
 
     try {
-        initialToolsData =
+        //fixme fix this for seo
+        // initialToolsData = await getTools({isPublic: true});
 
-
-            await getTools({isPublic: true});
     } catch (error) {
         console.error("Server failed to fetch tools data:", error);
         isError = true;

@@ -7,12 +7,7 @@ import { ChevronRight } from "lucide-react"
 import { useCategories } from "@/hooks/use-categories"
 // Import the reusable CategoryCard component
 import CategoryCard from "@/components/category-card"
-// You might need a loading spinner component
-// import LoadingSpinner from "@/components/loading-spinner";
-// You might need an error message component
-// import ErrorMessage from "@/components/error-message";
 
-// Removed fallbackCategories as the hook handles initial loading/error
 
 export default function BrowseCategories() {
   // Use the hook to fetch categories

@@ -245,7 +245,8 @@ import { useRouter, usePathname } from "next/navigation"
 
 // Import useQueryClient from the query library you are using (e.g., '@tanstack/react-query')
 import { useQueryClient } from '@tanstack/react-query';
-import SponsoredToolCard from "@/components/cards/sponsored-tool-card"; // Or 'react-query' depending on your version
+import SponsoredToolCard from "@/components/cards/sponsored-tool-card";
+import ToolCard from "@/components/cards/tool-card"; // Or 'react-query' depending on your version
 
 // --- Define the query key used by usePopularTools ---
 // This is crucial for setQueryData. Replace 'yourPopularToolsQueryKey'
@@ -272,7 +273,7 @@ export default function SponsoredTools() {
 
   const { data, isLoading, isError, refetch } = usePopularTools() // Ensure usePopularTools uses the key defined above
   const sponsoredTools: Tool[] = data?.tools || [] // Assuming data is { tools: Tool[] }
-  const itemsPerPage = 2
+  const itemsPerPage = 4
   const totalPages = Math.ceil(sponsoredTools.length / itemsPerPage)
 
   // Effect to add and clean up scroll listener
@@ -371,14 +372,73 @@ export default function SponsoredTools() {
   };
 
 
+
   if (isLoading) {
+    // --- Placeholder Loading State ---
+    // Mimic the section structure and the carousel layout
     return (
         <section className="py-8 bg-white">
-          <div className="container mx-auto px-4 flex justify-center py-12">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600"></div>
+          <div className="container mx-auto px-4">
+            {/* Placeholder for Header (Title and Navigation) */}
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-purple-700">Sponsored</h2>
+              <div className="flex space-x-2">
+                <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div> {/* Left arrow placeholder */}
+                <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div> {/* Right arrow placeholder */}
+              </div>
+            </div>
+
+            {/* Placeholder for Carousel (Horizontal list of skeleton cards) */}
+            <div className="flex gap-6 overflow-x-auto scroll-smooth transition-all duration-300 focus:outline-none scrollbar-hide"
+                 style={{ scrollSnapType: "x mandatory" }}>
+              {/* Render a few skeleton cards */}
+              {[...Array(3)].map((_, index) => ( // Showing 3 placeholders
+                  <Card
+                      key={index}
+                      // Use sizing similar to your actual sponsored cards for layout consistency
+                      className="min-w-full md:min-w-[calc(50%-12px)] lg:min-w-[calc(33.33%-16px)] flex-shrink-0 border border-gray-200 dark:border-gray-700 shadow-lg animate-pulse"
+                      style={{ scrollSnapAlign: "center" }}
+                  >
+                    <CardContent className="p-4">
+                      {/* Skeleton shapes for content within the card */}
+                      <div className="mb-2 flex items-center gap-4">
+                        <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div> {/* Category tag placeholder */}
+                      </div>
+                      <span className="flex items-center gap-2 pb-3">
+                                        <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div> {/* Image/Icon placeholder */}
+                        <div className="h-6 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div> {/* Title placeholder */}
+                                    </span>
+                      <div className="mb-4 text-sm text-gray-600 pt-3">
+                        <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded mb-1"></div> {/* Description line 1 placeholder */}
+                        <div className="h-4 w-5/6 bg-gray-200 dark:bg-gray-700 rounded"></div> {/* Description line 2 placeholder */}
+                      </div>
+                      <div className="mb-4 flex flex-wrap gap-1">
+                        <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div> {/* Tag 1 placeholder */}
+                        <div className="h-5 w-14 bg-gray-200 dark:bg-gray-700 rounded-lg"></div> {/* Tag 2 placeholder */}
+                        <div className="h-5 w-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div> {/* Tag 3 placeholder */}
+                      </div>
+                      <div className="flex items-center justify-between">
+                                        <span className="flex items-center gap-2">
+                                            <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded"></div> {/* Bookmark icon placeholder */}
+                                          <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded"></div> {/* Share icon placeholder */}
+                                        </span>
+                        <div className="h-9 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div> {/* Try Tool button placeholder */}
+                      </div>
+                    </CardContent>
+                  </Card>
+              ))}
+            </div>
+
+            {/* Placeholder for Pagination Indicators */}
+            <div className="mt-6 flex justify-center space-x-2">
+              <div className="h-1.5 w-6 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div> {/* Active dot placeholder */}
+              <div className="h-1.5 w-1.5 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div> {/* Inactive dot placeholder */}
+              <div className="h-1.5 w-1.5 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div> {/* Inactive dot placeholder */}
+            </div>
           </div>
         </section>
-    )
+    );
+    // --- End Placeholder Loading State ---
   }
 
   if (isError || sponsoredTools.length === 0) {
@@ -390,13 +450,15 @@ export default function SponsoredTools() {
         <SignInModal
             isOpen={isSignInModalOpen}
             onClose={closeAllModals}
-            onSwitchToSignUp={() => { }}
+            onSwitchToSignUp={() => {}}
             previousRoute={previousRoute}
         />
         <section className="py-8 bg-white">
           <div className="container mx-auto px-4">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-purple-700">Sponsored</h2>
+            <div className="mb-6 flex items-center justify-start md:justify-between">
+              <h2 className="text-2xl font-bold text-purple-700">Sponsored</h2>  <div className="block lg:hidden">
+              {/*"right" "left"*/}
+            </div>
               {totalPages > 1 && (
                   <div className="flex space-x-2">
                     <button
@@ -428,12 +490,22 @@ export default function SponsoredTools() {
                 aria-label="Sponsored Tools Carousel"
             >
               {sponsoredTools.map((tool) => (
-                  <SponsoredToolCard key={tool.unique_id} tool={tool} />
+                  <div
+                      key={tool.unique_id}
+                      className="w-full lg:w-auto flex-shrink-0 transition-transform duration-300"
+                      style={{ scrollSnapAlign: "center" }}
+                  >
+                    {/* Use ToolCard for mobile and SponsoredToolCard for larger screens */}
+                    <div className="block lg:hidden">
+                      <ToolCard tool={tool} key={tool.unique_id} />
+                    </div>
+                    <div className="hidden lg:block">
+                      <SponsoredToolCard tool={tool} />
+                    </div>
+                  </div>
               ))}
-
             </div>
 
-            {/* Pagination Indicators */}
             {totalPages > 1 && (
                 <div className="mt-6 flex justify-center space-x-2" role="tablist" aria-label="Sponsored Tools Pagination">
                   {Array.from({ length: totalPages }).map((_, i) => (
@@ -449,8 +521,8 @@ export default function SponsoredTools() {
                           tabIndex={currentPage === i ? 0 : -1}
                           onClick={() => {
                             if (scrollRef.current) {
-                              const pageWidth = scrollRef.current.clientWidth
-                              scrollRef.current.scrollTo({ left: i * pageWidth, behavior: "smooth" })
+                              const pageWidth = scrollRef.current.clientWidth;
+                              scrollRef.current.scrollTo({ left: i * pageWidth, behavior: "smooth" });
                             }
                           }}
                           aria-label={`Go to page ${i + 1} of sponsored tools`}
@@ -461,5 +533,6 @@ export default function SponsoredTools() {
           </div>
         </section>
       </>
-  )
+  );
+
 }

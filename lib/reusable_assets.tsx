@@ -1,3 +1,6 @@
+import Link from "next/link";
+import {ArrowLeft} from "lucide-react";
+
 export const robotSvg = <svg width="35" height="36" viewBox="0 0 35 36" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect y="0.5" width="35" height="35" rx="17.5" fill="url(#paint0_linear_535_10088)" fillOpacity="0.2"/>
     <path d="M18 12.5V8.5H14" stroke="#7E22CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -20,10 +23,42 @@ export const robotSvg = <svg width="35" height="36" viewBox="0 0 35 36" fill="no
 
 export const setDisplayCategories = (
     categories?: any,
+    limit: number = 15,
 ) => {
     const categoryName = categories && categories.length > 0
         ? (categories[0]?.name === "AI Tools" ? categories[1]?.name : categories[0]?.name)
         : "AI Tools";
 
-    return categoryName ? (categoryName.length > 15 ? categoryName.slice(0, 15) + '...' : categoryName) : "AI Tools";
+    return categoryName ? (categoryName.length > limit ? categoryName.slice(0, limit) + '...' : categoryName) : "AI Tools";
 };
+
+
+
+
+// lib/reusable_assets.ts or wherever you keep utility functions
+
+export const formatDescription = (
+    generatedDescription?: string | null | undefined,
+    description?: string | null | undefined,
+    sliceLength: number, // The maximum number of characters to display
+    ellipsisLength: number, // The original length threshold to add "..."
+): string => {
+    // Prioritize generatedDescription if it exists, otherwise use description
+    const sourceDescription = generatedDescription || description;
+
+    // If no description source is available, return an empty string
+    if (!sourceDescription) {
+        return '';
+    }
+
+    // Apply slicing
+    const slicedDescription = sourceDescription.substring(0, sliceLength);
+
+    // Determine if ellipsis is needed based on the original source length
+    const needsEllipsis = sourceDescription.length > ellipsisLength;
+
+    // Return the sliced description with ellipsis if necessary
+    return slicedDescription + (needsEllipsis ? '...' : '');
+};
+
+// You can then use this function in your components like setDisplayCategories

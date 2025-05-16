@@ -24,11 +24,12 @@ export const getTools = async (params?: {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    let endpoint ="/public/tools";
-        // params?.isPublic ? "/public/tools" : "/tools";
+    let endpoint =
+        // "/tools/";
+        params?.isPublic ? "/public/tools/" : "/tools/";
     const apiParams: Record<string, any> = {
       limit: params?.limit ?? 12,
-      skip: (params?.page ?? 1 - 1) * (params?.limit ?? 12),
+      skip: params?.search ? 0 : ((params?.page ?? 1) - 1) * (params?.limit ?? 12),
       sort_by: params?.sort_by ?? "created_at",
       sort_order: params?.sort_order ?? "desc",
       // isPublic: params?.isPublic ?? true, // Default to `true`
@@ -51,7 +52,7 @@ export const getTools = async (params?: {
 
     // Ensure the correct endpoint for private tools
     if (!params?.isPublic && endpoint === "/public/tools") {
-      endpoint = "/tools";
+      endpoint = "/tools/";
     }
 
     console.log(`Final endpoint: ${endpoint}`);

@@ -176,6 +176,7 @@ export const logout = () => {
   localStorage.removeItem("access_token")
   localStorage.removeItem("refresh_token")
   localStorage.removeItem("user")
+  window.location.reload();
   // Optionally call an API endpoint to invalidate tokens server-side
   // try { apiClient.post("/auth/logout"); } catch (e) { console.error("Logout API call failed:", e); }
 }
