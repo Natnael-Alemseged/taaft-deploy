@@ -685,6 +685,7 @@ interface Tool {
     icon?: string;
     image?: string;
     logo_url?: string;
+    // carriers?: string[];
 }
 
 interface Category {
@@ -705,6 +706,7 @@ export default function Hero() {
     const [isLoading, setIsLoading] = useState(false);
     const [isButtonLoading, setIsButtonLoading] = useState(false);
     const [tools, setTools] = useState<Tool[]>([]);
+    // const [carrierTools, setCarriersTools] = useState<Tool[]>([]);
     const [moreTools, setMoreTools] = useState<Tool[]>([]);
 
     // Refs for the different input elements
@@ -794,6 +796,9 @@ export default function Hero() {
                     `Keyword search successful, found ${keywordData.tools.length} tools.`
                 );
                 if (setLimit) {
+
+
+                    // setCarriersTools(keywordData.tools);
                     setTools(keywordData.tools);
                 } else {
                     setMoreTools(keywordData.tools);
