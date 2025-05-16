@@ -212,10 +212,16 @@ export default function Header() {
             <div className="hidden md:flex items-center space-x-3"> {/* Hidden on mobile, flex on medium+ */}
 
                 {isLoading ? (
-                          <div className="animate-pulse flex space-x-3">
-                            <div className="w-16 h-8 bg-gray-200 rounded-md"></div>
-                            <div className="w-24 h-8 bg-gray-200 rounded-md"></div>
+                        <div className="flex items-center space-x-3 animate-pulse">
+                          {/* Profile icon shimmer */}
+                          <div className="w-10 h-10 rounded-full bg-gray-200"></div>
+
+                          {/* Text placeholders */}
+                          <div className="space-y-2">
+                            <div className="w-24 h-3 bg-gray-200 rounded"></div>
+                            <div className="w-16 h-2 bg-gray-200 rounded"></div>
                           </div>
+                        </div>
                       ) :
 
                 isAuthenticated && user ? (
