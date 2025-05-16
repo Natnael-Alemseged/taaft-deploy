@@ -770,10 +770,11 @@ export default function Hero() {
         limitWhenTrue: number = 5,
         limitWhenFalse: number = 20
     ) => {
-        setIsLoading(true);
+
         console.log(`set limit is: ${setLimit}`);
 
         if (setLimit) {
+            setIsLoading(true);
             setTools([]);
         } else {
             setMoreTools([]);
@@ -862,30 +863,6 @@ export default function Hero() {
 
     const debouncedSearchQuery = useCustomDebounce(searchQuery, 500);
 
-    // const timer = setTimeout(() => {
-    //     if (searchQuery) {
-    //         fetchTools(searchQuery); // Fetches limited tools for immediate display
-    //     } else {
-    //         setTools([]); // Clear tools when search query is empty
-    //     }
-    // }, 700); // 150ms debounce
-    //
-    // return () => clearTimeout(timer); // Cleanup debounce timer
-
-
-    // Debounced search effect for live results in the intermediate UI
-    // useEffect(() => {
-    //
-    //
-    //     if (searchQuery) {
-    //         // const  debouncedSearchTerm = useCustomDebounce(searchQuery, 500);
-    //         // fetchTools(debouncedSearchTerm); // Fetches limited tools for immediate display
-    //     }
-    //     else {
-    //         setTools([]); // Clear tools when search query is empty
-    //     }
-    //
-    // }, [searchQuery]);
 
 
     useEffect(() => {
