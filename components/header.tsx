@@ -16,10 +16,11 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false) // State for mobile menu
   const [previousRoute, setPreviousRoute] = useState<string | undefined>()
-  const { user, logout, isAuthenticated } = useAuth()
+  const { user, logout, isAuthenticated,isLoading } = useAuth()
   const pathname = usePathname() // Get current pathname
   const onCloseCallbackRef = useRef<(() => void) | null>(null)
   const currentModalIdRef = useRef<string | null>(null)
+
 
   const mobileMenuRef = useRef<HTMLDivElement>(null); // Ref for mobile menu for click outside
 
@@ -209,7 +210,15 @@ export default function Header() {
 
             {/* Desktop Sign In/Sign Up buttons or User Menu */}
             <div className="hidden md:flex items-center space-x-3"> {/* Hidden on mobile, flex on medium+ */}
-              {isAuthenticated && user ? (
+
+                {isLoading ? (
+                          <div className="animate-pulse flex space-x-3">
+                            <div className="w-16 h-8 bg-gray-200 rounded-md"></div>
+                            <div className="w-24 h-8 bg-gray-200 rounded-md"></div>
+                          </div>
+                      ) :
+
+                isAuthenticated && user ? (
                   <div className="relative user-menu"> {/* Added class for click outside */}
                     <button
                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
