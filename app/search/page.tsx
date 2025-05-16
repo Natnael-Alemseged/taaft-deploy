@@ -1,5 +1,7 @@
 import SearchResults from "@/components/SearchResults"
 import SearchResultDirect from "@/components/search-results-direct";
+import {BackLink} from "@/components/ui/BackLink";
+
 
 export default async function SearchPage({
                                              searchParams,
@@ -11,24 +13,17 @@ export default async function SearchPage({
     const source = typeof (searchParams.source) === "string" ? searchParams.source : "" // Make sure no 'await' here
 
 
-    if (source === "direct") {
-        // Client-side will handle via sessionStorage
-        return (
+    const ResultsComponent = source === "direct"
+        ? <SearchResultDirect initialQuery={query} />
+        : <SearchResults initialQuery={query} category={category} source={source} />;
 
-            <div className="container mx-auto px-4 py-8">
-                <h1 className="text-2xl font-bold mb-6">Search Results</h1>
-                <SearchResultDirect initialQuery={query}/>
-            </div>);
-    } else {
-        // Server-side fetch
-
-        return (<div className="container mx-auto px-4 py-8">
+    return (
+        <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-bold mb-6">Search Results</h1>
-
-            <SearchResults initialQuery={query} category={category} source={source}/>
-
-        </div>);
-    }
+            <BackLink href="/" label="Back to Home" />
+            {ResultsComponent}
+        </div>
+    );
 
 
 }

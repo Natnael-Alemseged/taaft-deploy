@@ -1,3 +1,6 @@
+import Link from "next/link";
+import {ArrowLeft} from "lucide-react";
+
 export const robotSvg = <svg width="35" height="36" viewBox="0 0 35 36" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect y="0.5" width="35" height="35" rx="17.5" fill="url(#paint0_linear_535_10088)" fillOpacity="0.2"/>
     <path d="M18 12.5V8.5H14" stroke="#7E22CE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
