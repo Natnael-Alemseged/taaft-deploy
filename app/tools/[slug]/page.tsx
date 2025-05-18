@@ -23,6 +23,7 @@ import {getToolById, getToolByUniqueId, getTools} from "@/services/tool-service"
 import {Category, Tool} from "@/types/tool"
 import {robotSvg} from "@/lib/reusable_assets";
 import {LogoAvatar} from "@/components/LogoAvatar";
+import Image from 'next/image';
 
 
 // Keep Schema interface as is, not used in the render logic directly, but good for reference
@@ -33,9 +34,9 @@ export default function ToolDetail() {
     const slug = params?.slug as string
     const router = useRouter()
     const queryClient = useQueryClient()
-    const [isToolLoading, setIsToolLoading] = useState(false)
+    // const [isToolLoading, setIsToolLoading] = useState(false)
     const [isError, setIsError] = useState(false)
-    const [tool, setTool] = useState<Tool | null>(null)
+    // const [tool, setTool] = useState<Tool | null>(null)
 
 // Get auth state and loading state from useAuth
     const {isAuthenticated, isLoading: isAuthLoading} = useAuth()
@@ -58,36 +59,43 @@ export default function ToolDetail() {
         setSelectedPlan(selectedPlan === planName ? null : planName) // Deselect if it's already selected
     }
 
-    useEffect(() => {
-        const fetchTool = async () => {
-            setIsToolLoading(true);
-            setIsError(false);
-            console.log("Fetching tool with slug:", slug);
 
-            try {
-                // First attempt with unique_id
-                let response = await getToolByUniqueId(slug);
+    const {
+        data: tool,
+        isLoading: isToolLoading,
+        isError: isErrorTools,
+    } = useTool(slug);
 
-                if (response.status === 200 && response.data) {
-                    console.log('sucessful unique id');
-                    console.log(response.data);
-
-                    setTool(response.data);
-                    return;
-                }
-
-
-
-            } catch (error) {
-                console.error('Error fetching tool:', error);
-                setIsError(true);
-            } finally {
-                setIsToolLoading(false);
-            }
-        };
-
-        if (slug) fetchTool();
-    }, [slug]);
+    // useEffect(() => {
+    //     const fetchTool = async () => {
+    //         setIsToolLoading(true);
+    //         setIsError(false);
+    //         console.log("Fetching tool with slug:", slug);
+    //
+    //         try {
+    //             // First attempt with unique_id
+    //             let response = await getToolByUniqueId(slug);
+    //
+    //             if (response.status === 200 && response.data) {
+    //                 console.log('sucessful unique id');
+    //                 console.log(response.data);
+    //
+    //                 setTool(response.data);
+    //                 return;
+    //             }
+    //
+    //
+    //
+    //         } catch (error) {
+    //             console.error('Error fetching tool:', error);
+    //             setIsError(true);
+    //         } finally {
+    //             setIsToolLoading(false);
+    //         }
+    //     };
+    //
+    //     if (slug) fetchTool();
+    // }, [slug]);
 
 
 
@@ -279,23 +287,33 @@ export default function ToolDetail() {
                                         maxWidth: "952px",
                                         height: "fit-content",
                                         aspectRatio: "952/643.5",
+                                        position: 'relative', // <--- Add this line
                                     }}
                                 >
-                                    <img
-                                        src={safeTool.image_url || "/placeholder.svg"}
+                                    {/*<img*/}
+                                    {/*    src={safeTool.image_url || "/placeholder.svg"}*/}
+                                    {/*    alt={`${safeTool?.name ?? ""} screenshot`}*/}
+                                    {/*    className="w-full h-auto object-cover"*/}
+                                    {/*    style={{*/}
+                                    {/*        maxHeight: "643.5px",*/}
+                                    {/*        width: "100%",*/}
+                                    {/*    }}*/}
+                                    {/*    loading="lazy"*/}
+                                    {/*    onError={(e) => {*/}
+                                    {/*        (e.target as HTMLImageElement).src = "/placeholder.svg";*/}
+                                    {/*        (e.target as HTMLImageElement).className = "w-full h-auto object-contain";*/}
+                                    {/*    }}*/}
+                                    {/*/>*/}
+                                {/*    image optimized using nexts image componrnt instead of img*/}
+                                    <Image
+                                        src={safeTool.image_url}
                                         alt={`${safeTool?.name ?? ""} screenshot`}
-                                        className="w-full h-auto object-cover"
-                                        style={{
-                                            maxHeight: "643.5px",
-                                            width: "100%",
-                                        }}
-                                        loading="lazy"
-                                        onError={(e) => {
-                                            (e.target as HTMLImageElement).src = "/placeholder.svg";
-                                            (e.target as HTMLImageElement).className = "w-full h-auto object-contain";
-                                        }}
+                                        fill={true}
+                                        style={{ objectFit: 'cover' }}
+                                        sizes="(max-width: 768px) 100vw, 66vw"
                                     />
                                 </div>
+
                             </div>
                         )}
 
