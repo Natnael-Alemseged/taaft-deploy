@@ -19,6 +19,7 @@ export interface Tool {
   slug: string
   link: string
   generated_description:string
+  carriers: string[]
   categories: Category[]
   description: string
   feature_list: string[]
@@ -35,7 +36,6 @@ export interface Tool {
   saved_by_user?: boolean
   industry?: string
   user_reviews?: UserReviews | null;
-
 }
 
 export interface ToolSubmission {
