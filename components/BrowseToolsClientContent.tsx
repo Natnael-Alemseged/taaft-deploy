@@ -270,7 +270,7 @@ export default function BrowseToolsClientContent({
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-[#111827] dark:text-white mb-1">
                         {categoryName
-                            ? categoryName.toLowerCase().includes("ai tools") ? categoryName : `${categoryName} AI Tools`
+                            ?`${categoryName}`
                             : isFeaturedPage
                                 ? "Featured AI Tools"
                                 : "Browse AI Tools"
@@ -279,11 +279,7 @@ export default function BrowseToolsClientContent({
                     <p className="text-[#6b7280] dark:text-gray-400">
                         {categoryName // Check if categoryName exists
                             ? // If it exists (Category Page)
-                            `Discover and explore the best ${
-                                // Use the same logic as the H1 to get the clean category name
-                                categoryName.toLowerCase().includes("ai tools") ? categoryName : `${categoryName} AI Tools`
-                            }`
-                            : // If it doesn't exist (Browse or Featured Page)
+                            `Discover and explore the best  ${categoryName}` :
                             isFeaturedPage // Check if it's the featured page
                                 ? // If true (Featured Page)
                                 "Discover and explore our featured AI tools"
@@ -348,12 +344,7 @@ export default function BrowseToolsClientContent({
     `}
                                                 >
                                                     <span className="truncate flex-1 min-w-0">{category.name}</span>
-      {/*                                              {typeof category.count === "number" && (*/}
-      {/*                                                  <span*/}
-      {/*                                                      className="text-xs text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">*/}
-      {/*  {category.count}*/}
-      {/*</span>*/}
-      {/*                                              )}*/}
+
                                                 </button>
                                             ))
                                         )}
@@ -393,7 +384,11 @@ export default function BrowseToolsClientContent({
                 {!isLoadingTools && !isErrorTools && toolsData?.tools && toolsData.tools.length > 0 && (
                     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {toolsData.tools.map((tool) => (
-                            <ToolCard key={tool.id} tool={tool} hideFavoriteButton={isFromBrowsePage}/>
+                            <ToolCard key={tool.id} tool={tool} hideFavoriteButton={isFromBrowsePage} isFromCategoryPage={isFromCategoryPage}
+
+
+
+                            />
                         ))}
                     </div>
                 )}

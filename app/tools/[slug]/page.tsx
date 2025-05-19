@@ -8,7 +8,7 @@ import {useTool} from "@/hooks/use-tools" // Assuming this hook exists and works
 import {useSaveTool, useUnsaveTool} from "@/hooks/use-tools" // Assuming these hooks exist and works
 import {useAuth} from "@/contexts/auth-context" // Assuming useAuth hook is available
 import Header from "@/components/header" // Assuming Header component path
-import {useRouter} from "next/navigation" // Correct import for App Router
+import {useRouter, useSearchParams} from "next/navigation" // Correct import for App Router
 /// if api fails use fallback
 import {withFallbackTool} from "@/lib/utils" // Assuming this utility exists
 import {useParams} from "next/navigation" // Correct import for App Router
@@ -34,10 +34,11 @@ export default function ToolDetail() {
     const slug = params?.slug as string
     const router = useRouter()
     const queryClient = useQueryClient()
-    // const [isToolLoading, setIsToolLoading] = useState(false)
-    const [isError, setIsError] = useState(false)
-    // const [tool, setTool] = useState<Tool | null>(null)
 
+    const [isError, setIsError] = useState(false)
+
+    const searchParams = useSearchParams();
+    const isFromCategoryPage = searchParams.get('isFromCategoryPage') === 'true';
 // Get auth state and loading state from useAuth
     const {isAuthenticated, isLoading: isAuthLoading} = useAuth()
 
@@ -49,7 +50,8 @@ export default function ToolDetail() {
     // Function to toggle showing all features
     const handleShowMoreFeatures = () => {
         setShowAllFeatures(true);
-    };   const handleShowLessFeatures = () => {
+    };
+    const handleShowLessFeatures = () => {
         setShowAllFeatures(false);
     };
     const [selectedPlan, setSelectedPlan] = useState<SetStateAction<null> | null>(null) // State to manage the selected plan
@@ -96,7 +98,6 @@ export default function ToolDetail() {
     //
     //     if (slug) fetchTool();
     // }, [slug]);
-
 
 
     useEffect(() => {
@@ -184,9 +185,15 @@ export default function ToolDetail() {
                         Home
                     </Link>
                     <span className="mx-2 text-[#6b7280]">{">"}</span>
-                    <Link href="/browse" className="text-[#6b7280]">
-                        Tools
-                    </Link>
+                    {isFromCategoryPage ? <Link href="/categories" className="text-[#6b7280]">
+                            Categories
+                        </Link>
+
+                        :
+
+                        <Link href="/browse" className="text-[#6b7280]">
+                            Tools
+                        </Link>}
                     <span className="mx-2 text-[#6b7280]">{">"}</span>
                     <span className="text-[#6b7280]">{safeTool.name ?? ''}</span>
                 </div>
@@ -196,7 +203,7 @@ export default function ToolDetail() {
                     <div>
                         <div className="flex items-center gap-3 pb-5">
                             <div className="w-9 h-9 flex-shrink-0 rounded-full bg-gray-100 overflow-hidden">
-                                <LogoAvatar logoUrl={tool.logo_url} name={tool.name} />
+                                <LogoAvatar logoUrl={tool.logo_url} name={tool.name}/>
                             </div>
                             <h1 className="text-3xl font-bold text-[#111827]">
                                 {safeTool?.name || "Unknown name"}
@@ -232,49 +239,51 @@ export default function ToolDetail() {
                         {/* Key Features Section */}
                         {safeTool?.feature_list &&
                             safeTool.feature_list.filter(feature => feature.trim() !== "").length > 0 && (
-                            <div className="mb-12">
-                                <h2 className="text-xl font-bold text-[#111827] mb-6">Key Features</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Conditionally slice the feature list */}
-                                    {safeTool.feature_list
-                                        .slice(0, showAllFeatures ? safeTool.feature_list.length : 6) // Slice based on showAllFeatures state
-                                        .map((feature, index) => (
-                                            <div key={index} className="border border-[#e5e7eb] rounded-lg p-4">
-                                                <div className="flex items-start mb-2">
-                                                    <div
-                                                        className="w-5 h-5 rounded-full bg-[#f5f0ff] flex items-center justify-center mr-2 mt-1">
-                                                        <Check className="w-3 h-3 text-[#a855f7]"/>
-                                                    </div>
-                                                    {/* You can add the character truncation logic here if needed,
+                                <div className="mb-12">
+                                    <h2 className="text-xl font-bold text-[#111827] mb-6">Key Features</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Conditionally slice the feature list */}
+                                        {safeTool.feature_list
+                                            .slice(0, showAllFeatures ? safeTool.feature_list.length : 6) // Slice based on showAllFeatures state
+                                            .map((feature, index) => (
+                                                <div key={index} className="border border-[#e5e7eb] rounded-lg p-4">
+                                                    <div className="flex items-start mb-2">
+                                                        <div
+                                                            className="w-5 h-5 rounded-full bg-[#f5f0ff] flex items-center justify-center mr-2 mt-1">
+                                                            <Check className="w-3 h-3 text-[#a855f7]"/>
+                                                        </div>
+                                                        {/* You can add the character truncation logic here if needed,
                                             but the request was specifically for the feature list display */}
-                                                    <h3 className="font-semibold text-[#111827]">{feature}</h3>
+                                                        <h3 className="font-semibold text-[#111827]">{feature}</h3>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                </div>
+                                            ))}
+                                    </div>
 
-                                {/* Show "Show More" button only if there are more than 6 features
+                                    {/* Show "Show More" button only if there are more than 6 features
                         and showAllFeatures is false */}
-                                {safeTool.feature_list.length > 6 && !showAllFeatures && (
-                                    <div className="mt-6 text-center">
-                                        <Button variant="link" onClick={handleShowMoreFeatures} className="text-[#a855f7]">
-                                            Show More Features ({safeTool.feature_list.length - 6} more)
-                                            <ChevronRight className="ml-1 w-4 h-4"/>
-                                        </Button>
-                                    </div>
-                                )}
+                                    {safeTool.feature_list.length > 6 && !showAllFeatures && (
+                                        <div className="mt-6 text-center">
+                                            <Button variant="link" onClick={handleShowMoreFeatures}
+                                                    className="text-[#a855f7]">
+                                                Show More Features ({safeTool.feature_list.length - 6} more)
+                                                <ChevronRight className="ml-1 w-4 h-4"/>
+                                            </Button>
+                                        </div>
+                                    )}
 
-                                {/* Optionally show a "Show Less" button if needed */}
-                                {safeTool.feature_list.length > 6 && showAllFeatures && (
-                                    <div className="mt-6 text-center">
-                                        <Button variant="link" onClick={handleShowLessFeatures} className="text-[#a855f7]"> {/* Changed color to match Show More */}
-                                            Show Less Features
-                                            <ChevronUp className="ml-1 w-4 h-4"/>
-                                        </Button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                                    {/* Optionally show a "Show Less" button if needed */}
+                                    {safeTool.feature_list.length > 6 && showAllFeatures && (
+                                        <div className="mt-6 text-center">
+                                            <Button variant="link" onClick={handleShowLessFeatures}
+                                                    className="text-[#a855f7]"> {/* Changed color to match Show More */}
+                                                Show Less Features
+                                                <ChevronUp className="ml-1 w-4 h-4"/>
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                         {/* Screenshot Section */}
                         {safeTool.image_url && (
@@ -304,12 +313,12 @@ export default function ToolDetail() {
                                     {/*        (e.target as HTMLImageElement).className = "w-full h-auto object-contain";*/}
                                     {/*    }}*/}
                                     {/*/>*/}
-                                {/*    image optimized using nexts image componrnt instead of img*/}
+                                    {/*    image optimized using nexts image componrnt instead of img*/}
                                     <Image
                                         src={safeTool.image_url}
                                         alt={`${safeTool?.name ?? ""} screenshot`}
                                         fill={true}
-                                        style={{ objectFit: 'cover' }}
+                                        style={{objectFit: 'cover'}}
                                         sizes="(max-width: 768px) 100vw, 66vw"
                                     />
                                 </div>

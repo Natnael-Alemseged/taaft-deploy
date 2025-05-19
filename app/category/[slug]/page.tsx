@@ -12,8 +12,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   ).join(' ');
 
   return {
-        title: `${categoryName} AI Tools | TAAFT`,
-    description: `Discover and explore the best ${categoryName} AI tools. Find curated ${categoryName} tools for your projects.`,
+        title: `${categoryName}`,
+    description: `Discover and explore the best ${categoryName} . Find curated ${categoryName} tools for your projects.`,
   };
 }
 
@@ -33,7 +33,7 @@ function generateToolsSchema(toolsData: ToolsData | null, categoryName: string) 
         "@context": "https://schema.org",
         "@type": "WebPage",
         "name": `${categoryName} AI Tools | TAAFT`,
-        "description": `Discover and explore the best ${categoryName} AI tools. Find curated ${categoryName} tools for your projects.`,
+        "description": `Discover and explore the best ${categoryName}. Find curated ${categoryName} tools for your projects.`,
         "url": `${siteUrl}/category/${categoryName.toLowerCase().replace(/\s+/g, '-')}`,
         "mainEntity": {
           "@type": "ItemList",
