@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React, {useRef} from "react"
 import {useState, useEffect, useMemo} from "react"
 import Link from "next/link"
 import {Search, ChevronDown, ArrowLeft} from "lucide-react"
@@ -57,6 +57,7 @@ export default function BrowseToolsClientContent({
     const searchParams = useSearchParams()
     const pathname = usePathname()
 
+
     const {user, logout, isAuthenticated} = useAuth()
 
     // --- State Management ---
@@ -65,8 +66,22 @@ export default function BrowseToolsClientContent({
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
     const [page, setPage] = useState(1)
     let limit: number = 12 // Items per page
-    // const [debouncedQuery, setDebouncedQuery] = useState('')
-    const debouncedQuery = useCustomDebounce(searchQuery, 700);
+
+    const debouncedQuery:string = useCustomDebounce(searchQuery, 1000);
+
+    const hasInitializedSearchQuery = useRef(false); // Flag to ensure one-time initialization
+
+
+    useEffect(() => {
+        if (!hasInitializedSearchQuery.current) {
+            const searchFromUrl = searchParams.get("q");
+            if (searchFromUrl) {
+                setSearchQuery(searchFromUrl);
+            }
+            hasInitializedSearchQuery.current = true; // Mark as initialized
+        }
+    }, [searchParams]); // Keep searchParams here to get the *initial* value
+
 
 
     useEffect(() => {
@@ -84,30 +99,33 @@ export default function BrowseToolsClientContent({
         const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
         router.replace(newUrl, undefined, { shallow: true });
-    }, [debouncedQuery, searchParams, pathname, router]);
+    }, [debouncedQuery, pathname, router,searchParams]);
 
     // --- Sync state with URL query parameter on mount and URL changes ---
     useEffect(() => {
-        const categoryFromUrl = searchParams.get("category")
-        const pageFromUrl = searchParams.get("page")
-        const searchFromUrl = searchParams.get("q")
+        const categoryFromUrl = searchParams.get("category");
+        const pageFromUrl = searchParams.get("page");
 
-        if (categoryFromUrl) {
-            setSelectedCategory(categoryFromUrl)
+        // Only update category if it's different to prevent unnecessary re-renders
+        if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
+            setSelectedCategory(categoryFromUrl);
+        } else if (!categoryFromUrl && selectedCategory !== "all-categories") {
+            // If URL has no category, but state does, reset state
+            setSelectedCategory("all-categories");
         }
 
+
+        // Handle page from URL
         if (pageFromUrl) {
-            const parsedPage = Number.parseInt(pageFromUrl, 10)
-            if (!isNaN(parsedPage) && parsedPage > 0) {
-                setPage(parsedPage)
+            const parsedPage = Number.parseInt(pageFromUrl, 10);
+            if (!isNaN(parsedPage) && parsedPage > 0 && parsedPage !== page) {
+                setPage(parsedPage);
             }
+        } else if (page !== 1) { // If URL has no page, but state does, reset to 1
+            setPage(1);
         }
+    }, [searchParams, selectedCategory, page]); // Depend on relevant states for conditional updates
 
-        if (searchFromUrl) {
-            setSearchQuery(searchFromUrl)
-            // setDebouncedQuery(searchFromUrl)
-        }
-    }, [searchParams])
 
     // --- Data Fetching Hooks ---
     const {
@@ -158,9 +176,7 @@ export default function BrowseToolsClientContent({
 
     // --- Handlers for UI interactions ---
     const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newSearchQuery = e.target.value
-
-        // const debouncedQuery = await useCustomDebounce(newSearchQuery,700);
+        const newSearchQuery:string = e.target.value
 
 
         setSearchQuery(newSearchQuery)
