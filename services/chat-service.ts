@@ -81,6 +81,7 @@ export interface KeywordSearchResponse {
     total: number; // Total number of results
     skip: number; // Added based on Swagger
     limit: number; // Added based on Swagger
+    carriers: string[];
     // Add other pagination/metadata fields if present in API response
 }
 

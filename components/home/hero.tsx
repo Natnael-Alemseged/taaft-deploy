@@ -23,6 +23,7 @@ import { LogoAvatar } from "@/components/LogoAvatar";
 import {useCustomDebounce} from "@/lib/reusable-methods";
 import {SearchToolListItem} from "@/components/SearchToolList";
 import {Tool} from "@/types/tool";
+import {JobListItem} from "@/components/job-list-items";
 
 // Types for API integration
 // interface Tool {
@@ -58,6 +59,7 @@ export default function Hero() {
     const [tools, setTools] = useState<Tool[]>([]);
     const [carrierTools, setCarriersTools] = useState<Tool[]>([]);
     const [moreTools, setMoreTools] = useState<Tool[]>([]);
+    const [carriers,setCarriers] = useState<string[]>([]);
 
     // Refs for the different input elements
     const inputRef = useRef<HTMLInputElement>(null); // Ref for the initial input
@@ -87,6 +89,11 @@ export default function Hero() {
     function goToToolDetails(id: string | number): void {
         console.log("Calling goToToolDetails for ID:", id);
         router.push(`/tools/${encodeURIComponent(id)}`);
+        // router.push(`/tools/${id}`);
+    }
+    function goToJobImpact(id: string | number): void {
+        console.log("Calling goToToolDetails for ID:", id);
+        router.push(`/job-impact/${encodeURIComponent(id)}`);
         // router.push(`/tools/${id}`);
     }
 
@@ -143,28 +150,29 @@ export default function Hero() {
 
             if (keywordData && keywordData.tools && keywordData.tools.length > 0) {
                 console.log(
-                    `Keyword search successful, found ${keywordData.tools.length} tools.`
+                    `Keyword search successful, found ${keywordData.tools.length} tools. and carriers are ${keywordData.carriers.length}`
                 );
 
                 // Type-safe filtering
-                const { carrierTools, regularTools } = keywordData.tools.reduce(
-                    (result, tool) => {
-                        const hasCarriers = tool.carriers && tool.carriers.length > 0;
-                        hasCarriers ? result.carrierTools.push(tool) : result.regularTools.push(tool);
-                        return result;
-                    },
-                    { carrierTools: [] as Tool[], regularTools: [] as Tool[] }
-                );
+                // const { carrierTools, regularTools } = keywordData.tools.reduce(
+                //     (result, tool) => {
+                //         const hasCarriers = tool.carriers && tool.carriers.length > 0;
+                //         hasCarriers ? result.carrierTools.push(tool) : result.regularTools.push(tool);
+                //         return result;
+                //     },
+                //     { carrierTools: [] as Tool[], regularTools: [] as Tool[] }
+                // );
 
 
                 if (setLimit) {
 
                     //
                     // setCarriersTools(keywordData.tools);
-                    // setTools(keywordData.tools);
+                    setCarriers(keywordData.carriers);
+                    setTools(keywordData.tools);
 
-                    setCarriersTools(carrierTools);
-                    setTools(regularTools);
+                    // setCarriersTools(carrierTools);
+                    // setTools(regularTools);
                 } else {
                     setMoreTools(keywordData.tools);
 
@@ -654,18 +662,18 @@ export default function Hero() {
 
                                             <>
                                                 {/* Carrier Tools Section (only shown if carrierTools exist) */}
-                                                {carrierTools.length > 0 && (
+                                                {carriers.length > 0 && (
                                                     <div className="border-t border-gray-200">
                                                         <div className="px-4 py-2 bg-gray-50">
                                                             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                                 Jobs
                                                             </h3>
                                                         </div>
-                                                        {carrierTools.map((tool:Tool) => (
-                                                            <SearchToolListItem
-                                                                key={tool.id}
-                                                                tool={tool}
-                                                                onClick={() => goToToolDetails(tool.unique_id)}
+                                                        {carriers.map((carrier:string) => (
+                                                            <JobListItem
+
+                                                                carrier={carrier}
+                                                                onClick={() => goToJobImpact(carrier)}
                                                             />
                                                         ))}
                                                     </div>
