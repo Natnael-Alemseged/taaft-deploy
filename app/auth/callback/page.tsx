@@ -21,7 +21,7 @@ export default function AuthCallback() {
 
       try {
         await handleGoogleCallback(code)
-        router.push("/")
+        // router.push("/")
         console.log('In auth callback after google sign in');
 
 
