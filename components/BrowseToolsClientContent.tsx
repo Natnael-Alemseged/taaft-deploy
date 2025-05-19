@@ -18,6 +18,9 @@ import ToolCard from "@/components/cards/tool-card"
 // Import Next.js router and pathname hooks for App Router
 import {useRouter, useSearchParams, usePathname} from "next/navigation"
 
+import {useCustomDebounce} from "@/lib/reusable-methods";
+
+
 // Import types
 import type {Tool} from "@/types/tool"
 import type {Category} from "@/types/category"
@@ -61,59 +64,27 @@ export default function BrowseToolsClientContent({
     const [selectedCategory, setSelectedCategory] = useState<string>("all-categories")
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
     const [page, setPage] = useState(1)
-    let limit:number = 12 // Items per page
-    const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
-
-    // --- Effect for Search Query Debounce and URL Update ---
-    // useEffect(() => {
-    //     const handler = setTimeout(() => {
-    //         setDebouncedQuery(searchQuery)
-    //
-    //         // Update URL with search query and reset page
-    //         const current = new URLSearchParams(Array.from(searchParams.entries()))
-    //         if (searchQuery) {
-    //             current.set("q", searchQuery)
-    //         } else {
-    //             current.delete("q")
-    //         }
-    //
-    //         // When search changes, we always reset to page 1.
-    //         current.delete("page")
-    //
-    //         const search = current.toString()
-    //         const query = search ? `?${search}` : ""
-    //         router.replace(`${pathname}${query}`)
-    //     }, 50)
-    //
-    //     return () => {
-    //         clearTimeout(handler)
-    //     }
-    // }, [searchQuery, searchParams, pathname, router])
+    let limit: number = 12 // Items per page
+    // const [debouncedQuery, setDebouncedQuery] = useState('')
+    const debouncedQuery = useCustomDebounce(searchQuery, 700);
 
 
     useEffect(() => {
-        const handler = setTimeout(() => {
-            // Only proceed if searchQuery hasn't changed since we started the timeout
-            if (searchQuery === debouncedQuery) return;
+        const newParams = new URLSearchParams(Array.from(searchParams.entries()));
 
-            const newParams = new URLSearchParams(Array.from(searchParams.entries()));
+        if (debouncedQuery) {
+            newParams.set("q", debouncedQuery);
+        } else {
+            newParams.delete("q");
+        }
 
-            if (searchQuery) {
-                newParams.set("q", searchQuery);
-            } else {
-                newParams.delete("q");
-            }
+        newParams.delete("page");
 
-            newParams.delete("page");
+        const queryString = newParams.toString();
+        const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
-            const queryString = newParams.toString();
-            const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-
-            router.replace(newUrl, undefined, { shallow: true });
-        }, 500); // 500ms debounce (adjust as needed)
-
-        return () => clearTimeout(handler);
-    }, [searchQuery, debouncedQuery, searchParams, pathname, router]);
+        router.replace(newUrl, undefined, { shallow: true });
+    }, [debouncedQuery, searchParams, pathname, router]);
 
     // --- Sync state with URL query parameter on mount and URL changes ---
     useEffect(() => {
@@ -134,7 +105,7 @@ export default function BrowseToolsClientContent({
 
         if (searchFromUrl) {
             setSearchQuery(searchFromUrl)
-            setDebouncedQuery(searchFromUrl)
+            // setDebouncedQuery(searchFromUrl)
         }
     }, [searchParams])
 
@@ -186,8 +157,12 @@ export default function BrowseToolsClientContent({
     }, [categoriesData, toolsData?.total])
 
     // --- Handlers for UI interactions ---
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const newSearchQuery = e.target.value
+
+        // const debouncedQuery = await useCustomDebounce(newSearchQuery,700);
+
+
         setSearchQuery(newSearchQuery)
         setPage(1) // Reset to first page when search changes
     }
@@ -270,7 +245,7 @@ export default function BrowseToolsClientContent({
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-[#111827] dark:text-white mb-1">
                         {categoryName
-                            ?`${categoryName}`
+                            ? `${categoryName}`
                             : isFeaturedPage
                                 ? "Featured AI Tools"
                                 : "Browse AI Tools"
@@ -384,8 +359,8 @@ export default function BrowseToolsClientContent({
                 {!isLoadingTools && !isErrorTools && toolsData?.tools && toolsData.tools.length > 0 && (
                     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {toolsData.tools.map((tool) => (
-                            <ToolCard key={tool.id} tool={tool} hideFavoriteButton={isFromBrowsePage} isFromCategoryPage={isFromCategoryPage}
-
+                            <ToolCard key={tool.id} tool={tool} hideFavoriteButton={isFromBrowsePage}
+                                      isFromCategoryPage={isFromCategoryPage}
 
 
                             />
