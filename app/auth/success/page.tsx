@@ -47,11 +47,11 @@ export default function AuthSuccessPage() {
                     // 2. Redirect the user to a different page
                     console.log("AuthSuccessPage: Tokens stored, redirecting to /");
                     // Use replace to avoid going back to this success page
-                    router.replace('/');
+                    await router.replace('/');
                     console.log("refreshing page after navigating to /;");
-                    // setTimeout(() => {
-                    //     window.location.reload();
-                    // }, 1000);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                     // window.location.reload();
 
 

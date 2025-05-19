@@ -21,12 +21,9 @@ import {handleOpenTool} from "@/lib/reusable-methods";
 import {fallbackModeToFallbackField} from "next/dist/lib/fallback";
 
 interface ToolCardProps {
-    tool: Tool
-    hideFavoriteButton?: boolean;
-    // You might add props for handling save/share clicks if needed
-    // onSaveToggle?: (toolId: string, savedByUser: boolean) => void;
-    // onShare?: (tool: Tool) => void;
-    // isSaving?: boolean; // Add if you want to show a saving state
+    tool: Tool,
+    hideFavoriteButton?: boolean,
+    isFromCategoryPage?: undefined | boolean
 }
 
 // Helper function to get badge class based on pricing or other labels
@@ -52,7 +49,7 @@ const getBadgeClass = (label: string) => {
     }
 }
 
-export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCardProps,) {
+export default function ToolCard({tool: initialTool, hideFavoriteButton, isFromCategoryPage}: ToolCardProps,) {
 
     const {isAuthenticated} = useAuth()
     const router = useRouter()
@@ -67,7 +64,13 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
     const unsaveToolMutation = useUnsaveTool() // Renamed
 // ... inside your component function
     const [logoError, setLogoError] = useState(false);
-    const { data: savedTools, isLoading: isToolLoading, isError: isToolError, refetch: refetchSavedTools, isFetching: isRefetching , } = useSavedTools();
+    const {
+        data: savedTools,
+        isLoading: isToolLoading,
+        isError: isToolError,
+        refetch: refetchSavedTools,
+        isFetching: isRefetching,
+    } = useSavedTools();
     const handleToolClick = (e: React.MouseEvent) => {
         if (!isAuthenticated) {
             e.preventDefault()
@@ -149,7 +152,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
             })
         } else {
             // Navigate to tool detail page if authenticated
-            router.push(`/tools/${encodeURIComponent(tool.unique_id)}`);
+            router.push(`/tools/${encodeURIComponent(tool.unique_id)}?isFromCategoryPage=${isFromCategoryPage}`);
             // window.location.href = `/tools/${tool.unique_id}`
         }
 
@@ -167,7 +170,6 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
     const handleStopPropagation = (e: React.MouseEvent) => {
         e.stopPropagation();
     };
-
 
 
 // const safeTool=fallbackModeToFallbackField()
@@ -195,7 +197,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
 
 <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 overflow-hidden">
     {/* Check if URL exists AND no logo error has occurred */}
-    <LogoAvatar logoUrl={tool.logo_url} name={tool.name??''}/>
+    <LogoAvatar logoUrl={tool.logo_url} name={tool.name ?? ''}/>
 </div>
 
 
@@ -219,7 +221,7 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
                                         className="rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-600 cursor-help"
                                         title={feature} // <-- Added this line >
                                     >
-                    { feature!=null? feature.length > 15 ? `${feature.slice(0, 10)}...` : feature:''
+                    {feature != null ? feature.length > 15 ? `${feature.slice(0, 10)}...` : feature : ''
                         // feature
                     }
                   </span>
@@ -257,10 +259,9 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton}: ToolCa
                                 className="bg-purple-600 text-white hover:bg-purple-700"
                                 onClick={(e) => {
                                     handleStopPropagation(e);
-                                    if(isAuthenticated) {
+                                    if (isAuthenticated) {
                                         handleOpenTool(tool.link);
-                                    }
-                                    else {
+                                    } else {
                                         showLoginModal(pathname, () => {
                                             window.location.pathname = pathname; // Or whatever you want to do with the path
                                         });
