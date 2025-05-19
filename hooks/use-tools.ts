@@ -38,14 +38,42 @@ export function useTools(params?: {
   })
 }
 
-// Hook for fetching a single tool by ID or unique_id
-export function useTool(identifier: string, isUniqueId: boolean = false) {
-  return useQuery({
-    queryKey: ["tool", identifier, isUniqueId],
-    queryFn: () => isUniqueId ? getToolByUniqueId(identifier) : getToolById(identifier),
-    enabled: !!identifier, // Only run if identifier is provided
-  })
+export function useTool(identifier: string) {
+  return useQuery<Tool, Error>({ // The first generic is the shape of the SUCCESS data
+    queryKey: ["tool", identifier],
+    queryFn: async () => {
+      // Call your existing service function
+      const response = await getToolByUniqueId(identifier);
+
+      // Check the status from the response object
+      if (response.status >= 200 && response.status < 300) {
+        // If the status is successful (2xx), return the actual data part
+        if (response.data) {
+          return response.data; // This is the data that useQuery will provide as 'tool'
+        } else {
+          // Handle case where status is 2xx but data is null/undefined unexpectedly
+          throw new Error("Successful response returned no data");
+        }
+      } else {
+        // If the status indicates an error (e.g., 404, 500), throw an error
+        // React Query will catch this and set isError to true
+        // You can include more details in the error if needed
+        throw new Error(`Failed to fetch tool: Status ${response.status}`);
+        // Optionally include error data from response.data in the thrown error
+        // throw new Error(`Failed to fetch tool: Status ${response.status}, Details: ${JSON.stringify(response.data)}`);
+      }
+    },
+    enabled: !!identifier, // Only run the query if identifier is truthy
+  });
 }
+// export function useTool(identifier: string) {
+//   return useQuery<Tool, Error>({
+//     queryKey: ["tool", identifier],
+//     queryFn: () => getToolByUniqueId(identifier),
+//     enabled: !!identifier,
+//   });
+// }
+
 
 // Hook for fetching featured tools
 export function useFeaturedTools(limit?: number) {
