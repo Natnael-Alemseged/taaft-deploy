@@ -52,7 +52,7 @@ export default function AuthSuccessPage() {
                     // setTimeout(() => {
                     //     window.location.reload();
                     // }, 1000);
-                    window.location.reload();
+                    // window.location.reload();
 
 
                 } catch (error: any) {
