@@ -6,7 +6,7 @@ import {useRef, useState} from "react";
 import {showLoginModal} from "@/lib/auth-events";
 import type {Tool} from "@/types/tool";
 import {Card, CardContent} from "@/components/ui/card";
-import {formatDescription, robotSvg, setDisplayCategories} from "@/lib/reusable_assets";
+import {formatDescription, robotSvg, setDisplayCarriersMultiple, setDisplayCategories} from "@/lib/reusable_assets";
 import {Bookmark, ExternalLink} from "lucide-react";
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover";
 import {Button} from "@/components/ui/button";
@@ -141,16 +141,28 @@ export default function SponsoredToolCard({tool: initialTool}: SponsoredToolCard
             onClick={handleGoToToolDetails}
         >
             <CardContent className="p-4">
-                {tool.categories != null &&
-                    <div className="mb-2 flex items-center gap-4">
-                        {tool.categories.length > 0 && (
-                            <span
-                                className="text-xs font-bold text-purple-500 border border-purple-300 rounded-full px-2 py-1">
-                      {setDisplayCategories(tool.categories)}
-                      </span>
-                        )}
-                    </div>
-                }
+                {/*{tool.categories != null &&*/}
+                {/*    <div className="mb-2 flex items-center gap-4">*/}
+                {/*        {tool.categories.length > 0 && (*/}
+                {/*            <span*/}
+                {/*                className="text-xs font-bold text-purple-500 border border-purple-300 rounded-full px-2 py-1">*/}
+                {/*      {setDisplayCategories(tool.categories)}*/}
+                {/*      </span>*/}
+                {/*        )}*/}
+                {/*    </div>*/}
+                {/*}*/}
+
+
+                <div className="flex flex-wrap gap-2">
+                    {setDisplayCarriersMultiple(tool.carriers).map((carrier, index) => (
+                        <span
+                            key={index}
+                            className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600 border border-purple-200"
+                        >
+      {carrier}
+    </span>
+                    ))}
+                </div>
                 <span className="flex items-center gap-2 pb-3">
 <LogoAvatar logoUrl={tool.logo_url} name={tool.name}/>
                     <h3 className="text-lg font-semibold text-gray-900">{tool.name}</h3>
