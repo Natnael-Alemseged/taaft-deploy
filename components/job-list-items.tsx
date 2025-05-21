@@ -5,7 +5,7 @@ import {ExternalLink} from "lucide-react";
 
 import {Tool} from "@/types/tool";
 import {LogoAvatar} from "@/components/LogoAvatar";
-import {setDisplayCarriers, setDisplayCategories, useResponsiveLimit} from "@/lib/reusable_assets";
+import {setDisplayCarrier, setDisplayCategories, useResponsiveLimit} from "@/lib/reusable_assets";
 
 interface JobListItemProps {
     carrier: string;

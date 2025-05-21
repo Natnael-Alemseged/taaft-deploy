@@ -10,7 +10,13 @@ import {useAuth} from "@/contexts/auth-context"
 import {useRouter, usePathname} from "next/navigation"
 import {ShareButtonWithPopover} from "@/components/ShareButtonWithPopover"
 import {useSavedTools, useSaveTool, useUnsaveTool} from "@/hooks/use-tools"
-import {formatDescription, robotSvg, setDisplayCategories} from "@/lib/reusable_assets"
+import {
+    formatDescription,
+    robotSvg,
+    setDisplayCarrier,
+    setDisplayCarriersMultiple,
+    setDisplayCategories
+} from "@/lib/reusable_assets"
 import {SignInModal} from "@/components/home/sign-in-modal"
 import {useEffect, useState} from "react"
 import {showLoginModal} from "@/lib/auth-events"
@@ -206,10 +212,17 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton, isFromC
                   {tool.name ? (tool.name.length > 30 ? `${tool.name.slice(0, 20)}...` : tool.name) : "No Name"}
               </h3>
             </span>
-                        <span
-                            className="rounded-full bg-purple-100 px-2 py-0.5 w-fit text-xs font-medium text-purple-600">
-         {setDisplayCategories(tool.categories)}
-            </span>
+                        <div className="flex flex-wrap gap-2">
+                            {setDisplayCarriersMultiple(tool.carriers).map((carrier, index) => (
+                                <span
+                                    key={index}
+                                    className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600 border border-purple-200"
+                                >
+      {carrier}
+    </span>
+                            ))}
+                        </div>
+
                         <p className="mb-4 text-sm text-gray-600 pt-3">
                             {formatDescription(tool.generated_description, tool.description, 80, 80)} {/* Adjust lengths as needed for cards */}
                         </p>

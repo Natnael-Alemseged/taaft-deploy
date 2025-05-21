@@ -138,11 +138,17 @@ export default function BrowseToolsClientContent({
         search: debouncedQuery || undefined,
         page,
         limit,
-
         featured: isFeaturedPage ? true : undefined,
         sort_by: isCategoryPage ? 'name' : undefined,
         sort_order: isCategoryPage ? 'asc' : undefined,
-    }) as { data: ToolsData | undefined; isLoading: boolean; isError: boolean }
+    }, {
+        enabled: typeof isAuthenticated === "boolean" // delay fetch until resolved
+    }) as {
+        data: ToolsData | undefined;
+        isLoading: boolean;
+        isError: boolean;
+    };
+
 
     // Fetch categories data for the dropdown
     const {

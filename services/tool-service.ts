@@ -13,8 +13,13 @@ export const getTools = async (params?: {
   sort_order?: 'asc' | 'desc';
 }): Promise<{ tools: Tool[]; total: number }> => {
   try {
+    const isPublic:boolean = params?.isPublic??false;
     const token =
         typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+
+
+    console.log(`token: ${token} in getTools`);
+
 
     const headers: Record<string, string> = {
       Accept: "application/json",
@@ -44,7 +49,7 @@ export const getTools = async (params?: {
           token?"/tools/featured/search":
           "/public/tools/featured/search"
           :
-          token?"/tools/featured":
+          !isPublic?"/tools/featured":
 
           "/public/tools/featured";
       if (params.search) {
@@ -149,7 +154,7 @@ export const getFeaturedTools = async (limit?: number) => {
     if (token) {
       headers["Authorization"] = `Bearer ${token}` // Add Authorization header if token exists
       console.log("token", token);
-      endpoint = "/tools/"
+      endpoint = "/tools/featured"
     }
 
     // Make API call to get featured tools

@@ -35,7 +35,7 @@ export const setDisplayCategories = (
 
 
 // utils/display.ts
-export const setDisplayCarriers = (
+export const setDisplayCarrier = (
     carriers: string[] | null | undefined,
     limit: number = 20
 ): string => {
@@ -53,6 +53,35 @@ export const setDisplayCarriers = (
         ? `${firstCarrier.substring(0, limit)}...`
         : firstCarrier;
 };
+
+
+
+
+
+//for multiple display
+export const setDisplayCarriersMultiple = (
+    carriers: string[] | null | undefined,
+    limit: number = 20
+): string[] => { // <-- Function now returns an array of strings
+    // If no carriers are provided, return an array with "AI Tools"
+    if (!carriers || carriers.length === 0) {
+        return ["AI Tools"];
+    }
+
+    // Get the first 5 carriers
+    const displayedCarriers = carriers.slice(0, 5);
+
+    // Format each carrier name, applying the length limit
+    const formattedCarriers = displayedCarriers.map(carrier =>
+        carrier.length > limit
+            ? `${carrier.substring(0, limit)}...`
+            : carrier
+    );
+
+    return formattedCarriers;
+};
+
+
 
 
 

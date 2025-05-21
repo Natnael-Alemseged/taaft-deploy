@@ -17,26 +17,32 @@ import {
 import type { Tool, ToolSubmission } from "@/types/tool"
 
 // Hook for fetching tools with optional filtering
-export function useTools(params?: {
-  isPublic?: boolean
-  category?: string
-  search?: string
-  page?: number
-  limit?: number
-  featured?: boolean
-  sort_by?: string
-  sort_order?: 'asc' | 'desc'
-}) {
-  console.log(`isPublic value is:${params?.isPublic}`);
+
+export function useTools(
+    params?: {
+      isPublic?: boolean
+      category?: string
+      search?: string
+      page?: number
+      limit?: number
+      featured?: boolean
+      sort_by?: string
+      sort_order?: 'asc' | 'desc'
+    },
+    options?: { enabled?: boolean } // Accept extra options
+) {
+  console.log(`isPublic value is: ${params?.isPublic}`);
 
   return useQuery({
-    queryKey: ["tools", params?.category,params?.isPublic, params?.search, params?.page, params?.limit, params?.featured, params?.sort_by, params?.sort_order],
+    queryKey: ["tools", params?.category, params?.isPublic, params?.search, params?.page, params?.limit, params?.featured, params?.sort_by, params?.sort_order],
     queryFn: () => getTools(params),
-    placeholderData: (previousData) => previousData,  // Prevent flickering on pagination
-    staleTime: 1000 * 10,           // Consider data fresh for 10 seconds
-    refetchOnWindowFocus: false,    // Avoid refetching on focus (optional)
-  })
+    placeholderData: (previousData) => previousData,
+    staleTime: 1000 * 10,
+    refetchOnWindowFocus: false,
+    enabled: options?.enabled ?? true, // default to true
+  });
 }
+
 
 export function useTool(identifier: string) {
   return useQuery<Tool, Error>({ // The first generic is the shape of the SUCCESS data
