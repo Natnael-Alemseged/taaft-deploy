@@ -466,7 +466,9 @@ export default function SearchResults({ initialQuery, category, source }: Search
                     //   onSaveToggle={handleSaveToggle}
                     //   isAuthenticated={isAuthenticated}
                     // />
-                        <ToolCard tool={tool} key={index} />
+                        <ToolCard tool={tool} key={index}  breadcrumbItems={[{name: 'Home', path: '/'},
+                          {name: tool.name, path: null},
+                        ]}/>
                     
                     ) : (
                         // Custom Card for regular search results

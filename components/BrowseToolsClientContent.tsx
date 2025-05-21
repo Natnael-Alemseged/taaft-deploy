@@ -67,7 +67,7 @@ export default function BrowseToolsClientContent({
     const [page, setPage] = useState(1)
     let limit: number = 12 // Items per page
 
-    const debouncedQuery:string = useCustomDebounce(searchQuery, 1000);
+    const debouncedQuery: string = useCustomDebounce(searchQuery, 1000);
 
     const hasInitializedSearchQuery = useRef(false); // Flag to ensure one-time initialization
 
@@ -81,7 +81,6 @@ export default function BrowseToolsClientContent({
             hasInitializedSearchQuery.current = true; // Mark as initialized
         }
     }, [searchParams]); // Keep searchParams here to get the *initial* value
-
 
 
     useEffect(() => {
@@ -98,8 +97,8 @@ export default function BrowseToolsClientContent({
         const queryString = newParams.toString();
         const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
-        router.replace(newUrl, undefined, { shallow: true });
-    }, [debouncedQuery, pathname, router,searchParams]);
+        router.replace(newUrl, undefined, {shallow: true});
+    }, [debouncedQuery, pathname, router, searchParams]);
 
     // --- Sync state with URL query parameter on mount and URL changes ---
     useEffect(() => {
@@ -182,7 +181,7 @@ export default function BrowseToolsClientContent({
 
     // --- Handlers for UI interactions ---
     const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newSearchQuery:string = e.target.value
+        const newSearchQuery: string = e.target.value
 
 
         setSearchQuery(newSearchQuery)
@@ -381,11 +380,31 @@ export default function BrowseToolsClientContent({
                 {!isLoadingTools && !isErrorTools && toolsData?.tools && toolsData.tools.length > 0 && (
                     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {toolsData.tools.map((tool) => (
-                            <ToolCard key={tool.id} tool={tool} hideFavoriteButton={isFromBrowsePage}
-                                      isFromCategoryPage={isFromCategoryPage}
-
+                            <ToolCard
+                                key={tool.id}
+                                tool={tool}
+                                hideFavoriteButton={isFromBrowsePage}
+                                isFromCategoryPage={isFromCategoryPage}
+                                breadcrumbItems={
+                                    [
+                                        { name: 'Home', path: '/' },
+                                    ]
+                                        .concat(
+                                            isFeaturedPage
+                                                ? [{ name: 'Featured', path: '/featured-all' }]
+                                                : isFromCategoryPage
+                                                    ? [
+                                                        { name: 'categories', path: '/categories' },
+                                                        { name: categoryName, path: `/category/${categorySlug}` },
+                                                    ]
+                                                    : [{ name: 'Browse Tools', path: '/browse' }]
+                                        )
+                                        .concat({ name: tool.name, path: null })
+                                }
 
                             />
+
+
                         ))}
                     </div>
                 )}

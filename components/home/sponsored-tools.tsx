@@ -319,7 +319,11 @@ export default function SponsoredTools() {
                   >
                     {/* Use ToolCard for mobile and SponsoredToolCard for larger screens */}
                     <div className="block lg:hidden">
-                      <ToolCard tool={tool} key={tool.unique_id} />
+                      <ToolCard tool={tool} key={tool.unique_id}
+
+                                breadcrumbItems={[{name: 'Home', path: '/'},
+                                  {name: tool.name, path: null},
+                      ]} />
                     </div>
                     <div className="hidden lg:block">
                       <SponsoredToolCard tool={tool} />

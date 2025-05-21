@@ -24,12 +24,15 @@ import {Category, Tool} from "@/types/tool"
 import {robotSvg} from "@/lib/reusable_assets";
 import {LogoAvatar} from "@/components/LogoAvatar";
 import Image from 'next/image';
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 
 // Keep Schema interface as is, not used in the render logic directly, but good for reference
 
 
 export default function ToolDetail() {
+
+
     const params = useParams()
     const slug = params?.slug as string
     const router = useRouter()
@@ -38,6 +41,18 @@ export default function ToolDetail() {
     const [isError, setIsError] = useState(false)
 
     const searchParams = useSearchParams();
+    const breadcrumbsRaw = searchParams.get("breadcrumbs");
+
+    let breadcrumbItems: { name: string; path: string | null }[] = [];
+
+    try {
+        breadcrumbItems = breadcrumbsRaw
+            ? JSON.parse(decodeURIComponent(breadcrumbsRaw))
+            : [];
+    } catch {
+        breadcrumbItems = [];
+    }
+
     const isFromCategoryPage = searchParams.get('isFromCategoryPage') === 'true';
 // Get auth state and loading state from useAuth
     const {isAuthenticated, isLoading: isAuthLoading} = useAuth()
@@ -67,38 +82,6 @@ export default function ToolDetail() {
         isLoading: isToolLoading,
         isError: isErrorTools,
     } = useTool(slug);
-
-    // useEffect(() => {
-    //     const fetchTool = async () => {
-    //         setIsToolLoading(true);
-    //         setIsError(false);
-    //         console.log("Fetching tool with slug:", slug);
-    //
-    //         try {
-    //             // First attempt with unique_id
-    //             let response = await getToolByUniqueId(slug);
-    //
-    //             if (response.status === 200 && response.data) {
-    //                 console.log('sucessful unique id');
-    //                 console.log(response.data);
-    //
-    //                 setTool(response.data);
-    //                 return;
-    //             }
-    //
-    //
-    //
-    //         } catch (error) {
-    //             console.error('Error fetching tool:', error);
-    //             setIsError(true);
-    //         } finally {
-    //             setIsToolLoading(false);
-    //         }
-    //     };
-    //
-    //     if (slug) fetchTool();
-    // }, [slug]);
-
 
     useEffect(() => {
 
@@ -180,24 +163,24 @@ export default function ToolDetail() {
 
             <main className="max-w-6xl mx-auto px-4 py-8">
                 {/* Breadcrumbs */}
-                <div className="flex items-center text-sm mb-6">
-                    <Link href="/" className="text-[#6b7280]">
-                        Home
-                    </Link>
-                    <span className="mx-2 text-[#6b7280]">{">"}</span>
-                    {isFromCategoryPage ? <Link href="/categories" className="text-[#6b7280]">
-                            Categories
-                        </Link>
+                {/*<div className="flex items-center text-sm mb-6">*/}
+                {/*    <Link href="/" className="text-[#6b7280]">*/}
+                {/*        Home*/}
+                {/*    </Link>*/}
+                {/*    <span className="mx-2 text-[#6b7280]">{">"}</span>*/}
+                {/*    {isFromCategoryPage ? <Link href="/categories" className="text-[#6b7280]">*/}
+                {/*            Categories*/}
+                {/*        </Link>*/}
 
-                        :
+                {/*        :*/}
 
-                        <Link href="/browse" className="text-[#6b7280]">
-                            Tools
-                        </Link>}
-                    <span className="mx-2 text-[#6b7280]">{">"}</span>
-                    <span className="text-[#6b7280]">{safeTool.name ?? ''}</span>
-                </div>
-
+                {/*        <Link href="/browse" className="text-[#6b7280]">*/}
+                {/*            Tools*/}
+                {/*        </Link>}*/}
+                {/*    <span className="mx-2 text-[#6b7280]">{">"}</span>*/}
+                {/*    <span className="text-[#6b7280]">{safeTool.name ?? ''}</span>*/}
+                {/*</div>*/}
+                <Breadcrumbs items={breadcrumbItems} />
                 {/* Tool Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
                     <div>
@@ -299,21 +282,7 @@ export default function ToolDetail() {
                                         position: 'relative', // <--- Add this line
                                     }}
                                 >
-                                    {/*<img*/}
-                                    {/*    src={safeTool.image_url || "/placeholder.svg"}*/}
-                                    {/*    alt={`${safeTool?.name ?? ""} screenshot`}*/}
-                                    {/*    className="w-full h-auto object-cover"*/}
-                                    {/*    style={{*/}
-                                    {/*        maxHeight: "643.5px",*/}
-                                    {/*        width: "100%",*/}
-                                    {/*    }}*/}
-                                    {/*    loading="lazy"*/}
-                                    {/*    onError={(e) => {*/}
-                                    {/*        (e.target as HTMLImageElement).src = "/placeholder.svg";*/}
-                                    {/*        (e.target as HTMLImageElement).className = "w-full h-auto object-contain";*/}
-                                    {/*    }}*/}
-                                    {/*/>*/}
-                                    {/*    image optimized using nexts image componrnt instead of img*/}
+
                                     <Image
                                         src={safeTool.image_url}
                                         alt={`${safeTool?.name ?? ""} screenshot`}

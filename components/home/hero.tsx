@@ -88,7 +88,20 @@ export default function Hero() {
 
     function goToToolDetails(id: string | number): void {
         console.log("Calling goToToolDetails for ID:", id);
-        router.push(`/tools/${encodeURIComponent(id)}`);
+
+        ///fix-me just a trail
+
+        const breadcrumbItems = [
+            { name: 'Home', path: '/' },
+            // { name: 'Categories', path: '/categories' },
+            // { name: 'ToolName', path: null }
+        ];
+
+        const encoded = encodeURIComponent(JSON.stringify(breadcrumbItems));
+        router.push(`/tools/${encodeURIComponent(id)}?breadcrumbs=${encoded}`);
+
+
+        // router.push(`/tools/${encodeURIComponent(id)}`);
         // router.push(`/tools/${id}`);
     }
     function goToJobImpact(id: string | number): void {

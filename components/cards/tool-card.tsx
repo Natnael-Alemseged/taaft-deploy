@@ -30,7 +30,15 @@ interface ToolCardProps {
     tool: Tool,
     hideFavoriteButton?: boolean,
     isFromCategoryPage?: undefined | boolean
+    breadcrumbItems?: [string,string][]
 }
+
+
+//  const breadcrumbItems = [
+//             { name: 'Home', path: '/' },
+//             // { name: 'Categories', path: '/categories' },
+//             // { name: 'ToolName', path: null }
+//         ];
 
 // Helper function to get badge class based on pricing or other labels
 // Reusing logic from FeaturedTools.tsx
@@ -55,7 +63,7 @@ const getBadgeClass = (label: string) => {
     }
 }
 
-export default function ToolCard({tool: initialTool, hideFavoriteButton, isFromCategoryPage}: ToolCardProps,) {
+export default function ToolCard({tool: initialTool, hideFavoriteButton, isFromCategoryPage,breadcrumbItems}: ToolCardProps,) {
 
     const {isAuthenticated} = useAuth()
     const router = useRouter()
@@ -158,7 +166,10 @@ export default function ToolCard({tool: initialTool, hideFavoriteButton, isFromC
             })
         } else {
             // Navigate to tool detail page if authenticated
-            router.push(`/tools/${encodeURIComponent(tool.unique_id)}?isFromCategoryPage=${isFromCategoryPage}`);
+
+            const encoded = encodeURIComponent(JSON.stringify(breadcrumbItems));
+            router.push(`/tools/${encodeURIComponent(tool.unique_id)}?breadcrumbs=${encoded}`);
+            // router.push(`/tools/${encodeURIComponent(tool.unique_id)}?isFromCategoryPage=${isFromCategoryPage}`);
             // window.location.href = `/tools/${tool.unique_id}`
         }
 

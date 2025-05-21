@@ -8,10 +8,11 @@ import { Tool } from "@/types/tool";
 // It expects a single prop 'tools' which is an array of Tool objects
 interface FeaturedJobImpactProps {
     tools: Tool[];
+    jobName?: string;
 }
 
 // Corrected function signature using the props interface
-export default function FeaturedJobImpact({ tools }: FeaturedJobImpactProps) {
+export default function FeaturedJobImpact({ tools,jobName }: FeaturedJobImpactProps) {
     return (
         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 max-w-xl mx-auto">
             {/* Card Title - Keeping "Featured Tools" based on the image */}
@@ -22,7 +23,20 @@ export default function FeaturedJobImpact({ tools }: FeaturedJobImpactProps) {
                 {/* Map over the tools array and render a ToolCard for each */}
                 {tools.map(tool => (
                     // Pass the entire tool object as the 'tool' prop, and use tool.id for the key
-                    <ToolCard key={tool.id} tool={tool} />
+                    <ToolCard
+                        key={tool.id}
+                        tool={tool}
+                        breadcrumbItems={[
+                            { name: 'Home', path: '/' },
+                            ...(jobName
+                                ? [{ name: 'Job Impact', path: `/job-impact/${jobName}` }]
+                                : []),
+                            ...(tool.name
+                                ? [{ name: tool.name, path: null }]
+                                : []),
+                        ]}
+                    />
+
                 ))}
             </div>
         </div>

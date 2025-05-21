@@ -294,7 +294,7 @@ export default function JobImpactDetailsPage() {
                             <h2 className="text-lg font-semibold text-[#111827] mb-4">Featured Tools</h2>
                             <FeaturedJobImpact tools={
                                 // featuredData&&
-                                Array.isArray(featuredData?.tools) ? featuredData?.tools : staticFeaturedToolsData} />
+                                Array.isArray(featuredData?.tools) ? featuredData?.tools : staticFeaturedToolsData} jobName={carrier}/>
                         </div>
                     </div>
                 </div>
