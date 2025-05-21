@@ -7,6 +7,7 @@ import type React from "react"
  import { AuthProvider } from "@/contexts/auth-context"
  import { QueryProvider } from "@/components/query-provider"
 
+
  const inter = Inter({ subsets: ["latin"] })
 
  export const metadata: Metadata = {
@@ -29,6 +30,7 @@ import type React from "react"
                {/*fix me*/}
              <Footer />
            </AuthProvider>
+
          </QueryProvider>
        </body></html>
    )

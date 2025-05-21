@@ -1,4 +1,6 @@
 import React from 'react';
+import Image from "next/image";
+import {Banknote} from "lucide-react";
 
 interface ToolInfoCardProps {
     icon: string;
@@ -12,7 +14,20 @@ const InfoCard: React.FC<ToolInfoCardProps> = ({ icon, value, headerText, bodyTe
         <div className="bg-white rounded-lg shadow-md p-3 text-center max-w-sm mx-auto border border-gray-200">
             <div className="flex justify-center mb-4">
                 <div className="bg-purple-100 rounded-full p-3 inline-block">
-                    <img src={icon} alt="Info Icon" className="w-8 h-8" />
+                    {/*<img src={icon} alt="Info Icon" className="w-8 h-8" />*/}
+                    {/*<img src={icon} alt="Info Icon" className="w-8 h-8" />*/}
+
+                    {/*{icon ? (*/}
+                    {/*    <Image*/}
+                    {/*        src={icon}*/}
+                    {/*        alt={`${'category'} Category Icon`}*/}
+                    {/*        width={40}*/}
+                    {/*        height={40}*/}
+                    {/*        className="object-contain"*/}
+                    {/*    />*/}
+                    {/*) : (*/}
+                        <Banknote className="text-purple-600 w-6 h-6" />
+                    {/*)}*/}
                 </div>
             </div>
 

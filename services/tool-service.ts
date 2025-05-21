@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client"
-import type { Tool, ToolSubmission } from "@/types/tool"
+import type {CarrierDetail, Tool, ToolSubmission} from "@/types/tool"
 
 
 export const getTools = async (params?: {
@@ -40,8 +40,13 @@ export const getTools = async (params?: {
       endpoint = `/tools/category/${params.category}`;
     } else if (params?.featured) {
       endpoint = params.search
-          ? "/public/tools/featured/search"
-          : "/public/tools/featured";
+          ?
+          token?"/tools/featured/search":
+          "/public/tools/featured/search"
+          :
+          token?"/tools/featured":
+
+          "/public/tools/featured";
       if (params.search) {
         apiParams.q = params.search;
       }
@@ -182,7 +187,7 @@ export const getPopularTools = async (limit?: number) => {
       headers["Authorization"] = `Bearer ${token}` // Add Authorization header if token exists
       console.log("token", token);
       //todo change to private endpoint
-      endpoint = "/public/tools/sponsored"
+      endpoint = "/tools/sponsored"
     }
 
     const response = await apiClient.get<{ tools: Tool[] }>(endpoint, {
@@ -199,6 +204,45 @@ console.log("getPopularTools response", JSON.stringify(response.data, null, 2));
     return { tools: [] }
   }
 }
+
+
+
+
+
+// Get most popular tools
+export const getDetailByCarrier = async (carrier?: string): Promise<CarrierDetail> => {
+  if (!carrier) {
+    throw new Error("Carrier name is required to fetch details.")
+  }
+
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    // Construct the endpoint dynamically with the carrier name
+    const endpoint = `/api/jobs/${carrier}` // Matches the Swagger URL structure
+
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+    }
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`
+      console.log("token", token)
+    }
+
+    const response = await apiClient.get<CarrierDetail>(endpoint, { // Expect CarrierDetail type
+      headers,
+    })
+    console.log(`getDetailByCarrier for ${carrier} response`, JSON.stringify(response.data, null, 2))
+    return response.data
+  } catch (error) {
+    console.error(`Error fetching detail for carrier ${carrier}:`, error)
+    // You might want to throw the error or return a specific error structure
+    throw error // Re-throw the error to be handled by useQuery's error state
+  }
+}
+
+
+
 
 // Submit a new tool
 export const submitTool = async (toolData: ToolSubmission) => {

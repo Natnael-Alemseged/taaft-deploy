@@ -4,29 +4,6 @@ import type { ChatSession, Message } from "@/services/chat-service" // Import Me
 import { useQueryClient } from "@tanstack/react-query"; // Assuming useQueryClient is imported
 
 
-// Hook for sending messages to chat API
-// export function useChatCompletion() {
-//   return useMutation({
-//     mutationFn: ({
-//                    sessionId,
-//                    message,
-//                    model = "gpt4",
-//                    systemPrompt = "You are a helpful assistant.",
-//                    metadata,
-//                    isDirectSearch = false, // Added isDirectSearch parameter here
-//                  }: {
-//       sessionId: string
-//       message: string
-//       model?: string
-//       systemPrompt?: string
-//       metadata?: Record<string, any>
-//       isDirectSearch?: boolean // Added isDirectSearch to the input type
-//     }) => sendChatMessage(sessionId, message, model, systemPrompt, metadata), // <-- Pass isDirectSearch here
-//     onError: (error) => {
-//       console.error("Failed to send message:", error)
-//     },
-//   })
-// }
 
 export function useChatCompletion() {
   return useMutation({

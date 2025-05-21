@@ -97,6 +97,13 @@ export default async function BrowsePage() {
     // Generate schema using the data fetched on the server
     const schemaMarkup = generateToolsSchema(initialToolsData);
 
+    const breadcrumbs = [
+        ["Home", "/"],           // Link to Home page
+        ["Tools", "/browse"] // Link to the general Browse Tools page
+        // The current job title itself ("Frontend Developer") will be added automatically
+        // as the last, non-clickable item by the JobImpactDetailsPage component.
+    ];
+
     return (
         <>
             {/* Inject Schema.org JSON-LD in the server-rendered HTML */}
@@ -109,7 +116,7 @@ export default async function BrowsePage() {
 
             {/* Render the Client Component */}
             <BrowseToolsClientContent
-                // isFromBrowsePage={true}
+                // breadCrumPath={breadcrumbs}
                 initialToolsData={initialToolsData}
                 isErrorInitial={isError}
             />

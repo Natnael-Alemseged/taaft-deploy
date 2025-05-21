@@ -49,3 +49,27 @@ export interface ToolSubmission {
   contactName: string
   contactEmail: string
 }
+
+
+
+export interface CarrierDetail {
+  detail_page_link: string
+  job_title: string
+  slug: string | null
+  ai_impact_score: string
+  description: string
+  ai_impact_summary: string
+  detailed_analysis: string
+  job_category: string
+  tasks: Array<{
+    name: string
+    ai_impact_score: string
+    tools: Array<{
+      name: string
+      logo_url: string
+    }>
+  }>
+  _id: string
+  created_at: string
+  updated_at: string
+}

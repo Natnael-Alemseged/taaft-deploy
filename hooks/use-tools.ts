@@ -12,7 +12,7 @@ import {
   updateTool,
   deleteTool,
   uploadToolLogo,
-  uploadToolScreenshots,
+  uploadToolScreenshots, getDetailByCarrier,
 } from "@/services/tool-service"
 import type { Tool, ToolSubmission } from "@/types/tool"
 
@@ -91,6 +91,14 @@ export function usePopularTools(limit?: number) {
   return useQuery({
     queryKey: ["tools", "popular", limit],
     queryFn: () => getPopularTools(limit),
+  })
+}
+
+// Hook for fetching popular tools
+export function useCarriers(carrier?: string) {
+  return useQuery({
+    queryKey: ["tools", "carriers", carrier],
+    queryFn: () => getDetailByCarrier(carrier),
   })
 }
 
