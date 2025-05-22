@@ -35,16 +35,7 @@ export default function BrowseCategories() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center justify-center">Browse by Category</h2>{" "}
           
           <h3 className="text-md  pt-4 text-gray-600 dark:text-white text-center justify-center">Find the perfect AI tool for your needs from our carefully organized categories</h3>{" "}
-          {/* Added dark mode */}
-          {/* Link to the full Categories page */}
-          {/*<Link*/}
-          {/*  href="/categories"*/}
-          {/*  className="flex items-center text-sm text-purple-600 dark:text-purple-400 hover:underline"*/}
-          {/*>*/}
-          {/*  {" "}*/}
-          {/*  /!* Added dark mode *!/*/}
-          {/*  View all <ChevronRight className="ml-1 h-4 w-4" />*/}
-          {/*</Link>*/}
+
         </div>
 
         {/* Show loading state */}

@@ -116,6 +116,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
                 isFromCategoryPage={true}
                 initialToolsData={initialToolsData}
                 isErrorInitial={isError}
+                isFromHomePage={false}
                 categoryName={categoryName}
                 categorySlug={params.slug}
                 isCategoryPage={true}

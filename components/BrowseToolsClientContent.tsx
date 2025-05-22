@@ -25,6 +25,7 @@ import {useCustomDebounce} from "@/lib/reusable-methods";
 import type {Tool} from "@/types/tool"
 import type {Category} from "@/types/category"
 import {useAuth} from "@/contexts/auth-context";
+import LargeBreadcrumb from "@/components/breadcrums/LargeBreadcrumb";
 
 interface ToolsData {
     tools: Tool[];
@@ -40,11 +41,13 @@ interface BrowseToolsClientContentProps {
     isCategoryPage?: boolean,
     isFromBrowsePage?: boolean
     isFromCategoryPage?: boolean
+    isFromHomePage?:boolean
 }
 
 export default function BrowseToolsClientContent({
                                                      isFromBrowsePage = false,
                                                      isFromCategoryPage = false,
+                                                     isFromHomePage=false,
                                                      initialToolsData,
                                                      isErrorInitial,
                                                      isFeaturedPage = false,
@@ -252,15 +255,17 @@ export default function BrowseToolsClientContent({
         <div className="min-h-screen bg-white dark:bg-gray-950">
             <main className="max-w-6xl mx-auto px-4 py-8">
                 {/* Breadcrumb - Back to Home or Category Page */}
-                <div className="mb-6">
-                    <Link
-                        href={isFromCategoryPage ? "/categories" : '/'}
-                        className="inline-flex items-center text-[#a855f7] dark:text-purple-400 hover:text-[#9333ea] dark:hover:text-purple-300"
-                    >
-                        <ArrowLeft className="mr-2 h-5 w-5"/>
-                        {isFromCategoryPage ? "Back To Categories" : "Back to Home"}
-                    </Link>
-                </div>
+                {/*<div className="mb-6">*/}
+                {/*    <Link*/}
+                {/*        href={isFromCategoryPage ? "/categories" : '/'}*/}
+                {/*        className="inline-flex items-center text-[#a855f7] dark:text-purple-400 hover:text-[#9333ea] dark:hover:text-purple-300"*/}
+                {/*    >*/}
+                {/*        <ArrowLeft className="mr-2 h-5 w-5"/>*/}
+                {/*        {isFromCategoryPage ? "Back To Categories" : "Back to Home"}*/}
+                {/*    </Link>*/}
+                {/*</div>*/}
+
+                <LargeBreadcrumb isFromCategoryPage={isCategoryPage} isFromHomePage={isFromHomePage} />
 
                 {/* Page Title */}
                 <div className="mb-8">

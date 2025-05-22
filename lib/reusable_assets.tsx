@@ -22,6 +22,16 @@ export const robotSvg = <svg width="35" height="36" viewBox="0 0 35 36" fill="no
 </svg>;
 
 
+export const logoSvg = <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M8.25525 15.75H7.20375C4.515 15.75 3.171 15.75 2.3355 14.8988C1.5 14.0475 1.5 12.6773 1.5 9.9375C1.5 7.19775 1.5 5.8275 2.3355 4.97625C3.171 4.125 4.515 4.125 7.20375 4.125H10.056C12.7448 4.125 14.0895 4.125 14.925 4.97625C15.5677 5.631 15.7155 6.59325 15.75 8.25"
+        stroke="#7E22CE" stroke-linecap="round" stroke-linejoin="round"/>
+    <path
+        d="M15.0128 15.0173L16.5 16.5M12 4.125L11.925 3.8925C11.5537 2.7375 11.3685 2.16 10.9268 1.83C10.4843 1.5 9.89775 1.5 8.7225 1.5H8.52525C7.3515 1.5 6.76425 1.5 6.3225 1.83C5.88 2.16 5.69475 2.7375 5.3235 3.8925L5.25 4.125M15.7897 13.1445C15.7957 12.7934 15.7316 12.4447 15.6014 12.1186C15.4711 11.7925 15.2772 11.4957 15.031 11.2453C14.7848 10.9949 14.4913 10.7961 14.1674 10.6604C13.8436 10.5246 13.496 10.4547 13.1449 10.4547C12.7937 10.4547 12.4461 10.5246 12.1223 10.6604C11.7985 10.7961 11.5049 10.9949 11.2587 11.2453C11.0125 11.4957 10.8187 11.7925 10.6884 12.1186C10.5581 12.4447 10.4941 12.7934 10.5 13.1445C10.5117 13.8383 10.7955 14.4996 11.2902 14.9861C11.785 15.4726 12.451 15.7452 13.1449 15.7452C13.8387 15.7452 14.5048 15.4726 14.9995 14.9861C15.4943 14.4996 15.7781 13.8383 15.7897 13.1445Z"
+        stroke="#7E22CE" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>;
+
+
 export const setDisplayCategories = (
     categories?: any,
     limit: number = 15,
@@ -55,9 +65,6 @@ export const setDisplayCarrier = (
 };
 
 
-
-
-
 //for multiple display
 export const setDisplayCarriersMultiple = (
     carriers: string[] | null | undefined,
@@ -80,10 +87,6 @@ export const setDisplayCarriersMultiple = (
 
     return formattedCarriers;
 };
-
-
-
-
 
 
 // lib/reusable_assets.ts or wherever you keep utility functions

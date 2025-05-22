@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import {robotSvg} from "@/lib/reusable_assets";
+import {logoSvg, robotSvg} from "@/lib/reusable_assets";
 
 
 interface LogoAvatarProps {
@@ -7,6 +7,7 @@ interface LogoAvatarProps {
     name?: string;
     size?: 'sm' | 'md' | 'lg'; // Optional size variants
     className?: string; // Additional className
+    isLogo?: boolean; // NEW prop
 }
 
 export const LogoAvatar = ({
@@ -14,6 +15,7 @@ export const LogoAvatar = ({
                                name = 'Tool',
                                size = 'md',
                                className = '',
+                               isLogo = false // Default to false
                            }: LogoAvatarProps) => {
     const [logoError, setLogoError] = useState(false);
 
@@ -41,7 +43,7 @@ export const LogoAvatar = ({
                 />
             ) : (
                 <div className="flex items-center justify-center w-full h-full">
-                    {robotSvg}
+                    {isLogo ? logoSvg : robotSvg}
                 </div>
             )}
         </div>

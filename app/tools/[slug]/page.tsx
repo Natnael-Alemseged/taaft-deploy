@@ -24,7 +24,7 @@ import {Category, Tool} from "@/types/tool"
 import {robotSvg} from "@/lib/reusable_assets";
 import {LogoAvatar} from "@/components/LogoAvatar";
 import Image from 'next/image';
-import Breadcrumbs from "@/components/Breadcrumbs";
+import Breadcrumbs from "@/components/breadcrums/Breadcrumbs";
 
 
 // Keep Schema interface as is, not used in the render logic directly, but good for reference
