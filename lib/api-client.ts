@@ -1,7 +1,8 @@
 import { showLoginModal } from "@/lib/auth-events"
 import axios from "axios"
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://taaft-backend.onrender.com"
+// const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://taaft-backend.onrender.com"
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://3.133.139.7:8001"
 console.log(`API Client initialized with base URL: ${apiUrl}`)
 
 const apiClient = axios.create({
