@@ -204,8 +204,8 @@ console.log("getPopularTools response", JSON.stringify(response.data, null, 2));
   } catch (error) {
     console.error("Error fetching popular tools:", error)
 
-    // Return mock popular tools (using the first few tools from our mock data)
-    // const mockTools = getMockTools({ limit }).tools
+
+
     return { tools: [] }
   }
 }
