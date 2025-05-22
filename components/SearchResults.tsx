@@ -458,14 +458,7 @@ export default function SearchResults({ initialQuery, category, source }: Search
                 {toolsToDisplay.map((tool, index) => (
                     // Use ChatResultCard for chat results, and a new custom card for regular tools
                     source === "chat" ? (
-                    //   <ChatResultCard
-                    //   key={tool.id || index}
-                    //   tool={tool}
-                    //   index={index}
-                    //   viewMode={viewMode}
-                    //   onSaveToggle={handleSaveToggle}
-                    //   isAuthenticated={isAuthenticated}
-                    // />
+
                         <ToolCard tool={tool} key={index}  breadcrumbItems={[{name: 'Home', path: '/'},
                           {name: tool.name, path: null},
                         ]}/>
