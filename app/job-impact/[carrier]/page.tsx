@@ -15,29 +15,27 @@ import type { Tool } from '@/types/tool';
 import {ChevronLeft} from "lucide-react";
 
 import {useCarriers, useFeaturedTools} from '@/hooks/use-tools';
-import { useRouter, useSearchParams, useParams } from 'next/navigation'; // Add useParams
+import { useRouter, useSearchParams, useParams } from 'next/navigation';
+import {automatedPotentialSvg, jobImpactAiToolsSvg, robotSvg, taskAffectedSvg} from "@/lib/reusable_assets"; // Add useParams
 
-const potentialSVg=<svg width="44" height="45" viewBox="0 0 44 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect y="0.659912" width="44" height="44" rx="22" fill="#F3E8FF"/>
-    <path d="M30.3337 22.66H28.267C27.9028 22.6592 27.5484 22.7777 27.2579 22.9975C26.9675 23.2172 26.757 23.526 26.6587 23.8767L24.7003 30.8433C24.6877 30.8866 24.6614 30.9246 24.6253 30.9517C24.5893 30.9787 24.5454 30.9933 24.5003 30.9933C24.4552 30.9933 24.4114 30.9787 24.3753 30.9517C24.3393 30.9246 24.3129 30.8866 24.3003 30.8433L19.7003 14.4767C19.6877 14.4334 19.6614 14.3954 19.6253 14.3683C19.5893 14.3413 19.5454 14.3267 19.5003 14.3267C19.4552 14.3267 19.4114 14.3413 19.3753 14.3683C19.3393 14.3954 19.3129 14.4334 19.3003 14.4767L17.342 21.4433C17.244 21.7926 17.0348 22.1004 16.746 22.32C16.4573 22.5396 16.1048 22.659 15.742 22.66H13.667" stroke="#9333EA" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>;
+
 
 
 const staticInfoCardData = {
     automationPotential: {
-        icon: potentialSVg,
+        icon: automatedPotentialSvg,
         value: '60%',
         headerText: 'Automation Potential',
         bodyText: 'Percentage of job tasks that can be automated by AI',
     },
     tasksAffected: {
-        icon: '/icons/tasks-affected-icon.svg',
+        icon: taskAffectedSvg,
         value: '12',
         headerText: 'Tasks Affected',
         bodyText: 'Number of key job tasks impacted by AI',
     },
     aiTools: {
-        icon: '/icons/ai-tools-icon.svg',
+        icon: jobImpactAiToolsSvg,
         value: '18',
         headerText: 'AI Tools',
         bodyText: 'AI solutions currently impacting this role',
@@ -249,8 +247,7 @@ export default function JobImpactDetailsPage() {
                                 </div>
                             </div>
 
-                            {/* Info Cards Grid - Now takes full width of its container */}
-                            {/* Removed flex justify-end from this wrapper */}
+
                             {/* We maintain the grid, but remove the max-width to let it expand */}
                             <div className="mb-8">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
@@ -259,18 +256,21 @@ export default function JobImpactDetailsPage() {
                                         headerText={staticInfoCardData.automationPotential.headerText}
                                         value={carrierDetail?.ai_impact_score ?? staticInfoCardData.automationPotential.value}
                                         bodyText={staticInfoCardData.automationPotential.bodyText}
+                                        className="w-full"  // Add this to each InfoCard if needed
                                     />
                                     <InfoCard
                                         icon={staticInfoCardData.tasksAffected.icon}
                                         headerText={staticInfoCardData.tasksAffected.headerText}
                                         value={carrierDetail?.tasks.length ?? staticInfoCardData.tasksAffected.value}
                                         bodyText={staticInfoCardData.tasksAffected.bodyText}
+                                        className="w-full"  // Add this to each InfoCard if needed
                                     />
                                     <InfoCard
                                         icon={staticInfoCardData.aiTools.icon}
                                         headerText={staticInfoCardData.aiTools.headerText}
-                                        value={String(uniqueToolCount)}  // inject the computed value
+                                        value={String(uniqueToolCount)} // inject the computed value
                                         bodyText={staticInfoCardData.aiTools.bodyText}
+                                        className="w-full"  // Add this to each InfoCard if needed
                                     />
                                 </div>
                             </div>
