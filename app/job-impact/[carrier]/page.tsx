@@ -94,7 +94,7 @@ export default function JobImpactDetailsPage() {
     } = useFeaturedTools(3)
     // const jobTitle = 'Software Engineer';
     // const jobCategory = "Software Development";
-    const jobRisk = "Medium Risk";
+    // const jobRisk = "Medium Risk";
 
 
 
@@ -131,6 +131,19 @@ export default function JobImpactDetailsPage() {
 
     const jobTitle = carrierDetail?.job_title ?? 'Software Engineer';
     const jobCategory = carrierDetail?.job_category??'Software Development';
+
+
+    function getRiskCategory(aiImpactScore: string): string {
+        const score = parseFloat(aiImpactScore.replace('%', ''));
+
+        if (score <= 40) {
+            return "Low Risk";
+        } else if (score <= 75) {
+            return "Medium Risk";
+        } else {
+            return "High Risk";
+        }
+    }
 
 
     function countUniqueTools(data: any): number {
@@ -232,7 +245,7 @@ export default function JobImpactDetailsPage() {
                                     <p className="text-[#6b7280]">{jobCategory}</p>
                                 </div>
                                 <div className="ml-auto bg-[#fffbeb] text-[#d97706] px-3 py-1 rounded-full text-sm font-medium">
-                                    {jobRisk}
+                                    {carrierDetail&& getRiskCategory(carrierDetail.ai_impact_score)}
                                 </div>
                             </div>
 

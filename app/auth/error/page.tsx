@@ -4,16 +4,22 @@
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import {useAuth} from "@/contexts/auth-context";
+
 
 export default function AuthErrorPage() {
+    const {user, logout, isAuthenticated} = useAuth()
+
+
     const router = useRouter();
     const searchParams = useSearchParams();
     const message = searchParams.get('message');
 
     useEffect(() => {
+        logout()
         const timer = setTimeout(() => {
             router.push('/');
-        }, 3000); // Redirect after 3 seconds
+        }, 2000); // Redirect after 3 seconds
         return () => clearTimeout(timer);
     }, [router]);
 
