@@ -223,7 +223,8 @@ export const getDetailByCarrier = async (carrier?: string): Promise<CarrierDetai
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
     // Construct the endpoint dynamically with the carrier name
-    const endpoint = `/api/jobs/${carrier}` // Matches the Swagger URL structure
+    const endpoint = `/api/search/recommend-tools/${carrier}` 
+// Matches the Swagger URL structure
 
     const headers: Record<string, string> = {
       Accept: "application/json",
