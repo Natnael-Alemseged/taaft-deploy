@@ -103,10 +103,15 @@ export default function FeaturedTools() {
             <div className="container mx-auto px-4">
                 <div className="mb-8 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Featured AI Tools</h2>
-                    <Link href="/featured-all"
-                          className="flex items-center text-sm text-purple-600 dark:text-purple-400 hover:underline">
-                        View all <ChevronRight className="ml-1 h-4 w-4"/>
-                    </Link>
+
+
+                    {data?.tools.length > 4 && (
+                        <Link href="/featured-all"
+                              className="flex items-center text-sm text-purple-600 dark:text-purple-400 hover:underline">
+                            View all <ChevronRight className="ml-1 h-4 w-4"/>
+                        </Link>
+                    )}
+
                 </div>
 
                 {isLoading ? (
