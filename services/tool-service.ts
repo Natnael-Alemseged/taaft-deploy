@@ -223,7 +223,7 @@ export const getDetailByCarrier = async (carrier?: string): Promise<CarrierDetai
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
     // Construct the endpoint dynamically with the carrier name
-    const endpoint = `/api/search/recommend-tools/${carrier}` 
+    const endpoint = `/api/jobs/by-title?job_title=${carrier}`
 // Matches the Swagger URL structure
 
     const headers: Record<string, string> = {
@@ -247,6 +247,87 @@ export const getDetailByCarrier = async (carrier?: string): Promise<CarrierDetai
   }
 }
 
+// Get most popular tools
+export const getToolsFromTask = async (task?: string): Promise<CarrierDetail> => {
+  if (!task) {
+    throw new Error("Carrier name is required to fetch details.")
+  }
+
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    // Construct the endpoint dynamically with the carrier name
+    const endpoint = `/api/search/task-tools/${task}`
+// Matches the Swagger URL structure
+
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+    }
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`
+      console.log("token", token)
+    }
+
+    const response = await apiClient.get<CarrierDetail>(endpoint, { // Expect CarrierDetail type
+      headers,
+    })
+    console.log(`get Tools form task for ${task} response`, JSON.stringify(response.data, null, 2))
+    return response.data['tools']
+  } catch (error) {
+    console.error(`Error fetching tool for task ${task}:`, error)
+
+    throw error // Re-throw the error to be handled by useQuery's error state
+  }
+}
+
+
+
+export const searchCarrier=async (searchInput:string) => {
+  if (!searchInput) {
+    throw new Error("Carrier name is required to fetch details.")
+  }
+
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    // Construct the endpoint dynamically with the carrier name
+    const endpoint = `api/search/direct-search/job-impacts?query=${searchInput}`
+// Matches the Swagger URL structure
+
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+    }
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`
+      console.log("token", token)
+    }
+
+    const response = await apiClient.get<CarrierDetail>(endpoint, { // Expect CarrierDetail type
+      headers,
+    })
+    console.log(`get Carrier from search ${searchInput} response`, JSON.stringify(response.data, null, 2))
+
+    const jobImpacts=response.data['job_impacts']
+// Use map to extract the 'job_title' from each object
+    const jobTitles = jobImpacts
+        .map(jobImpact => jobImpact.job_title)
+        .filter(Boolean);
+
+
+    jobImpacts.forEach((item, index) => {
+      console.log(`Item ${index}:`, item.job_title);
+    });
+
+    console.log(jobTitles); // This will log an array of job titles
+
+// If you want to return this array from a function, you would do:
+    return jobTitles;
+  } catch (error) {
+    console.error(`Error fetching Carrier from search ${searchInput}:`, error)
+
+    throw error // Re-throw the error to be handled by useQuery's error state
+  }
+}
 
 
 

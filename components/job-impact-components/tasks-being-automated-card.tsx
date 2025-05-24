@@ -1,104 +1,3 @@
-// import React, { useState } from 'react';
-// import type { Tool } from "@/types/tool";
-// import { useRouter } from 'next/navigation';
-// import {useAuth} from "@/contexts/auth-context";
-// import {showLoginModal} from "@/lib/auth-events";
-// // Assuming you have a hook or context for auth status and login modal
-//
-//
-// interface AutomatedTask {
-//     id: string;
-//     title: string;
-//     impactPercentage: number;
-//     impactDescription: string;
-//     aiTools: Tool[];
-// }
-//
-// interface TasksBeingAutomatedCardProps {
-//     tasks: AutomatedTask[];
-// }
-//
-// interface ToolWithUniqueId extends Tool {
-//     unique_id: string;
-//     url?: string;
-// }
-//
-// export default function TasksBeingAutomatedCard({ tasks }: TasksBeingAutomatedCardProps) {
-//     const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
-//     const router = useRouter();
-//     const { isAuthenticated } = useAuth();
-//
-//     const { pathname } = router;
-//
-//     const toggleExpand = (taskId: string) => {
-//         setExpandedTaskId(expandedTaskId === taskId ? null : taskId);
-//     };
-//
-//     const handleGoToToolDetails = (tool: ToolWithUniqueId) => {
-//         if (!tool.unique_id) {
-//             console.error('Tool is missing unique_id:', tool);
-//             return;
-//         }
-//         if (!isAuthenticated) {
-//             showLoginModal(pathname, () => {
-//                 router.push(`/tools/${encodeURIComponent(tool.unique_id)}`);
-//             });
-//         } else {
-//             router.push(`/tools/${encodeURIComponent(tool.unique_id)}`);
-//         }
-//     };
-//
-//     return (
-//         // Added max-w-2xl here
-//         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 max-w-2xl">
-//             <h2 className="text-2xl font-bold text-gray-800 mb-6">Tasks Being Automated</h2>
-//             <div>
-//                 {tasks.map((task) => (
-//                     <div key={task.id} className="border-b border-gray-200 last:border-b-0 py-4">
-//                         <button
-//                             className="flex justify-between items-center w-full text-left"
-//                             onClick={() => toggleExpand(task.id)}
-//                             aria-expanded={expandedTaskId === task.id}
-//                             aria-controls={`task-content-${task.id}`}
-//                         >
-//                             <div className="flex-grow pr-4">
-//                                 <h3 className="text-lg font-semibold text-gray-700">{task.title}</h3>
-//                                 <span className="inline-block bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full mr-2">
-//                   {task.impactPercentage}% Impact
-//                 </span>
-//                                 <p className="text-gray-600 text-sm mt-1">{task.impactDescription}</p>
-//                             </div>
-//                             <svg className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${expandedTaskId === task.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-//                         </button>
-//                         {expandedTaskId === task.id && (
-//                             <div id={`task-content-${task.id}`} className="mt-4 animate-fade-in">
-//                                 <h4 className="text-md font-semibold text-gray-700 mb-3">AI Tools Automating This Task:</h4>
-//                                 <div className="space-y-3">
-//                                     {task.aiTools.map((tool) => (
-//                                         (tool as ToolWithUniqueId).unique_id && (
-//                                             <div key={tool.id} className="bg-gray-50 p-3 rounded-md border border-gray-100 flex justify-between items-center">
-//                                                 <div>
-//                                                     <h5 className="text-sm font-medium text-gray-800">{tool.name}</h5>
-//                                                     <p className="text-gray-600 text-xs mt-0.5">{tool.description}</p>
-//                                                 </div>
-//                                                 <button
-//                                                     onClick={() => handleGoToToolDetails(tool as ToolWithUniqueId)}
-//                                                     className="ml-4 flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-1.5 px-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-//                                                 >
-//                                                     View Tool
-//                                                 </button>
-//                                             </div>
-//                                         )
-//                                     ))}
-//                                 </div>
-//                             </div>
-//                         )}
-//                     </div>
-//                 ))}
-//             </div>
-//         </div>
-//     );
-// }
 
 
 'use client';
@@ -107,7 +6,8 @@ import React, { useState } from 'react';
 import type { Tool } from "@/types/tool"; // Make sure this path is correct
 import { useRouter } from 'next/navigation';
 import {useAuth} from "@/contexts/auth-context"; // Make sure this path is correct
-import {showLoginModal} from "@/lib/auth-events"; // Make sure this path is correct
+import {showLoginModal} from "@/lib/auth-events";
+import {useTaskTools} from "@/hooks/use-tools"; // Make sure this path is correct
 
 // Define the interface for an Automated Task based on your API response
 // and how it's used in this component.
@@ -149,12 +49,19 @@ export default function TasksBeingAutomatedCard({ tasks }: TasksBeingAutomatedCa
     const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
     const router = useRouter();
     const { isAuthenticated } = useAuth();
-
     const { pathname } = router;
 
-    const toggleExpand = (taskId: string) => {
-        setExpandedTaskId(expandedTaskId === taskId ? null : taskId);
+    const [selectedTaskName, setSelectedTaskName] = useState<string | null>(null);
+    const { data: toolsData, isError, isLoading } = useTaskTools(selectedTaskName ?? undefined);
+
+    const toggleExpand = (taskId: string, taskName: string) => {
+        const isSame = expandedTaskId === taskId;
+        setExpandedTaskId(isSame ? null : taskId);
+        setSelectedTaskName(isSame ? null : taskName); // trigger refetch
     };
+
+
+
 
     const handleGoToToolDetails = (tool: ToolForNavigation) => {
         // We prioritize unique_id or slug for robust routing.
@@ -186,62 +93,96 @@ export default function TasksBeingAutomatedCard({ tasks }: TasksBeingAutomatedCa
                     <p className="text-gray-600">No specific tasks identified for automation for this job role yet.</p>
                 )}
 
-                {tasks.map((task) => (
-                    // Using task.id which is generated in the parent component's mapping
-                    <div key={task.id} className="border-b border-gray-200 last:border-b-0 py-4">
-                        <button
-                            className="flex justify-between items-center w-full text-left"
-                            onClick={() => toggleExpand(task.id)}
-                            aria-expanded={expandedTaskId === task.id}
-                            aria-controls={`task-content-${task.id}`}
-                        >
-                            <div className="flex-grow pr-4">
-                                <h3 className="text-lg font-semibold text-gray-700">{task.title}</h3>
-                                <span className="inline-block bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full mr-2">
-                                    {task.impactPercentage}% Impact
-                                </span>
-                                {/* Display impactDescription if available. This is derived in the parent. */}
-                                {task.impactDescription && <p className="text-gray-600 text-sm mt-1">{task.impactDescription}</p>}
-                            </div>
-                            <svg className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${expandedTaskId === task.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
-                        {expandedTaskId === task.id && (
-                            <div id={`task-content-${task.id}`} className="mt-4 animate-fade-in">
-                                {task.tools && task.tools.length > 0 ? (
-                                    <>
-                                        <h4 className="text-md font-semibold text-gray-700 mb-3">AI Tools Automating This Task:</h4>
-                                        <div className="space-y-3">
-                                            {task.tools.map((tool) => (
-                                                // Ensure we have a unique key for the tool.
-                                                // If your TaskApiTool from the API doesn't have an 'id',
-                                                // consider using a combination like tool.name and index for the key
-                                                // if names are not guaranteed unique within a task.
-                                                // However, for navigation, we need unique_id/slug.
-                                                <div key={tool.name} className="bg-gray-50 p-3 rounded-md border border-gray-100 flex justify-between items-center">
-                                                    <div>
-                                                        <h5 className="text-sm font-medium text-gray-800">{tool.name}</h5>
-                                                        {/* The original API JSON for nested tools does not have a 'description'.
-                                                            This will only show if your Tool type and mapping provide it. */}
-                                                        {(tool as Tool).description && <p className="text-gray-600 text-xs mt-0.5">{(tool as Tool).description}</p>}
-                                                    </div>
-                                                    <button
-                                                        // Cast to ToolForNavigation to ensure type safety for handleGoToToolDetails
-                                                        onClick={() => handleGoToToolDetails(tool as ToolForNavigation)}
-                                                        className="ml-4 flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-1.5 px-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                {tasks.map((task, index) => {
+                    const taskId = `${task.name}-${index}`;
+                    const isExpanded = expandedTaskId === taskId;
+                    const showTools = isExpanded && selectedTaskName === task.name;
+
+                    return (
+                        <div key={taskId} className="border-b border-gray-200 last:border-b-0 py-4">
+                            <button
+                                className="flex justify-between items-center w-full text-left"
+                                onClick={() => toggleExpand(taskId, task.name)}
+                                aria-expanded={isExpanded}
+                                aria-controls={`task-content-${taskId}`}
+                            >
+                                <div className="flex-grow pr-4">
+                                    <h3 className="text-lg font-semibold text-gray-700">{task.name}</h3>
+                                    <span className="inline-block bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full mr-2">
+                                        {task.ai_impact_score} Impact
+                                    </span>
+                                    {task.impactDescription && (
+                                        <p className="text-gray-600 text-sm mt-1">{task.impactDescription}</p>
+                                    )}
+                                </div>
+                                <svg
+                                    className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${
+                                        isExpanded ? 'rotate-180' : ''
+                                    }`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M19 9l-7 7-7-7"
+                                    />
+                                </svg>
+                            </button>
+
+                            {isExpanded && (
+                                <div id={`task-content-${taskId}`} className="mt-4 animate-fade-in">
+                                    {isLoading && <p className="text-sm text-gray-500">Loading tools...</p>}
+                                    {isError && <p className="text-sm text-red-500">Failed to load tools.</p>}
+                                    {!isLoading && !isError && toolsData && toolsData.length > 0 ? (
+                                        <>
+                                            <h4 className="text-md font-semibold text-gray-700 mb-3">
+                                                AI Tools Automating This Task:
+                                            </h4>
+                                            <div className="space-y-3">
+                                                {toolsData.map((tool) => (
+                                                    <div
+                                                        key={tool.name}
+                                                        className="bg-gray-50 p-3 rounded-md border border-gray-100 flex justify-between items-center"
                                                     >
-                                                        View Tool
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </>
-                                ) : (
-                                    <p className="text-gray-600 text-sm mt-3">No specific AI tools identified for this task yet.</p>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                ))}
+                                                        <div>
+                                                            <h5 className="text-sm font-medium text-gray-800">{tool.name}</h5>
+                                                            {(tool as Tool).description && (
+                                                                <p className="text-gray-600 text-xs mt-0.5">
+                                                                    {(tool as Tool).description.length > 50
+                                                                        ? `${(tool as Tool).description.substring(0, 60)}...`
+                                                                        : (tool as Tool).description}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleGoToToolDetails(tool as ToolForNavigation)
+                                                            }
+                                                            className="ml-4 flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-1.5 px-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                                                        >
+                                                            View Tool
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        !isLoading &&
+                                        !isError && (
+                                            <p className="text-gray-600 text-sm mt-3">
+                                                No specific AI tools identified for this task yet.
+                                            </p>
+                                        )
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

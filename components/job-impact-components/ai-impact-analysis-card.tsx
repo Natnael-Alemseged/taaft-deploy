@@ -12,7 +12,7 @@ interface AiImpactAnalysisCardProps {
 
 export default function AiImpactAnalysisCard({ impact }: AiImpactAnalysisCardProps) {
     const { aiImpactLevelPercentage, aiImpactSummary, aiDetailedImpact } = impact;
-    const progressBarWidth = `${aiImpactLevelPercentage}%`;
+    const progressBarWidth = `${aiImpactLevelPercentage}`;
     const progressColor = aiImpactLevelPercentage > 50 ? 'bg-yellow-500' : 'bg-purple-500';
 
     return (
@@ -29,7 +29,7 @@ export default function AiImpactAnalysisCard({ impact }: AiImpactAnalysisCardPro
             <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-gray-600">AI Impact Level</span>
-                    <span className="text-sm font-bold text-gray-800">{aiImpactLevelPercentage}%</span>
+                    <span className="text-sm font-bold text-gray-800">{aiImpactLevelPercentage}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                     <div className={`h-2.5 rounded-full ${progressColor}`} style={{ width: progressBarWidth }}></div>

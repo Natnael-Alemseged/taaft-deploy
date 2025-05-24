@@ -1,24 +1,22 @@
-
-
 "use client";
 
 import type React from "react";
 
-import { useState, useRef, useEffect } from "react";
-import { Search, MessageSquare, X, ChevronRight, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {useState, useRef, useEffect} from "react";
+import {Search, MessageSquare, X, ChevronRight, ExternalLink} from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
 import ChatInterface from "./chat-interface";
-import { useAuth } from "@/contexts/auth-context";
+import {useAuth} from "@/contexts/auth-context";
 
-import { useClickOutside } from "@/hooks/use-click-outside";
+import {useClickOutside} from "@/hooks/use-click-outside";
 
-import { keywordSearch } from "@/services/chat-service";
-import { useRouter } from "next/navigation";
-import { robotSvg, setDisplayCategories } from "@/lib/reusable_assets";
-import { SignInModal } from "./sign-in-modal";
-import { getTools } from "@/services/tool-service";
-import { LogoAvatar } from "@/components/LogoAvatar";
+import {keywordSearch} from "@/services/chat-service";
+import {useRouter} from "next/navigation";
+import {robotSvg, setDisplayCategories} from "@/lib/reusable_assets";
+import {SignInModal} from "./sign-in-modal";
+import {getTools, searchCarrier} from "@/services/tool-service";
+import {LogoAvatar} from "@/components/LogoAvatar";
 
 import {useCustomDebounce} from "@/lib/reusable-methods";
 import {SearchToolListItem} from "@/components/SearchToolList";
@@ -59,7 +57,7 @@ export default function Hero() {
     const [tools, setTools] = useState<Tool[]>([]);
     const [carrierTools, setCarriersTools] = useState<Tool[]>([]);
     const [moreTools, setMoreTools] = useState<Tool[]>([]);
-    const [carriers,setCarriers] = useState<string[]>([]);
+    const [carriers, setCarriers] = useState<string[]>([]);
 
     // Refs for the different input elements
     const inputRef = useRef<HTMLInputElement>(null); // Ref for the initial input
@@ -68,7 +66,7 @@ export default function Hero() {
 
     const searchContainerRef = useRef<HTMLDivElement>(null);
     const searchCommandRef = useRef<HTMLDivElement>(null);
-    const { isAuthenticated } = useAuth();
+    const {isAuthenticated} = useAuth();
     const [showChatTooltip, setShowChatTooltip] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
@@ -92,7 +90,7 @@ export default function Hero() {
         ///fix-me just a trail
 
         const breadcrumbItems = [
-            { name: 'Home', path: '/' },
+            {name: 'Home', path: '/'},
             // { name: 'Categories', path: '/categories' },
             // { name: 'ToolName', path: null }
         ];
@@ -104,6 +102,7 @@ export default function Hero() {
         // router.push(`/tools/${encodeURIComponent(id)}`);
         // router.push(`/tools/${id}`);
     }
+
     function goToJobImpact(id: string | number): void {
         console.log("Calling goToToolDetails for ID:", id);
         router.push(`/job-impact/${encodeURIComponent(id)}`);
@@ -160,28 +159,27 @@ export default function Hero() {
 
             // Attempt keyword search first
             const keywordData = await keywordSearch([query], 0, limit);
+            const carrierData = await searchCarrier(`${query}`);
+
+            // console.log("carrier data is", carrierData);
+
+
 
             if (keywordData && keywordData.tools && keywordData.tools.length > 0) {
                 console.log(
                     `Keyword search successful, found ${keywordData.tools.length} tools. and carriers are ${keywordData.carriers.length}`
                 );
 
-                // Type-safe filtering
-                // const { carrierTools, regularTools } = keywordData.tools.reduce(
-                //     (result, tool) => {
-                //         const hasCarriers = tool.carriers && tool.carriers.length > 0;
-                //         hasCarriers ? result.carrierTools.push(tool) : result.regularTools.push(tool);
-                //         return result;
-                //     },
-                //     { carrierTools: [] as Tool[], regularTools: [] as Tool[] }
-                // );
 
+                if (carrierData) {
+                    setCarriers(carrierData);
+                }
 
                 if (setLimit) {
 
                     //
                     // setCarriersTools(keywordData.tools);
-                    setCarriers(keywordData.carriers);
+                    // setCarriers(keywordData.carriers);
                     setTools(keywordData.tools);
 
                     // setCarriersTools(carrierTools);
@@ -253,7 +251,6 @@ export default function Hero() {
     };
 
     const debouncedSearchQuery = useCustomDebounce(searchQuery, 500);
-
 
 
     useEffect(() => {
@@ -380,7 +377,7 @@ export default function Hero() {
         console.log(`more tools length is: ${moreTools.length}`);
         if (!searchQuery) {
             console.log(`navigating with empty query`);
-             // sessionStorage.r("searchTools");
+            // sessionStorage.r("searchTools");
             sessionStorage.removeItem("searchTools");
             router.push(`/search?q=${encodeURIComponent(searchQuery)}&source=direct`);
         }
@@ -458,7 +455,8 @@ export default function Hero() {
                 onSwitchToSignUp={openSignUpModal}
                 previousRoute={previousRoute}
             />
-            <section className="relative overflow-hidden bg-gradient-to-br from-white via-purple-50 to-purple-100 py-24 text-center">
+            <section
+                className="relative overflow-hidden bg-gradient-to-br from-white via-purple-50 to-purple-100 py-24 text-center">
                 <div className="container mx-auto px-4">
                     <div className="mx-auto max-w-3xl">
                         {/* Top badge */}
@@ -475,11 +473,11 @@ export default function Hero() {
                             <div className="relative inline-block w-10 h-10 ml-2 md:w-12 md:h-12 md:ml-3">
                                 <div
                                     className="absolute top-0 left-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-purple-500 opacity-75"
-                                    style={{ transform: "translate(15%, 15%)" }}
+                                    style={{transform: "translate(15%, 15%)"}}
                                 ></div>
                                 <div
                                     className="absolute top-0 left-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-purple-400"
-                                    style={{ transform: "translate(-15%, -15%)" }}
+                                    style={{transform: "translate(-15%, -15%)"}}
                                 ></div>
                             </div>
                         </h2>
@@ -508,7 +506,7 @@ export default function Hero() {
                                         />
                                     </div>
                                     <div className="absolute left-4 top-4 flex items-center gap-2">
-                                        <Search className="h-5 w-5 text-gray-400" />
+                                        <Search className="h-5 w-5 text-gray-400"/>
                                     </div>
                                     <div className="absolute right-2 top-2 flex items-center gap-1">
                                         {/*fix me chat hidden*/}
@@ -531,7 +529,7 @@ export default function Hero() {
                                             className="h-10 rounded-full bg-purple-600 px-6 text-sm hover:bg-purple-700"
                                             onClick={() => handleSearchFocus()} // Call handleSearchFocus on button click too
                                         >
-                                            Search <ChevronRight className="h-4 w-4" />
+                                            Search <ChevronRight className="h-4 w-4"/>
                                         </Button>
                                     </div>
                                 </div>
@@ -539,10 +537,11 @@ export default function Hero() {
 
                             {/* Intermediate Search UI - shown when search is open and chat is not */}
                             {isSearchOpen && !isChatOpen && (
-                                <div ref={searchCommandRef} className="w-full max-w-2xl mx-auto rounded-lg border border-gray-200 shadow-sm bg-white overflow-hidden">
+                                <div ref={searchCommandRef}
+                                     className="w-full max-w-2xl mx-auto rounded-lg border border-gray-200 shadow-sm bg-white overflow-hidden">
                                     {/* Search header with input and buttons */}
                                     <div className="flex items-center border-b px-4 py-3 gap-2">
-                                        <Search className="h-5 w-5 text-gray-400" />
+                                        <Search className="h-5 w-5 text-gray-400"/>
                                         <input
                                             ref={intermediateInputRef} // Attach the ref to the intermediate input
                                             type="text"
@@ -591,7 +590,7 @@ export default function Hero() {
                                                     onClick={handleSearchNavigation}
                                                     className="px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors flex items-center gap-1.5"
                                                 >
-                                                    <Search className="h-4 w-4" />
+                                                    <Search className="h-4 w-4"/>
                                                     <span>Search</span>
                                                 </button>
                                             )}
@@ -599,10 +598,12 @@ export default function Hero() {
                                     </div>
 
                                     {/* Content Area (Loading, No Results, Results List) */}
-                                    <div className="divide-y max-h-96 overflow-y-auto"> {/* Added max-height and overflow for scrollable results */}
+                                    <div
+                                        className="divide-y max-h-96 overflow-y-auto"> {/* Added max-height and overflow for scrollable results */}
                                         {isLoading ? (
                                             <div className="flex items-center justify-center py-8">
-                                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                                                <div
+                                                    className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
                                             </div>
                                         ) : searchQuery.length === 0 ? (
                                             <div className="py-6 text-center text-sm text-gray-500">
@@ -682,7 +683,7 @@ export default function Hero() {
                                                                 Jobs
                                                             </h3>
                                                         </div>
-                                                        {carriers.map((carrier:string) => (
+                                                        {carriers.map((carrier: string) => (
                                                             <JobListItem
 
                                                                 carrier={carrier}
@@ -698,7 +699,7 @@ export default function Hero() {
                                                         AI Tools
                                                     </h3>
                                                 </div>
-                                                {tools.map((tool:Tool) => (
+                                                {tools.map((tool: Tool) => (
                                                     <SearchToolListItem
                                                         key={tool.id}
                                                         tool={tool}

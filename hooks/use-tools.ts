@@ -12,7 +12,7 @@ import {
   updateTool,
   deleteTool,
   uploadToolLogo,
-  uploadToolScreenshots, getDetailByCarrier,
+  uploadToolScreenshots, getDetailByCarrier, getToolsFromTask,
 } from "@/services/tool-service"
 import type { Tool, ToolSubmission } from "@/types/tool"
 
@@ -105,6 +105,13 @@ export function useCarriers(carrier?: string) {
   return useQuery({
     queryKey: ["tools", "carriers", carrier],
     queryFn: () => getDetailByCarrier(carrier),
+  })
+}
+
+export function useTaskTools(task?: string) {
+  return useQuery({
+    queryKey: ["tools", "Tasks", task],
+    queryFn: () => getToolsFromTask(task),
   })
 }
 

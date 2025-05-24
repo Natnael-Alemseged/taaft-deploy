@@ -146,7 +146,7 @@ export default function JobImpactDetailsPage() {
 
     function countUniqueTools(data: any): number {
         if (!data || !Array.isArray(data.tasks)) {
-            return 10;
+            return 0;
         }
 
         const toolsSet = new Set<string>();
@@ -154,8 +154,8 @@ export default function JobImpactDetailsPage() {
         data.tasks.forEach(task => {
             if (Array.isArray(task.tools)) {
                 task.tools.forEach(tool => {
-                    if (tool?.name) {
-                        toolsSet.add(tool.name);
+                    if (tool?.tool_name) {
+                        toolsSet.add(tool.tool_name);
                     }
                 });
             }
@@ -163,6 +163,7 @@ export default function JobImpactDetailsPage() {
 
         return toolsSet.size;
     }
+
     const tasksBeingAutomatedData = (carrierDetail?.tasks || []).map(task => {
         const taskName = task?.name || 'unnamed-task';
         const impactScore = task?.ai_impact_score?.replace('%', '') || '0';
@@ -261,7 +262,10 @@ export default function JobImpactDetailsPage() {
                                     <InfoCard
                                         icon={staticInfoCardData.tasksAffected.icon}
                                         headerText={staticInfoCardData.tasksAffected.headerText}
-                                        value={carrierDetail?.tasks.length ?? staticInfoCardData.tasksAffected.value}
+                                        value={
+                                        carrierDetail?.tasks.length ??
+                                            staticInfoCardData.tasksAffected.value
+                                    }
                                         bodyText={staticInfoCardData.tasksAffected.bodyText}
                                         className="w-full"  // Add this to each InfoCard if needed
                                     />
