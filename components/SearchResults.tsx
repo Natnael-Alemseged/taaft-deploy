@@ -15,6 +15,7 @@ import { showLoginModal } from "@/lib/auth-events"
 import { ShareButtonWithPopover } from "./ShareButtonWithPopover"
 import { robotSvg } from "@/lib/reusable_assets"
 import ToolCard from "@/components/cards/tool-card";
+import {BackLink} from "@/components/ui/BackLink";
 
 interface SearchResultsProps {
   initialQuery?: string
@@ -278,6 +279,9 @@ export default function SearchResults({ initialQuery, category, source }: Search
   const totalResultsToDisplay = source === "chat" ? chatResults.length : totalResults;
 
   return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-6">Search Results</h1>
+        <BackLink href="/" label="Back to Home" />
       <div className="min-h-screen bg-white dark:bg-gray-950">
         {/* Header is assumed to be in the layout */}
         {/* <Header /> */}
@@ -632,6 +636,7 @@ export default function SearchResults({ initialQuery, category, source }: Search
 
         {/* Assuming Footer is rendered elsewhere */}
         {/* <Footer /> */}
+      </div>
       </div>
   )
 }

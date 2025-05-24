@@ -2,6 +2,7 @@
 import {useEffect, useState} from "react";
 import {Tool} from "@/types/tool";
 import ToolCard from "@/components/cards/tool-card";
+import {BackLink} from "@/components/ui/BackLink";
 
 
 interface SearchResultsDirectProps {
@@ -12,9 +13,16 @@ interface SearchResultsDirectProps {
 
 export default function SearchResultDirect({initialQuery, category, source}: SearchResultsDirectProps) {
     const [tools, setTools] = useState<Tool[]>([]);
+    const [toolTitle, setToolTitle] = useState<string | null>(null);
 
     useEffect(() => {
         const storedTools = sessionStorage.getItem("searchTools");
+        const storedToolTitle = sessionStorage.getItem("searchTerm");
+        // sessionStorage.setItem("searchTerm", searchQuery);
+        if (storedToolTitle) {
+            setToolTitle(storedToolTitle);
+        }
+
         if (storedTools) {
             try {
                 const parsedTools = JSON.parse(storedTools);
@@ -26,6 +34,9 @@ export default function SearchResultDirect({initialQuery, category, source}: Sea
     }, []);
 
     return (
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-2xl font-bold mb-6">{`Search Results for ${toolTitle}`}</h1>
+            <BackLink href="/" label="Back to Home" />
         <div className="container mx-auto px-4 py-8">
 
             {tools.length === 0 ? (
@@ -42,6 +53,7 @@ export default function SearchResultDirect({initialQuery, category, source}: Sea
 
                 </div>
             )}
+        </div>
         </div>
     );
 }

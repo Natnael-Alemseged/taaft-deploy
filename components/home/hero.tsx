@@ -379,6 +379,10 @@ export default function Hero() {
             console.log(`navigating with empty query`);
             // sessionStorage.r("searchTools");
             sessionStorage.removeItem("searchTools");
+            sessionStorage.removeItem("searchTerm");
+
+
+
             router.push(`/search?q=${encodeURIComponent(searchQuery)}&source=direct`);
         }
         // if (!searchQuery) return;
@@ -437,6 +441,7 @@ export default function Hero() {
         if (moreTools.length > 0) {
             // Store in session storage for the search results page to access
             sessionStorage.setItem("searchTools", JSON.stringify(moreTools));
+            sessionStorage.setItem("searchTerm", searchQuery);
 
             // Navigate to the search page
             router.push(`/search?q=${encodeURIComponent(searchQuery)}&source=direct`);

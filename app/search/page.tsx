@@ -18,9 +18,8 @@ export default async function SearchPage({
         : <SearchResults initialQuery={query} category={category} source={source} />;
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-6">Search Results</h1>
-            <BackLink href="/" label="Back to Home" />
+        <div >
+
             {ResultsComponent}
         </div>
     );
